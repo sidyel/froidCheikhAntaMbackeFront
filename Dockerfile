@@ -10,6 +10,5 @@ RUN npm run build -- --configuration production
 FROM nginx:alpine
 COPY --from=build /app/dist/froid-cheikh-ecommerce-frontend/browser /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Script pour remplacer $PORT au démarrage
+EXPOSE 8080
 CMD ["/bin/sh", "-c", "sed -i 's/$PORT/'$PORT'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
