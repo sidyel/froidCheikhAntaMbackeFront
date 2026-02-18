@@ -3,7 +3,7 @@ export const environment = {
   apiUrl: 'https://froidcheikhantambacke-production.up.railway.app/api',
   uploadUrl: 'https://froidcheikhantambacke-production.up.railway.app/uploads',
   companyInfo: {
-    name: 'Froid Cheikh Anta Mbacké',
+    name: 'Froid Cheikh Anta Mbacké Babacar Dione',
     phones: ['77 335 20 00', '76 888 04 42', '33 820 16 33'],
     address: 'Ouest Foire, Cité Aelmas, derrière station Shell',
     ninea: '0151340-2B1',
