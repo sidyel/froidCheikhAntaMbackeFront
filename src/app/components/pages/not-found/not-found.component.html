@@ -1,0 +1,107 @@
+<div class="not-found-page">
+  <div class="container">
+    <div class="not-found-content">
+      <!-- Error Illustration -->
+      <div class="error-illustration">
+        <div class="error-code">404</div>
+        <div class="error-icon">
+          <lucide-icon name="alert-triangle"></lucide-icon>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message">
+        <h1>Oops ! Page non trouvée</h1>
+        <p class="error-description">
+          La page que vous cherchez n'existe pas ou a été déplacée.
+          <br>
+          Vérifiez l'URL ou utilisez les liens ci-dessous pour naviguer.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="goHome()">
+          <lucide-icon name="home"></lucide-icon>
+          Retour à l'accueil
+        </button>
+        <button class="btn btn-secondary" (click)="goBack()">
+          <lucide-icon name="arrow-left"></lucide-icon>
+          Page précédente
+        </button>
+      </div>
+
+      <!-- Countdown -->
+      <div class="countdown-section" *ngIf="countdownInterval">
+        <p class="countdown-text">
+          Redirection automatique vers l'accueil dans
+          <span class="countdown-number">{{ countdown }}</span>
+          secondes
+        </p>
+        <button class="btn-link" (click)="stopCountdown()">
+          Annuler la redirection
+        </button>
+      </div>
+
+      <!-- Popular Links -->
+      <div class="popular-links">
+        <h3>Pages populaires</h3>
+        <div class="links-grid">
+          <a
+            *ngFor="let link of popularLinks"
+            [routerLink]="link.route"
+            class="link-card"
+          >
+            <div class="link-icon">
+              <lucide-icon [name]="link.icon"></lucide-icon>
+            </div>
+            <span class="link-label">{{ link.label }}</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Search Section -->
+      <div class="search-section">
+        <h3>Rechercher un produit</h3>
+        <div class="search-form">
+          <div class="search-input-group">
+            <lucide-icon name="search" class="search-icon"></lucide-icon>
+            <input
+              type="text"
+              placeholder="Rechercher des climatiseurs, réfrigérateurs..."
+              class="search-input"
+              #searchInput
+              (keyup.enter)="onSearch(searchInput.value)"
+            >
+            <button
+              class="search-btn"
+              (click)="onSearch(searchInput.value)"
+            >
+              Rechercher
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help Section -->
+      <div class="help-section">
+        <h3>Besoin d'aide ?</h3>
+        <p>Notre équipe est là pour vous aider</p>
+        <div class="help-actions">
+          <a routerLink="/contact" class="help-link">
+            <lucide-icon name="phone"></lucide-icon>
+            Nous contacter
+          </a>
+          <a href="mailto:contact@froidcheikh.sn" class="help-link">
+            <lucide-icon name="mail"></lucide-icon>
+            Envoyer un email
+          </a>
+          <a href="tel:+221771234567" class="help-link">
+            <lucide-icon name="phone"></lucide-icon>
+            +221 77 123 45 67
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

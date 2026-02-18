@@ -1,0 +1,318 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.dialog-container {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.dialog-content {
+  padding: 0;
+}
+
+/* Header */
+.dialog-header {
+  position: relative;
+  padding: 30px 30px 0 30px;
+  text-align: center;
+}
+
+.dialog-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.dialog-icon.info {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.dialog-icon.success {
+  background: #dcfce7;
+  color: #10b981;
+}
+
+.dialog-icon.warning {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.dialog-icon.danger {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.dialog-icon lucide-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #f1f5f9;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #64748b;
+}
+
+.close-button:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.close-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.close-button lucide-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Body */
+.dialog-body {
+  padding: 0 30px 30px 30px;
+  text-align: center;
+}
+
+.dialog-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.dialog-message {
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Footer */
+.dialog-footer {
+  padding: 20px 30px 30px 30px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  min-width: 100px;
+  font-size: 0.95rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: white;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+/* Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Focus management */
+.dialog-container {
+  outline: none;
+}
+
+.dialog-overlay:focus {
+  outline: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dialog-container {
+    margin: 20px;
+    max-width: calc(100vw - 40px);
+    border-radius: 12px;
+  }
+
+  .dialog-header {
+    padding: 25px 20px 0 20px;
+  }
+
+  .dialog-body {
+    padding: 0 20px 25px 20px;
+  }
+
+  .dialog-footer {
+    padding: 20px 20px 25px 20px;
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .dialog-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+  }
+
+  .dialog-icon lucide-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .dialog-title {
+    font-size: 1.25rem;
+  }
+
+  .close-button {
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .close-button lucide-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* High contrast mode support */
+
+
+
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .dialog-overlay,
+  .dialog-container {
+    animation: none;
+  }
+
+  .spinner {
+    animation-duration: 2s;
+  }
+}

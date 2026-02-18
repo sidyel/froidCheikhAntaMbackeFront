@@ -1,0 +1,289 @@
+<footer class="footer" role="contentinfo" aria-label="Pied de page du site">
+
+  <!-- Main Footer Content -->
+  <div class="footer-main">
+    <div class="container">
+      <div class="footer-grid">
+
+        <!-- Company Info Section -->
+        <div class="footer-section" data-aos="fade-up" data-aos-delay="0">
+          <div class="company-header">
+            <div class="flex-shrink-0">
+              <img
+                src="assets/images/logo.png"
+                alt="Froid Cheikh Logo"
+                class="h-16 w-auto object-contain"
+              >
+            </div>
+            <div class="company-title">
+              <h3>{{ companyInfo.name }}</h3>
+              <p class="company-subtitle">Qualité & Service</p>
+            </div>
+          </div>
+
+          <p class="company-description">
+            Spécialiste en climatisation, réfrigération et électroménager depuis plus de 15 ans au Sénégal.
+          </p>
+
+          <div class="company-details">
+            <div class="detail-item">
+              <lucide-icon name="map-pin" class="detail-icon"></lucide-icon>
+              <span style="margin-top: 10px">{{ companyInfo.address }}</span>
+            </div>
+            <div class="detail-item">
+              <lucide-icon name="shield" class="detail-icon"></lucide-icon>
+              <span style="margin-top: 10px" class="ninea">NINEA: {{ companyInfo.ninea }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links Section -->
+        <div class="footer-section" data-aos="fade-up" data-aos-delay="100">
+          <h4 class="section-title">Liens Rapides</h4>
+          <nav class="footer-nav" aria-label="Navigation rapide">
+            <a *ngFor="let link of quickLinks"
+               [routerLink]="link.route"
+               class="footer-link"
+               [attr.aria-label]="'Naviguer vers ' + link.label">
+              <lucide-icon [name]="link.icon" class="link-icon" *ngIf="link.icon"></lucide-icon>
+              <span style="margin-top: 10px;margin-left: 5px">{{ link.label }}</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Categories Section -->
+        <div class="footer-section" data-aos="fade-up" data-aos-delay="200">
+          <h4 class="section-title">Nos Catégories</h4>
+          <nav class="footer-nav" aria-label="Catégories de produits">
+            <a *ngFor="let category of categoryLinks"
+               [routerLink]="category.route"
+               class="footer-link"
+               [attr.aria-label]="'Voir les ' + category.label">
+              <lucide-icon name="chevron-right" class="link-icon"></lucide-icon>
+              <span style="margin-top: 10px">{{ category.label }}</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="footer-section" data-aos="fade-up" data-aos-delay="300">
+          <h4 class="section-title">Nous Contacter</h4>
+
+          <div class="contact-info">
+            <div *ngFor="let phone of companyInfo.phones" class="contact-item">
+              <lucide-icon name="phone" class="contact-icon"></lucide-icon>
+              <a style="margin-top: 10px;margin-left: 5px" [href]="'tel:' "
+                 class="contact-link"
+                 (click)="onPhoneClick(phone)"
+                 [attr.aria-label]="'Appeler le ' + phone">
+                {{ phone }}
+              </a>
+            </div>
+
+            <div class="contact-item" *ngIf="companyInfo.email">
+              <lucide-icon name="mail" class="contact-icon"></lucide-icon>
+              <a style="margin-top: 10px;margin-left: 5px" [href]="'mailto:' + companyInfo.email"
+                 class="contact-link"
+                 (click)="onEmailClick()"
+                 [attr.aria-label]="'Envoyer un email à ' + companyInfo.email">
+                {{ companyInfo.email }}
+              </a>
+            </div>
+          </div>
+
+          <!-- Business Hours -->
+          <div class="business-hours">
+            <h5 class="hours-title">
+              <lucide-icon name="clock" class="hours-icon"></lucide-icon>
+              <span style="margin-top: 10px">Horaires d'ouverture</span>
+            </h5>
+            <div class="hours-list">
+              <div *ngFor="let hour of businessHours"
+                   class="hour-item"
+                   [class.closed]="hour.hours === 'Fermé'">
+                <span class="hour-day">{{ hour.day }}</span>
+                <span class="hour-time">{{ hour.hours }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Newsletter Section -->
+  <div class="footer-newsletter" data-aos="fade-up">
+    <div class="container">
+      <div class="newsletter-content">
+        <div class="newsletter-header">
+          <lucide-icon name="mail" class="newsletter-icon"></lucide-icon>
+          <div>
+            <h3 class="newsletter-title">Restez Informé</h3>
+            <p class="newsletter-description">
+              Recevez nos dernières offres et nouveautés directement dans votre boîte mail.
+            </p>
+          </div>
+        </div>
+
+        <form class="newsletter-form"
+              (ngSubmit)="onNewsletterSubmit()"
+              #newsletterForm="ngForm"
+              [class.submitted]="newsletterSubmitted">
+          <div class="form-group">
+            <label for="newsletter-email" class="sr-only">Adresse email</label>
+            <input
+              id="newsletter-email"
+              type="email"
+              name="email"
+              [(ngModel)]="newsletterEmail"
+              placeholder="Votre adresse email"
+              required
+              email
+              class="form-input"
+              [disabled]="isNewsletterLoading || newsletterSubmitted"
+              aria-label="Entrez votre adresse email pour la newsletter"
+              aria-required="true">
+
+            <button
+              type="submit"
+              [disabled]="!newsletterForm.valid || isNewsletterLoading || newsletterSubmitted"
+              class="form-button"
+              [class.loading]="isNewsletterLoading"
+              [class.success]="newsletterSubmitted"
+              [attr.aria-label]="newsletterSubmitted ? 'Inscription réussie' : 'S\'abonner à la newsletter'">
+
+              <lucide-icon name="mail" class="button-icon" *ngIf="!isNewsletterLoading && !newsletterSubmitted"></lucide-icon>
+              <lucide-icon name="check-circle" class="button-icon success-icon" *ngIf="newsletterSubmitted"></lucide-icon>
+
+              <div class="spinner" *ngIf="isNewsletterLoading" aria-hidden="true"></div>
+
+              <span style="margin-top: 10px">{{ newsletterSubmitted ? 'Inscrit !' : 'S\'abonner' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment & Social Section -->
+  <div class="footer-info">
+    <div class="container">
+      <div class="info-grid">
+
+        <!-- Copyright -->
+        <div class="copyright" data-aos="fade-up">
+          <p>© {{ currentYear }} {{ companyInfo.name }}. Tous droits réservés.</p>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="payment-methods" data-aos="fade-up" data-aos-delay="100">
+          <span class="methods-label">Moyens de paiement:</span>
+          <div class="methods-list">
+            <div *ngFor="let method of paymentMethods"
+                 class="payment-badge"
+                 [ngClass]="method.color"
+                 [attr.aria-label]="'Paiement accepté: ' + method.name">
+              {{ method.name }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Links -->
+        <div class="social-links" data-aos="fade-up" data-aos-delay="200">
+          <span class="social-label">Suivez-nous:</span>
+          <!-- Remplacez cette section -->
+          <div class="social-list">
+            <!-- Facebook -->
+            <a href="https://facebook.com/froidcheikh"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="social-link social-link-facebook"
+               (click)="onSocialClick('Facebook')"
+               aria-label="Suivez-nous sur Facebook">
+              <!-- SVG inline au lieu de img -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="social-logo">
+                <circle cx="12" cy="12" r="10" fill="#1877f2"/>
+                <path d="M15.5 8.25H13.75C13.198 8.25 12.75 8.698 12.75 9.25V11H15.5L15.125 13.75H12.75V20.5H9.75V13.75H7.5V11H9.75V9.25C9.75 7.455 11.205 6 13 6H15.5V8.25Z" fill="white"/>
+              </svg>
+              <span class="social-name">Facebook</span>
+            </a>
+
+            <!-- WhatsApp -->
+            <a [href]="'https://wa.me/' + formatPhoneForWhatsApp(companyInfo.phones[0])"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="social-link social-link-whatsapp"
+               (click)="onSocialClick('WhatsApp')"
+               aria-label="Contactez-nous sur WhatsApp">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="social-logo">
+                <circle cx="12" cy="12" r="10" fill="#25d366"/>
+                <path d="M16.5 13.25C16.3 13.15 15.2 12.6 15 12.55C14.8 12.5 14.65 12.45 14.5 12.65C14.35 12.85 13.95 13.35 13.8 13.5C13.65 13.65 13.5 13.65 13.3 13.55C12.55 13.2 11.9 12.75 11.35 12.15C10.8 11.55 10.35 10.85 10 10.1C9.9 9.9 10 9.75 10.1 9.65C10.2 9.55 10.3 9.4 10.4 9.3C10.5 9.2 10.55 9.1 10.6 9C10.65 8.9 10.6 8.8 10.55 8.7C10.5 8.6 10.05 7.5 9.85 7.05C9.65 6.6 9.45 6.65 9.3 6.65H8.85C8.7 6.65 8.45 6.7 8.25 6.9C8.05 7.1 7.45 7.65 7.45 8.75C7.45 9.85 8.3 10.9 8.4 11.05C8.5 11.2 9.95 13.5 12.25 14.45C13.95 15.15 14.55 15.1 14.95 15.05C15.45 14.95 16.3 14.45 16.5 13.9C16.7 13.35 16.7 12.85 16.65 12.8C16.6 12.7 16.45 12.65 16.2 12.55L16.5 13.25Z" fill="white"/>
+              </svg>
+              <span class="social-name">WhatsApp</span>
+            </a>
+
+            <!-- Instagram -->
+            <a href="https://instagram.com/froidcheikh"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="social-link social-link-instagram"
+               (click)="onSocialClick('Instagram')"
+               aria-label="Suivez-nous sur Instagram">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="social-logo">
+                <defs>
+                  <linearGradient id="instagram-gradient-footer" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#f09433"/>
+                    <stop offset="25%" style="stop-color:#e6683c"/>
+                    <stop offset="50%" style="stop-color:#dc2743"/>
+                    <stop offset="75%" style="stop-color:#cc2366"/>
+                    <stop offset="100%" style="stop-color:#bc1888"/>
+                  </linearGradient>
+                </defs>
+                <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#instagram-gradient-footer)"/>
+                <circle cx="12" cy="12" r="3.5" stroke="white" stroke-width="1.5" fill="none"/>
+                <circle cx="17" cy="7" r="1" fill="white"/>
+                <rect x="5.5" y="5.5" width="13" height="13" rx="3" stroke="white" stroke-width="1.5" fill="none"/>
+              </svg>
+              <span class="social-name">Instagram</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Legal Links -->
+  <div class="footer-legal">
+    <div class="container">
+      <nav class="legal-nav" aria-label="Liens légaux">
+        <a href="#" class="legal-link" aria-label="Consulter les conditions générales de vente">
+          Conditions Générales de Vente
+        </a>
+        <span class="separator" aria-hidden="true">|</span>
+        <a href="#" class="legal-link" aria-label="Consulter la politique de confidentialité">
+          Politique de Confidentialité
+        </a>
+        <span class="separator" aria-hidden="true">|</span>
+        <a href="#" class="legal-link" aria-label="Consulter les mentions légales">
+          Mentions Légales
+        </a>
+        <span class="separator" aria-hidden="true">|</span>
+        <a routerLink="/contact" class="legal-link" aria-label="Contacter le support client">
+          Support Client
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Back to Top Button -->
+  <button
+    class="back-to-top"
+    (click)="scrollToTop()"
+    aria-label="Retour en haut de la page"
+    title="Retour en haut">
+    <lucide-icon name="chevron-up"></lucide-icon>
+  </button>
+
+</footer>

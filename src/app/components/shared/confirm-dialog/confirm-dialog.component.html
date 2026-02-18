@@ -1,0 +1,57 @@
+<p>confirm-dialog works!</p>
+<div
+  class="dialog-overlay"
+  *ngIf="isVisible"
+  (click)="onBackdropClick($event)"
+  (keydown)="onKeyDown($event)"
+  tabindex="0"
+>
+  <div class="dialog-container" role="dialog" aria-modal="true" [attr.aria-labelledby]="'dialog-title'">
+    <div class="dialog-content">
+      <!-- Header -->
+      <div class="dialog-header">
+        <div [class]="getIconClass()">
+          <lucide-icon [name]="getIconName()"></lucide-icon>
+        </div>
+        <button
+          class="close-button"
+          (click)="onCancel()"
+          [disabled]="isLoading"
+          aria-label="Fermer"
+          *ngIf="data.showCancel !== false"
+        >
+          <lucide-icon name="x"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="dialog-body">
+        <h2 id="dialog-title" class="dialog-title">{{ data.title }}</h2>
+        <p class="dialog-message" [innerHTML]="data.message"></p>
+      </div>
+
+      <!-- Footer -->
+      <div class="dialog-footer">
+        <button
+          *ngIf="data.showCancel !== false"
+          class="btn btn-outline"
+          (click)="onCancel()"
+          [disabled]="isLoading"
+          type="button"
+        >
+          {{ data.cancelText || 'Annuler' }}
+        </button>
+
+        <button
+          [class]="getConfirmButtonClass()"
+          (click)="onConfirm()"
+          [disabled]="isLoading"
+          type="button"
+        >
+          <div class="spinner" *ngIf="isLoading"></div>
+          <span>{{ data.confirmText || 'Confirmer' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

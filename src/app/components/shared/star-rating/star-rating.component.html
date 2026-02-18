@@ -1,0 +1,75 @@
+<div
+  [class]="getContainerClass()"
+  (mouseleave)="onContainerLeave()"
+  [attr.aria-label]="getAriaLabel()"
+  role="img"
+>
+  <!-- Stars Container -->
+  <div class="stars-container">
+    <span
+      *ngFor="let star of stars; trackBy: trackByStar"
+      [class]="getStarClass()"
+      (click)="onStarClick(star.index, $event)"
+      (mouseenter)="onStarHover(star.index, $event)"
+      (mousemove)="onStarHover(star.index, $event)"
+      [attr.aria-label]="'Étoile ' + star.index"
+      [attr.data-rating]="star.index"
+    >
+      <!-- Background Star (Empty) -->
+      <lucide-icon
+        name="star"
+        class="star-background"
+        [style.color]="emptyColor"
+      ></lucide-icon>
+
+      <!-- Foreground Star (Filled) -->
+      <lucide-icon
+        name="star"
+        class="star-foreground"
+        [style.color]="isHovering ? hoverColor : color"
+        [style.clip-path]="'inset(0 ' + (100 - getStarPercentage(star)) + '% 0 0)'"
+        [style.opacity]="getStarPercentage(star) > 0 ? 1 : 0"
+      ></lucide-icon>
+    </span>
+  </div>
+
+  <!-- Rating Text -->
+  <span class="rating-text" *ngIf="getRatingText()">
+    {{ getRatingText() }}
+  </span>
+</div>
+
+<!-- Alternative Template for better half-star display -->
+<!-- This can be used if the clip-path method doesn't work well -->
+<!--
+<div
+  [class]="getContainerClass()"
+  (mouseleave)="onContainerLeave()"
+  [attr.aria-label]="getAriaLabel()"
+  role="img"
+>
+  <div class="stars-container">
+    <span
+      *ngFor="let star of stars; trackBy: trackByStar"
+      [class]="getStarClass()"
+      (click)="onStarClick(star.index, $event)"
+      (mouseenter)="onStarHover(star.index, $event)"
+      (mousemove)="onStarHover(star.index, $event)"
+      [attr.aria-label]="'Étoile ' + star.index"
+      [attr.data-rating]="star.index"
+    >
+      <lucide-icon
+        name="star"
+        class="star-icon"
+        [class.star-empty]="star.filled === 'empty'"
+        [class.star-half]="star.filled === 'half'"
+        [class.star-full]="star.filled === 'full'"
+        [style.color]="getStarColor(star)"
+      ></lucide-icon>
+    </span>
+  </div>
+
+  <span class="rating-text" *ngIf="getRatingText()">
+    {{ getRatingText() }}
+  </span>
+</div>-->

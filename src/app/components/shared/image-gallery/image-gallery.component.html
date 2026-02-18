@@ -1,0 +1,186 @@
+<div class="image-gallery" [class.zoomed]="isZoomed">
+  <!-- Main Image Container -->
+  <div class="main-image-container">
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" *ngIf="isLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Main Image -->
+    <div
+      class="main-image-wrapper"
+      (click)="onImageClick($event)"
+      (dblclick)="onDoubleClick()"
+      (mousedown)="onMouseDown($event)"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd($event)"
+      [style.cursor]="isZoomed ? (isDragging ? 'grabbing' : 'grab') : (allowZoom ? 'zoom-in' : 'default')"
+    >
+      <img
+        #mainImage
+        [src]="currentImage"
+        [alt]="alt + ' - Image ' + (currentIndex + 1)"
+        class="main-image"
+        [style.transform]="getImageTransform()"
+        [class.zoomed]="isZoomed"
+        (load)="onImageLoad()"
+        (error)="onImageError($event)"
+        draggable="false"
+      >
+    </div>
+
+    <!-- Navigation Arrows -->
+    <div class="navigation-arrows" *ngIf="showNavigation && hasMultipleImages">
+      <button
+        class="nav-arrow prev-arrow"
+        (click)="previousImage()"
+        [disabled]="!canGoPrevious && !autoPlay"
+        aria-label="Image précédente"
+      >
+        <lucide-icon name="chevron-left"></lucide-icon>
+      </button>
+
+      <button
+        class="nav-arrow next-arrow"
+        (click)="nextImage()"
+        [disabled]="!canGoNext && !autoPlay"
+        aria-label="Image suivante"
+      >
+        <lucide-icon name="chevron-right"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Image Counter -->
+    <div class="image-counter" *ngIf="hasMultipleImages">
+      {{ currentIndex + 1 }} / {{ images.length }}
+    </div>
+
+    <!-- Controls -->
+    <div class="image-controls">
+      <!-- Zoom Controls -->
+      <div class="zoom-controls" *ngIf="allowZoom">
+        <button
+          class="control-btn"
+          (click)="zoomOut()"
+          [disabled]="zoomLevel <= 1"
+          title="Zoom arrière"
+        >
+          <lucide-icon name="minus"></lucide-icon>
+        </button>
+
+        <span class="zoom-level">{{ Math.round(zoomLevel * 100) }}%</span>
+
+        <button
+          class="control-btn"
+          (click)="zoomIn()"
+          [disabled]="zoomLevel >= 3"
+          title="Zoom avant"
+        >
+          <lucide-icon name="plus"></lucide-icon>
+        </button>
+
+        <button
+          class="control-btn"
+          (click)="resetZoom()"
+          [disabled]="zoomLevel === 1"
+          title="Réinitialiser le zoom"
+        >
+          <lucide-icon name="refresh-ccw"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Other Controls -->
+      <div class="other-controls">
+        <button
+          class="control-btn"
+          (click)="toggleAutoPlay()"
+          [title]="autoPlay ? 'Arrêter le diaporama' : 'Démarrer le diaporama'"
+          *ngIf="hasMultipleImages"
+        >
+          <lucide-icon [name]="autoPlay ? 'pause' : 'play'"></lucide-icon>
+        </button>
+
+        <button
+          class="control-btn"
+          (click)="openFullscreen()"
+          title="Plein écran"
+          *ngIf="showFullscreenButton"
+        >
+          <lucide-icon name="maximize"></lucide-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thumbnails -->
+  <div class="thumbnails-container" *ngIf="showThumbnails && hasMultipleImages">
+    <div class="thumbnails-wrapper">
+      <button
+        *ngFor="let image of images; let i = index"
+        class="thumbnail"
+        [class.active]="i === currentIndex"
+        (click)="selectImage(i)"
+        [attr.aria-label]="'Voir image ' + (i + 1)"
+      >
+        <img
+          [src]="image"
+          [alt]="alt + ' - Miniature ' + (i + 1)"
+          (error)="onImgError($event)"        >
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen Image Viewer -->
+<div class="image-viewer-overlay" *ngIf="showImageViewer" (click)="closeImageViewer()">
+  <div class="image-viewer-container" (click)="$event.stopPropagation()">
+    <button class="close-viewer-btn" (click)="closeImageViewer()" aria-label="Fermer">
+      <lucide-icon name="x"></lucide-icon>
+    </button>
+
+    <div class="viewer-content">
+      <img
+        [src]="currentImage"
+        [alt]="alt + ' - Image ' + (currentIndex + 1)"
+        class="viewer-image"
+        [style.transform]="getImageTransform()"
+        (click)="onImageClick($event)"
+        (dblclick)="onDoubleClick()"
+        (mousedown)="onMouseDown($event)"
+        draggable="false"
+      >
+    </div>
+
+    <!-- Viewer Navigation -->
+    <div class="viewer-navigation" *ngIf="hasMultipleImages">
+      <button class="viewer-nav-btn prev" (click)="previousImage()">
+        <lucide-icon name="chevron-left"></lucide-icon>
+      </button>
+      <button class="viewer-nav-btn next" (click)="nextImage()">
+        <lucide-icon name="chevron-right"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Viewer Controls -->
+    <div class="viewer-controls">
+      <div class="viewer-zoom-controls" *ngIf="allowZoom">
+        <button class="viewer-control-btn" (click)="zoomOut()" [disabled]="zoomLevel <= 1">
+          <lucide-icon name="minus"></lucide-icon>
+        </button>
+        <span class="viewer-zoom-level">{{ Math.round(zoomLevel * 100) }}%</span>
+        <button class="viewer-control-btn" (click)="zoomIn()" [disabled]="zoomLevel >= 3">
+          <lucide-icon name="plus"></lucide-icon>
+        </button>
+        <button class="viewer-control-btn" (click)="resetZoom()" [disabled]="zoomLevel === 1">
+          <lucide-icon name="refresh-ccw"></lucide-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Viewer Counter -->
+    <div class="viewer-counter" *ngIf="hasMultipleImages">
+      {{ currentIndex + 1 }} / {{ images.length }}
+    </div>
+  </div>
+</div>

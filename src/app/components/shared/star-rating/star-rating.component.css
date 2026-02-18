@@ -1,0 +1,204 @@
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.star-rating-interactive {
+  cursor: pointer;
+}
+
+.stars-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Star Styling */
+.star {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.star-interactive {
+  cursor: pointer;
+}
+
+.star-interactive:hover {
+  transform: scale(1.1);
+}
+
+.star-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.star-animated {
+  transition: all 0.3s ease;
+}
+
+/* Star Sizes */
+.star-small {
+  width: 16px;
+  height: 16px;
+}
+
+.star-small .star-background,
+.star-small .star-foreground {
+  width: 16px;
+  height: 16px;
+}
+
+.star-medium {
+  width: 20px;
+  height: 20px;
+}
+
+.star-medium .star-background,
+.star-medium .star-foreground {
+  width: 20px;
+  height: 20px;
+}
+
+.star-large {
+  width: 24px;
+  height: 24px;
+}
+
+.star-large .star-background,
+.star-large .star-foreground {
+  width: 24px;
+  height: 24px;
+}
+
+/* Star Icons */
+.star-background,
+.star-foreground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  fill: currentColor;
+  transition: all 0.2s ease;
+}
+
+.star-foreground {
+  z-index: 1;
+}
+
+/* Rating Text */
+.rating-text {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.star-rating.star-small .rating-text {
+  font-size: 0.8rem;
+}
+
+.star-rating.star-large .rating-text {
+  font-size: 1rem;
+}
+
+/* Alternative styles for the second template approach */
+.star-icon {
+  fill: currentColor;
+  transition: all 0.2s ease;
+}
+
+.star-empty {
+  color: #e5e7eb;
+}
+
+.star-half {
+  background: linear-gradient(90deg, #fbbf24 50%, #e5e7eb 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.star-full {
+  color: #fbbf24;
+}
+
+/* Interactive States */
+.star-interactive:hover .star-background {
+  color: #f3f4f6;
+}
+
+.star-interactive:active {
+  transform: scale(0.95);
+}
+
+/* Animation for rating changes */
+@keyframes starPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.star-animated.star-full .star-foreground {
+  animation: starPulse 0.4s ease-in-out;
+}
+
+/* Hover effect enhancement */
+.star-interactive:hover .star-foreground {
+  filter: brightness(1.1);
+}
+
+/* Focus styles for accessibility */
+.star:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* High contrast mode support */
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    transition: none;
+  }
+
+  .star-animated {
+    transition: none;
+  }
+
+  .star-interactive:hover {
+    transform: none;
+  }
+
+  .star-foreground {
+    animation: none;
+  }
+}
+
+/* Mobile touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  .star-interactive:hover {
+    transform: none;
+  }
+
+  .star {
+    /* Larger touch target */
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .stars-container {
+    gap: 4px;
+  }
+}

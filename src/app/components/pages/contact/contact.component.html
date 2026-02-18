@@ -1,0 +1,214 @@
+<div class="contact-page">
+  <!-- Header -->
+  <section class="contact-header">
+    <div class="container">
+      <h1>Contactez-nous</h1>
+      <p>Notre équipe est à votre disposition pour répondre à toutes vos questions</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="contact-content">
+      <!-- Contact Form -->
+      <div class="contact-form-section">
+        <div class="form-header">
+          <h2>Envoyez-nous un message</h2>
+          <p>Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais</p>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" *ngIf="submitSuccess">
+          <lucide-icon name="check-circle"></lucide-icon>
+          <p>Votre message a été envoyé avec succès ! Nous vous contacterons bientôt.</p>
+        </div>
+
+        <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+          <!-- Nom et Prénom -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nom">Nom *</label>
+              <input
+                type="text"
+                id="nom"
+                formControlName="nom"
+                class="form-control"
+                [class.error]="formControls['nom'].invalid && formControls['nom'].touched"
+                placeholder="Votre nom"
+              >
+              <div class="error-message" *ngIf="getFieldError('nom')">
+                {{ getFieldError('nom') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="prenom">Prénom *</label>
+              <input
+                type="text"
+                id="prenom"
+                formControlName="prenom"
+                class="form-control"
+                [class.error]="formControls['prenom'].invalid && formControls['prenom'].touched"
+                placeholder="Votre prénom"
+              >
+              <div class="error-message" *ngIf="getFieldError('prenom')">
+                {{ getFieldError('prenom') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Email et Téléphone -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                class="form-control"
+                [class.error]="formControls['email'].invalid && formControls['email'].touched"
+                placeholder="votre.email@example.com"
+              >
+              <div class="error-message" *ngIf="getFieldError('email')">
+                {{ getFieldError('email') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="telephone">Téléphone</label>
+              <input
+                type="tel"
+                id="telephone"
+                formControlName="telephone"
+                class="form-control"
+                [class.error]="formControls['telephone'].invalid && formControls['telephone'].touched"
+                placeholder="+221 77 123 45 67"
+              >
+              <div class="error-message" *ngIf="getFieldError('telephone')">
+                {{ getFieldError('telephone') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Sujet -->
+          <div class="form-group">
+            <label for="sujet">Sujet *</label>
+            <select
+              id="sujet"
+              formControlName="sujet"
+              class="form-control"
+              [class.error]="formControls['sujet'].invalid && formControls['sujet'].touched"
+            >
+              <option value="">Sélectionnez un sujet</option>
+              <option *ngFor="let subject of subjects" [value]="subject">
+                {{ subject }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="getFieldError('sujet')">
+              {{ getFieldError('sujet') }}
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div class="form-group">
+            <label for="message">Message *</label>
+            <textarea
+              id="message"
+              formControlName="message"
+              class="form-control"
+              [class.error]="formControls['message'].invalid && formControls['message'].touched"
+              rows="5"
+              placeholder="Décrivez votre demande en détail..."
+            ></textarea>
+            <div class="error-message" *ngIf="getFieldError('message')">
+              {{ getFieldError('message') }}
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="btn btn-primary submit-btn"
+            [disabled]="isSubmitting"
+          >
+            <lucide-icon *ngIf="!isSubmitting" name="send"></lucide-icon>
+            <div *ngIf="isSubmitting" class="spinner"></div>
+            {{ isSubmitting ? 'Envoi en cours...' : 'Envoyer le message' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="contact-info-section">
+        <h2>Nos coordonnées</h2>
+
+        <!-- Address -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <lucide-icon name="map-pin"></lucide-icon>
+          </div>
+          <div class="contact-details">
+            <h4>Adresse</h4>
+            <p>{{ contactInfo.address }}</p>
+          </div>
+        </div>
+
+        <!-- Phones -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <lucide-icon name="phone"></lucide-icon>
+          </div>
+          <div class="contact-details">
+            <h4>Téléphones</h4>
+            <p *ngFor="let phone of contactInfo.phones">
+              <a [href]="'tel:' + phone">{{ phone }}</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <lucide-icon name="mail"></lucide-icon>
+          </div>
+          <div class="contact-details">
+            <h4>Email</h4>
+            <p>
+              <a [href]="'mailto:' + contactInfo.email">{{ contactInfo.email }}</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Hours -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <lucide-icon name="clock"></lucide-icon>
+          </div>
+          <div class="contact-details">
+            <h4>Horaires d'ouverture</h4>
+            <p>{{ contactInfo.hours.weekdays }}</p>
+            <p>{{ contactInfo.hours.saturday }}</p>
+            <p>{{ contactInfo.hours.sunday }}</p>
+          </div>
+        </div>
+
+        <!-- Social Media -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <lucide-icon name="share"></lucide-icon>
+          </div>
+          <div class="contact-details">
+            <h4>Suivez-nous</h4>
+            <div class="social-links">
+              <a *ngFor="let social of contactInfo.socialMedia"
+                 [href]="social.url"
+                 class="social-link"
+                 target="_blank">
+                {{ social.name }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

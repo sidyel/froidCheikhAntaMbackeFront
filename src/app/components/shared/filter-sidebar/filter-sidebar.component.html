@@ -1,0 +1,282 @@
+<div class="filter-overlay" *ngIf="isVisible" (click)="onBackdropClick($event)">
+  <div class="filter-sidebar" role="dialog" aria-label="Filtres de recherche">
+    <!-- Header -->
+    <div class="filter-header">
+      <div class="header-content">
+        <h2>
+          <lucide-icon name="filter"></lucide-icon>
+          Filtres
+        </h2>
+        <span class="active-filters-count" *ngIf="activeFiltersCount > 0">
+          {{ activeFiltersCount }} filtre(s)
+        </span>
+      </div>
+      <button class="close-btn" (click)="onClose()" aria-label="Fermer les filtres">
+        <lucide-icon name="x"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Filter Form -->
+    <form [formGroup]="filterForm" class="filter-form">
+      <div class="filter-content">
+
+        <!-- Search by Name -->
+        <div class="filter-section">
+          <button
+            type="button"
+            class="section-header"
+            (click)="toggleSection('search')"
+          >
+            <span>Recherche par nom</span>
+            <lucide-icon
+              [name]="isSectionExpanded('search') ? 'chevron-up' : 'chevron-down'"
+            ></lucide-icon>
+          </button>
+
+          <div class="section-content" *ngIf="isSectionExpanded('search')">
+            <div class="search-input-group">
+              <lucide-icon name="search" class="search-icon"></lucide-icon>
+              <input
+                type="text"
+                formControlName="nom"
+                placeholder="Rechercher un produit..."
+                class="search-input"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Range -->
+        <div class="filter-section">
+          <button
+            type="button"
+            class="section-header"
+            (click)="toggleSection('price')"
+          >
+            <span>Prix</span>
+            <lucide-icon
+              [name]="isSectionExpanded('price') ? 'chevron-up' : 'chevron-down'"
+            ></lucide-icon>
+          </button>
+
+          <div class="section-content" *ngIf="isSectionExpanded('price')">
+            <!-- Quick Price Ranges -->
+            <div class="price-ranges">
+              <button
+                type="button"
+                *ngFor="let range of priceRanges"
+                class="price-range-btn"
+                (click)="onPriceRangeSelect(range)"
+              >
+                {{ range.label }}
+              </button>
+            </div>
+
+            <!-- Custom Price Range -->
+            <div class="custom-price-range">
+              <h4>Fourchette personnalisée</h4>
+              <div class="price-inputs">
+                <div class="price-input-group">
+                  <label>Prix min</label>
+                  <input
+                    type="number"
+                    formControlName="prixMin"
+                    placeholder="0"
+                    class="price-input"
+                    min="0"
+                  >
+                  <span class="currency">FCFA</span>
+                </div>
+                <div class="price-separator">-</div>
+                <div class="price-input-group">
+                  <label>Prix max</label>
+                  <input
+                    type="number"
+                    formControlName="prixMax"
+                    placeholder="Maximum"
+                    class="price-input"
+                    min="0"
+                  >
+                  <span class="currency">FCFA</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="filter-section" *ngIf="categories.length > 0">
+          <button
+            type="button"
+            class="section-header"
+            (click)="toggleSection('categories')"
+          >
+            <span>Catégories</span>
+            <lucide-icon
+              [name]="isSectionExpanded('categories') ? 'chevron-up' : 'chevron-down'"
+            ></lucide-icon>
+          </button>
+
+          <div class="section-content" *ngIf="isSectionExpanded('categories')">
+            <div class="options-list">
+              <label class="option-item">
+                <input
+                  type="radio"
+                  name="categorie"
+                  [value]="null"
+                  formControlName="categorieId"
+                >
+                <span class="option-label">Toutes les catégories</span>
+              </label>
+              <label class="option-item" *ngFor="let categorie of categories">
+                <input
+                  type="radio"
+                  name="categorie"
+                  [value]="categorie.idCategorie"
+                  formControlName="categorieId"
+                >
+                <span class="option-label">
+                  {{ categorie.nomCategorie }}
+                  <span class="option-count" *ngIf="categorie.nombreProduits">
+                    ({{ categorie.nombreProduits }})
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brands -->
+        <div class="filter-section" *ngIf="marques.length > 0">
+          <button
+            type="button"
+            class="section-header"
+            (click)="toggleSection('brands')"
+          >
+            <span>Marques</span>
+            <lucide-icon
+              [name]="isSectionExpanded('brands') ? 'chevron-up' : 'chevron-down'"
+            ></lucide-icon>
+          </button>
+
+          <div class="section-content" *ngIf="isSectionExpanded('brands')">
+            <div class="options-list">
+              <label class="option-item">
+                <input
+                  type="radio"
+                  name="marque"
+                  [value]="null"
+                  formControlName="marqueId"
+                >
+                <span class="option-label">Toutes les marques</span>
+              </label>
+              <label class="option-item" *ngFor="let marque of marques">
+                <input
+                  type="radio"
+                  name="marque"
+                  [value]="marque.idMarque"
+                  formControlName="marqueId"
+                >
+                <span class="option-label">
+                  {{ marque.nomMarque }}
+                  <span class="option-count" *ngIf="marque.nombreProduits">
+                    ({{ marque.nombreProduits }})
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Energy Label -->
+        <div class="filter-section">
+          <button
+            type="button"
+            class="section-header"
+            (click)="toggleSection('energy')"
+          >
+            <span>Classe énergétique</span>
+            <lucide-icon
+              [name]="isSectionExpanded('energy') ? 'chevron-up' : 'chevron-down'"
+            ></lucide-icon>
+          </button>
+
+          <div class="section-content" *ngIf="isSectionExpanded('energy')">
+            <div class="options-list">
+              <label class="option-item">
+                <input
+                  type="radio"
+                  name="labelEnergie"
+                  [value]="null"
+                  formControlName="labelEnergie"
+                >
+                <span class="option-label">Toutes les classes</span>
+              </label>
+              <label class="option-item" *ngFor="let label of labelEnergieOptions">
+                <input
+                  type="radio"
+                  name="labelEnergie"
+                  [value]="label.value"
+                  formControlName="labelEnergie"
+                >
+                <span class="option-label">
+                  Classe {{ label.label }}
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Availability -->
+        <div class="filter-section">
+          <button
+            type="button"
+            class="section-header"
+            (click)="toggleSection('availability')"
+          >
+            <span>Disponibilité</span>
+            <lucide-icon
+              [name]="isSectionExpanded('availability') ? 'chevron-up' : 'chevron-down'"
+            ></lucide-icon>
+          </button>
+
+          <div class="section-content" *ngIf="isSectionExpanded('availability')">
+            <div class="options-list">
+              <label class="option-item">
+                <input
+                  type="checkbox"
+                  formControlName="disponibilite"
+                >
+                <span class="option-label">Produits disponibles uniquement</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="filter-footer">
+      <button
+        type="button"
+        class="btn btn-outline"
+        (click)="onClearFilters()"
+        [disabled]="isLoading || activeFiltersCount === 0"
+      >
+        <lucide-icon name="refresh-ccw"></lucide-icon>
+        Réinitialiser
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="onClose()"
+        [disabled]="isLoading"
+      >
+        <lucide-icon name="check"></lucide-icon>
+        Appliquer les filtres
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,260 @@
+<div class="about-page">
+  <!-- Hero Section avec image de fond -->
+  <section class="hero-section">
+    <div class="hero-background">
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">À Propos de {{ companyInfo.name }}</h1>
+        <p class="hero-subtitle">{{ companyInfo.description }}</p>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-number">{{ currentYear - companyInfo.foundedYear }}+</span>
+            <span class="stat-label">Années d'expérience</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">1000+</span>
+            <span class="stat-label">Clients satisfaits</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">50+</span>
+            <span class="stat-label">Marques partenaires</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission & Vision -->
+  <section class="mission-vision">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mission-card">
+            <lucide-icon name="target" class="card-icon"></lucide-icon>
+            <h3>Notre Mission</h3>
+            <p>{{ companyInfo.mission }}</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="vision-card">
+            <lucide-icon name="eye" class="card-icon"></lucide-icon>
+            <h3>Notre Vision</h3>
+            <p>{{ companyInfo.vision }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Partenaires -->
+  <section class="partners-section">
+    <div class="container">
+      <h2 class="section-title">Nos Partenaires</h2>
+      <p class="section-subtitle">Nous travaillons avec les meilleures marques du marché</p>
+      <div class="partners-grid">
+        <div class="partner-card" *ngFor="let partner of companyInfo.partners">
+          <div class="partner-logo">
+            <img
+              [src]="partner.logo"
+              [alt]="partner.name"
+              loading="eager"
+              decoding="async"
+              (load)="onImageLoad($event)"
+              (error)="onImageError($event)"
+              class="partner-image"
+            />
+          </div>
+          <h4>{{ partner.name }}</h4>
+          <p>{{ partner.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services améliorés -->
+  <section class="services-section">
+    <div class="container">
+      <h2 class="section-title">Nos Services</h2>
+      <p class="section-subtitle">Une gamme complète de services pour répondre à tous vos besoins</p>
+      <div class="services-grid">
+        <div class="service-card" *ngFor="let service of companyInfo.services">
+          <div class="service-icon">
+            <img
+              [src]="service.image"
+              [alt]="service.title"
+              loading="lazy"
+              decoding="async"
+              (load)="onImageLoad($event)"
+              (error)="onImageError($event)"
+              class="service-image"
+            />
+          </div>
+          <h4>{{ service.title }}</h4>
+          <p>{{ service.description }}</p>
+          <ul class="service-features">
+            <li *ngFor="let feature of service.features">
+              <lucide-icon name="check" class="check-icon"></lucide-icon>
+              {{ feature }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Équipe avec photos -->
+  <section class="team-section">
+    <div class="container">
+      <h2 class="section-title">Notre Équipe</h2>
+      <p class="section-subtitle">Des professionnels passionnés à votre service</p>
+      <div class="team-grid">
+        <div class="team-member" *ngFor="let member of companyInfo.team">
+          <div class="member-photo">
+            <img
+              [src]="member.photo"
+              [alt]="member.name"
+              loading="eager"
+              decoding="async"
+              (load)="onImageLoad($event)"
+              (error)="onImageError($event)"
+              class="member-image"
+            />
+            <div class="member-overlay">
+              <div class="social-links">
+                <a *ngIf="member.linkedin" [href]="member.linkedin" target="_blank" rel="noopener">
+                  <lucide-icon name="linkedin"></lucide-icon>
+                </a>
+                <a *ngIf="member.email" [href]="'mailto:' + member.email">
+                  <lucide-icon name="mail"></lucide-icon>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="member-info">
+            <h4>{{ member.name }}</h4>
+            <p class="member-position">{{ member.position }}</p>
+            <p class="member-experience">{{ member.experience }}</p>
+            <p class="member-bio">{{ member.bio }}</p>
+            <div class="member-skills">
+              <span class="skill-tag" *ngFor="let skill of member.skills">{{ skill }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Nos Réalisations avec Carrousel d'Images -->
+  <section class="achievements-section">
+    <div class="container">
+      <h2 class="section-title">Nos Réalisations</h2>
+      <p class="section-subtitle">Découvrez quelques-uns de nos projets les plus marquants</p>
+      <div class="achievements-grid">
+        <div class="achievement-card" *ngFor="let achievement of companyInfo.achievements; let i = index">
+
+          <!-- Carrousel d'Images -->
+          <div class="achievement-carousel">
+            <div class="carousel-container">
+              <!-- Images du carrousel -->
+              <div class="carousel-slide"
+                   *ngFor="let image of achievement.images; let slideIndex = index"
+                   [class.active]="currentSlides[i] === slideIndex">
+                <img
+                  [src]="image"
+                  [alt]="achievement.title + ' - Image ' + (slideIndex + 1)"
+                  loading="eager"
+                  decoding="async"
+                  (load)="onImageLoad($event)"
+                  (error)="onImageError($event)"
+                  class="carousel-image"
+                />
+              </div>
+
+              <!-- Overlay avec catégorie -->
+              <div class="achievement-overlay">
+                <div class="achievement-category">{{ achievement.category }}</div>
+              </div>
+
+              <!-- Boutons de navigation -->
+              <div class="carousel-controls">
+                <button class="carousel-btn prev-btn"
+                        (click)="previousSlide(i)"
+                        [disabled]="achievement.images.length <= 1">
+                  <lucide-icon name="chevron-left"></lucide-icon>
+                </button>
+                <button class="carousel-btn next-btn"
+                        (click)="nextSlide(i)"
+                        [disabled]="achievement.images.length <= 1">
+                  <lucide-icon name="chevron-right"></lucide-icon>
+                </button>
+              </div>
+
+              <!-- Indicateurs de slides -->
+              <div class="carousel-indicators" *ngIf="achievement.images.length > 1">
+                <button class="indicator"
+                        *ngFor="let image of achievement.images; let slideIndex = index"
+                        [class.active]="currentSlides[i] === slideIndex"
+                        (click)="goToSlide(i, slideIndex)">
+                </button>
+              </div>
+
+              <!-- Compteur d'images -->
+              <div class="image-counter" *ngIf="achievement.images.length > 1">
+                {{ currentSlides[i] + 1 }} / {{ achievement.images.length }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Contenu de la carte -->
+          <div class="achievement-content">
+            <h4>{{ achievement.title }}</h4>
+            <p class="achievement-location">
+              <lucide-icon name="map-pin" class="location-icon"></lucide-icon>
+              {{ achievement.location }}
+            </p>
+            <p class="achievement-description">{{ achievement.description }}</p>
+            <div class="achievement-details">
+              <div class="detail-item" *ngIf="achievement.surface">
+                <span class="detail-label">Surface:</span>
+                <span class="detail-value">{{ achievement.surface }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Durée:</span>
+                <span class="detail-value">{{ achievement.duration }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Année:</span>
+                <span class="detail-value">{{ achievement.year }}</span>
+              </div>
+            </div>
+            <div class="achievement-tags">
+              <span class="tag" *ngFor="let tag of achievement.tags">{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Prêt à découvrir nos produits ?</h2>
+        <p>Explorez notre large gamme de climatiseurs et équipements de réfrigération</p>
+        <div class="cta-buttons">
+          <a routerLink="/produits" class="btn btn-primary">
+            <lucide-icon name="package"></lucide-icon>
+            Voir nos produits
+          </a>
+          <a routerLink="/contact" class="btn btn-outline">
+            <lucide-icon name="phone"></lucide-icon>
+            Nous contacter
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

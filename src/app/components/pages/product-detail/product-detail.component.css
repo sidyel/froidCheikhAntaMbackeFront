@@ -1,0 +1,62 @@
+/* Container de scroll des thumbnails */
+.thumbnail-scroll-container {
+  /* Smooth scroll natif */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+
+  /* Masquer la scrollbar sur mobile tout en gardant la fonctionnalité */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203, 213, 225, 0.5) transparent;
+}
+
+/* Scrollbar personnalisée pour desktop */
+.thumbnail-scroll-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.thumbnail-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 1rem;
+}
+
+.thumbnail-scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(203, 213, 225, 0.5);
+  border-radius: 4px;
+}
+
+.thumbnail-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.7);
+}
+
+/* Sur mobile, masquer complètement la scrollbar */
+@media (max-width: 768px) {
+  .thumbnail-scroll-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .thumbnail-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Améliorer le tap sur mobile */
+@media (max-width: 768px) {
+  .thumbnail-scroll-container button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Animation pour l'indicateur de scroll actif */
+.thumbnail-scroll-container + .flex .bg-primary-600 {
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

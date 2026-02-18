@@ -1,0 +1,235 @@
+<div class="wishlist-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1>
+          <lucide-icon name="heart"></lucide-icon>
+          Ma Liste de Souhaits
+        </h1>
+        <p *ngIf="!isLoading">{{ wishlistProduits.length }} produit(s) dans votre liste</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="header-actions" *ngIf="wishlistProduits.length > 0 && !isLoading">
+        <button
+          class="btn btn-outline"
+          (click)="partagerWishlist()"
+          title="Partager ma liste"
+        >
+          <lucide-icon name="share"></lucide-icon>
+          Partager
+        </button>
+
+        <button
+          class="btn btn-primary"
+          (click)="ajouterToutAuPanier()"
+          [disabled]="produitsDisponibles.length === 0"
+          title="Ajouter tous les produits disponibles au panier"
+        >
+          <lucide-icon name="shopping-cart"></lucide-icon>
+          Tout ajouter au panier
+        </button>
+
+        <button
+          class="btn btn-danger"
+          (click)="viderWishlist()"
+          title="Vider ma liste"
+        >
+          <lucide-icon name="trash-2"></lucide-icon>
+          Vider la liste
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="isLoading">
+      <app-loading-spinner></app-loading-spinner>
+      <p>Chargement de votre liste de souhaits...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && wishlistProduits.length === 0">
+      <div class="empty-icon">
+        <lucide-icon name="heart"></lucide-icon>
+      </div>
+      <h2>Votre liste de souhaits est vide</h2>
+      <p>Ajoutez des produits à votre liste pour les retrouver facilement plus tard</p>
+      <a routerLink="/produits" class="btn btn-primary">
+        <lucide-icon name="package"></lucide-icon>
+        Découvrir nos produits
+      </a>
+    </div>
+
+    <!-- Products List -->
+    <div class="wishlist-content" *ngIf="!isLoading && wishlistProduits.length > 0">
+      <!-- Available Products -->
+      <section class="products-section" *ngIf="produitsDisponibles.length > 0">
+        <h2 class="section-title">
+          <lucide-icon name="check-circle"></lucide-icon>
+          Produits disponibles ({{ produitsDisponibles.length }})
+        </h2>
+
+        <div class="products-grid">
+          <div
+            class="wishlist-item"
+            *ngFor="let produit of produitsDisponibles"
+            [class.removing]="isItemRemoving(produit.idProduit)"
+          >
+            <!-- Product Image -->
+            <div class="product-image">
+              <img
+                [src]="produit.listeImages[0] || '/assets/images/placeholder.jpg'"
+                [alt]="produit.nomProduit"
+                (error)="onImgError($event)"
+              >
+
+              <div class="stock-badge available">En stock</div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+              <div class="product-header">
+                <h3 class="product-name">
+                  <a [routerLink]="['/produit', produit.idProduit]">
+                    {{ produit.nomProduit }}
+                  </a>
+                </h3>
+                <button
+                  class="remove-btn"
+                  (click)="retirerDeWishlist(produit.idProduit)"
+                  [disabled]="isItemRemoving(produit.idProduit)"
+                  title="Retirer de la liste"
+                >
+                  <lucide-icon name="x" *ngIf="!isItemRemoving(produit.idProduit)"></lucide-icon>
+                  <div class="spinner" *ngIf="isItemRemoving(produit.idProduit)"></div>
+                </button>
+              </div>
+
+              <p class="product-ref" *ngIf="produit.refProduit">
+                Réf: {{ produit.refProduit }}
+              </p>
+
+              <div class="product-details">
+                <span class="product-brand" *ngIf="produit.marque">
+                  {{ produit.marque.nomMarque }}
+                </span>
+                <span class="product-category" *ngIf="produit.categorie">
+                  {{ produit.categorie.nomCategorie }}
+                </span>
+              </div>
+
+              <div class="product-price">
+                {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }} FCFA
+              </div>
+
+              <div class="product-actions">
+                <button
+                  class="btn btn-primary btn-sm"
+                  (click)="ajouterAuPanier(produit)"
+                >
+                  <lucide-icon name="shopping-cart"></lucide-icon>
+                  Ajouter au panier
+                </button>
+
+                <a
+                  [routerLink]="['/produit', produit.idProduit]"
+                  class="btn btn-outline btn-sm"
+                >
+                  <lucide-icon name="eye"></lucide-icon>
+                  Voir détails
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Unavailable Products -->
+      <section class="products-section" *ngIf="produitsIndisponibles.length > 0">
+        <h2 class="section-title unavailable">
+          <lucide-icon name="alert-circle"></lucide-icon>
+          Produits indisponibles ({{ produitsIndisponibles.length }})
+        </h2>
+
+        <div class="products-grid">
+          <div
+            class="wishlist-item unavailable"
+            *ngFor="let produit of produitsIndisponibles"
+            [class.removing]="isItemRemoving(produit.idProduit)"
+          >
+            <!-- Product Image -->
+            <div class="product-image">
+              <img
+                [src]="produit.listeImages[0] || '/assets/images/placeholder.jpg'"
+                [alt]="produit.nomProduit"
+                (error)="onImgError($event)"
+              >
+
+              <div class="stock-badge unavailable">
+                {{ produit.stockDisponible === 0 ? 'Rupture de stock' : 'Indisponible' }}
+              </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+              <div class="product-header">
+                <h3 class="product-name">
+                  <a [routerLink]="['/produit', produit.idProduit]">
+                    {{ produit.nomProduit }}
+                  </a>
+                </h3>
+                <button
+                  class="remove-btn"
+                  (click)="retirerDeWishlist(produit.idProduit)"
+                  [disabled]="isItemRemoving(produit.idProduit)"
+                  title="Retirer de la liste"
+                >
+                  <lucide-icon name="x" *ngIf="!isItemRemoving(produit.idProduit)"></lucide-icon>
+                  <div class="spinner" *ngIf="isItemRemoving(produit.idProduit)"></div>
+                </button>
+              </div>
+
+              <p class="product-ref" *ngIf="produit.refProduit">
+                Réf: {{ produit.refProduit }}
+              </p>
+
+              <div class="product-details">
+                <span class="product-brand" *ngIf="produit.marque">
+                  {{ produit.marque.nomMarque }}
+                </span>
+                <span class="product-category" *ngIf="produit.categorie">
+                  {{ produit.categorie.nomCategorie }}
+                </span>
+              </div>
+
+              <div class="product-price">
+                {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }} FCFA
+              </div>
+
+              <div class="product-actions">
+                <a
+                  [routerLink]="['/produit', produit.idProduit]"
+                  class="btn btn-outline btn-sm"
+                >
+                  <lucide-icon name="eye"></lucide-icon>
+                  Voir détails
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Recommendations -->
+    <section class="recommendations" *ngIf="!isLoading && wishlistProduits.length > 0">
+      <h2>Vous pourriez aussi aimer</h2>
+      <p>Découvrez d'autres produits similaires</p>
+      <a routerLink="/produits" class="btn btn-outline">
+        <lucide-icon name="package"></lucide-icon>
+        Voir plus de produits
+      </a>
+    </section>
+  </div>
+</div>
