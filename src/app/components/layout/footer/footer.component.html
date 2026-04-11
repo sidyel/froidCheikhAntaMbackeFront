@@ -112,7 +112,7 @@
     </div>
   </div>
 
-  <!-- Newsletter Section -->
+  <!-- Newsletter Section
   <div class="footer-newsletter" data-aos="fade-up">
     <div class="container">
       <div class="newsletter-content">
@@ -164,7 +164,7 @@
         </form>
       </div>
     </div>
-  </div>
+  </div>-->
 
   <!-- Payment & Social Section -->
   <div class="footer-info">
@@ -177,14 +177,19 @@
         </div>
 
         <!-- Payment Methods -->
+        <!-- Payment Methods -->
         <div class="payment-methods" data-aos="fade-up" data-aos-delay="100">
           <span class="methods-label">Moyens de paiement:</span>
           <div class="methods-list">
             <div *ngFor="let method of paymentMethods"
                  class="payment-badge"
-                 [ngClass]="method.color"
-                 [attr.aria-label]="'Paiement accepté: ' + method.name">
-              {{ method.name }}
+                 [attr.aria-label]="'Paiement accepté: ' + method.name"
+                 [title]="method.name">
+              <img
+                [src]="method.logo"
+                [alt]="method.name"
+                class="payment-logo"
+                (error)="onPaymentLogoError($event, method)">
             </div>
           </div>
         </div>

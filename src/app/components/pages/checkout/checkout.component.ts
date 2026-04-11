@@ -80,19 +80,21 @@ interface VilleOption {
                     </div>
                   </div>
 
+                  <!-- Email (optionnel) -->
                   <div>
-                    <label class="form-label">Email *</label>
+                    <label class="form-label">Email <span class="text-gray-400 text-sm">(optionnel)</span></label>
                     <input
                       type="email"
                       formControlName="email"
                       class="form-input"
-                      [class.border-red-500]="isFieldInvalid('email')">
+                      [class.border-red-500]="isFieldInvalid('email')"
+                      placeholder="votre.email@example.com">
                     <div *ngIf="isFieldInvalid('email')" class="text-red-500 text-sm mt-1">
-                      <span *ngIf="checkoutForm.get('email')?.errors?.['required']">L'email est requis</span>
-                      <span *ngIf="checkoutForm.get('email')?.errors?.['email']">Format d'email invalide</span>
+                      Format d'email invalide
                     </div>
                   </div>
 
+                  <!-- Téléphone (obligatoire, min 9 chiffres) -->
                   <div>
                     <label class="form-label">Téléphone *</label>
                     <input
@@ -102,7 +104,10 @@ interface VilleOption {
                       class="form-input"
                       [class.border-red-500]="isFieldInvalid('telephone')">
                     <div *ngIf="isFieldInvalid('telephone')" class="text-red-500 text-sm mt-1">
-                      Le téléphone est requis
+                      <span *ngIf="checkoutForm.get('telephone')?.errors?.['required']">Le téléphone est requis</span>
+                      <span *ngIf="checkoutForm.get('telephone')?.errors?.['minlength'] || checkoutForm.get('telephone')?.errors?.['pattern']">
+      Le numéro doit contenir au minimum 9 chiffres
+    </span>
                     </div>
                   </div>
                 </div>
@@ -167,7 +172,7 @@ interface VilleOption {
                   </div>
 
                   <div>
-                    <label class="form-label">Complément d'adresse</label>
+                    <label class="form-label">Complément d'adresse (point de repaire)</label>
                     <input
                       type="text"
                       formControlName="adresseLigne2"
@@ -194,88 +199,134 @@ interface VilleOption {
               </div>
 
               <!-- Delivery Method -->
+              <!-- Delivery Method -->
               <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Mode de livraison</h2>
 
                 <div class="space-y-3">
+
+                  <!-- Livraison à domicile -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
                       value="LIVRAISON_DOMICILE"
                       formControlName="modeLivraison"
                       class="form-radio text-primary-600">
-                    <div class="ml-3 flex-1">
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <div class="font-medium text-gray-900">Livraison à domicile</div>
-                          <div class="text-sm text-gray-500">Livraison sous 24-48h</div>
-                        </div>
-                        <div [class]="getDeliveryFees() > 0 ? 'text-gray-900 font-medium' : 'text-green-600 font-medium'">
-                          {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:'XOF':'symbol':'1.0-0') : 'Gratuit' }}
+                    <div class="ml-3 flex items-center space-x-3 flex-1">
+                      <img
+                        src="assets/images/livraison1.jpg"
+                        alt="Livraison à domicile"
+                        class="h-12 w-16 object-contain rounded"
+                        onerror="this.style.display='none'">
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium text-gray-900">Livraison à domicile</div>
+                            <div class="text-sm text-gray-500">Livraison sous 24-48h</div>
+                          </div>
+                          <div [class]="getDeliveryFees() > 0 ? 'text-gray-900 font-medium' : 'text-green-600 font-medium'">
+                            {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:'XOF':'symbol':'1.0-0') : 'Gratuit' }}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </label>
 
+                  <!-- Retrait en magasin -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
                       value="RETRAIT_MAGASIN"
                       formControlName="modeLivraison"
                       class="form-radio text-primary-600">
-                    <div class="ml-3 flex-1">
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <div class="font-medium text-gray-900">Retrait en magasin</div>
-                          <div class="text-sm text-gray-500">Disponible sous 2h</div>
+                    <div class="ml-3 flex items-center space-x-3 flex-1">
+                      <img
+                        src="assets/images/magasin.jpg"
+                        alt="Retrait en magasin"
+                        class="h-12 w-16 object-contain rounded"
+                        onerror="this.style.display='none'">
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium text-gray-900">Retrait en magasin</div>
+                            <div class="text-sm text-gray-500">Disponible sous 2h</div>
+                          </div>
+                          <div class="text-green-600 font-medium">Gratuit</div>
                         </div>
-                        <div class="text-green-600 font-medium">Gratuit</div>
                       </div>
                     </div>
                   </label>
+
                 </div>
               </div>
 
+              <!-- Payment Method -->
               <!-- Payment Method -->
               <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Mode de paiement</h2>
 
                 <div class="space-y-3">
+
+                  <!-- Wave -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
                       value="WAVE"
                       formControlName="methodePaiement"
                       class="form-radio text-primary-600">
-                    <div class="ml-3 flex-1">
-                      <div class="font-medium text-gray-900">Wave</div>
-                      <div class="text-sm text-gray-500">Paiement mobile sécurisé</div>
+                    <div class="ml-3 flex items-center space-x-3 flex-1">
+                      <img
+                        src="assets/images/wave.png"
+                        alt="Wave"
+                        class="h-12 w-auto object-contain rounded"
+                        onerror="this.style.display='none'">
+                      <div>
+                        <div class="font-medium text-gray-900">Wave</div>
+                        <div class="text-sm text-gray-500">Paiement mobile sécurisé</div>
+                      </div>
                     </div>
                   </label>
 
+                  <!-- Orange Money -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
                       value="ORANGE_MONEY"
                       formControlName="methodePaiement"
                       class="form-radio text-primary-600">
-                    <div class="ml-3 flex-1">
-                      <div class="font-medium text-gray-900">Orange Money</div>
-                      <div class="text-sm text-gray-500">Paiement mobile Orange</div>
+                    <div class="ml-3 flex items-center space-x-3 flex-1">
+                      <img
+                        src="assets/images/om.png"
+                        alt="Orange Money"
+                        class="h-12 w-auto object-contain rounded"
+                        onerror="this.style.display='none'">
+                      <div>
+                        <div class="font-medium text-gray-900">Orange Money</div>
+                        <div class="text-sm text-gray-500">Paiement mobile Orange</div>
+                      </div>
                     </div>
                   </label>
 
+                  <!-- Paiement à la livraison -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
                       value="ESPECES"
                       formControlName="methodePaiement"
                       class="form-radio text-primary-600">
-                    <div class="ml-3 flex-1">
-                      <div class="font-medium text-gray-900">Paiement à la livraison</div>
-                      <div class="text-sm text-gray-500">Paiement en espèces</div>
+                    <div class="ml-3 flex items-center space-x-3 flex-1">
+                      <img
+                        src="assets/images/livraison.png"
+                        alt="Paiement à la livraison"
+                        class="h-12 w-auto object-contain rounded"
+                        onerror="this.style.display='none'">
+                      <div>
+                        <div class="font-medium text-gray-900">Paiement à la livraison</div>
+                        <div class="text-sm text-gray-500">Paiement en espèces</div>
+                      </div>
                     </div>
                   </label>
+
                 </div>
               </div>
 
@@ -329,9 +380,9 @@ interface VilleOption {
                     <span *ngIf="selectedQuartierPrixLivraison === 0">
                       Zone de livraison gratuite
                     </span>
-                    <span *ngIf="selectedQuartierPrixLivraison > 0">
+                    <!--<span *ngIf="selectedQuartierPrixLivraison > 0">
                       Frais quartier: {{ selectedQuartierPrixLivraison | currency:'XOF':'symbol':'1.0-0' }}
-                    </span>
+                    </span>-->
                   </div>
 
                   <div class="border-t border-gray-200 pt-2">
@@ -576,8 +627,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       // Informations client
       nom: ['', [Validators.required, Validators.minLength(2)]],
       prenom: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      telephone: ['', [Validators.required]],
+      email: ['', [Validators.email]], // ← plus required
+      telephone: ['', [Validators.required, Validators.minLength(9), Validators.pattern(/^[0-9+\s]{9,15}$/)]], // ← minimum 9 chiffres
 
       // Adresse de livraison
       ville: ['', [Validators.required]],

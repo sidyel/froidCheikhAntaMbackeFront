@@ -281,3 +281,35 @@ textarea.form-control {
     align-self: stretch;
   }
 }
+/* Social Links — page contact */
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+}
+
+.social-link:hover {
+  transform: translateX(4px);
+}
+
+.social-link-facebook:hover { color: #1877f2; background: #e7f0fd; }
+.social-link-whatsapp:hover { color: #25d366; background: #e6f9ee; }
+.social-link-instagram:hover { color: #dc2743; background: #fdf0f2; }
+
+.social-link svg {
+  flex-shrink: 0;
+}

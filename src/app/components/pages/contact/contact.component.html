@@ -192,6 +192,7 @@
         </div>
 
         <!-- Social Media -->
+        <!-- Social Media -->
         <div class="contact-item">
           <div class="contact-icon">
             <lucide-icon name="share"></lucide-icon>
@@ -199,12 +200,60 @@
           <div class="contact-details">
             <h4>Suivez-nous</h4>
             <div class="social-links">
-              <a *ngFor="let social of contactInfo.socialMedia"
-                 [href]="social.url"
-                 class="social-link"
-                 target="_blank">
-                {{ social.name }}
+
+              <!-- Facebook -->
+              <a href="https://facebook.com/froidcheikh"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="social-link social-link-facebook"
+                 (click)="onSocialClick('Facebook')"
+                 aria-label="Suivez-nous sur Facebook">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="#1877f2"/>
+                  <path d="M15.5 8.25H13.75C13.198 8.25 12.75 8.698 12.75 9.25V11H15.5L15.125 13.75H12.75V20.5H9.75V13.75H7.5V11H9.75V9.25C9.75 7.455 11.205 6 13 6H15.5V8.25Z" fill="white"/>
+                </svg>
+                <span>Facebook</span>
               </a>
+
+              <!-- WhatsApp -->
+              <a href="https://wa.me/221773352000"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="social-link social-link-whatsapp"
+                 (click)="onSocialClick('WhatsApp')"
+                 aria-label="Contactez-nous sur WhatsApp">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="#25d366"/>
+                  <path d="M16.5 13.25C16.3 13.15 15.2 12.6 15 12.55C14.8 12.5 14.65 12.45 14.5 12.65C14.35 12.85 13.95 13.35 13.8 13.5C13.65 13.65 13.5 13.65 13.3 13.55C12.55 13.2 11.9 12.75 11.35 12.15C10.8 11.55 10.35 10.85 10 10.1C9.9 9.9 10 9.75 10.1 9.65C10.2 9.55 10.3 9.4 10.4 9.3C10.5 9.2 10.55 9.1 10.6 9C10.65 8.9 10.6 8.8 10.55 8.7C10.5 8.6 10.05 7.5 9.85 7.05C9.65 6.6 9.45 6.65 9.3 6.65H8.85C8.7 6.65 8.45 6.7 8.25 6.9C8.05 7.1 7.45 7.65 7.45 8.75C7.45 9.85 8.3 10.9 8.4 11.05C8.5 11.2 9.95 13.5 12.25 14.45C13.95 15.15 14.55 15.1 14.95 15.05C15.45 14.95 16.3 14.45 16.5 13.9C16.7 13.35 16.7 12.85 16.65 12.8C16.6 12.7 16.45 12.65 16.2 12.55L16.5 13.25Z" fill="white"/>
+                </svg>
+                <span>WhatsApp</span>
+              </a>
+
+              <!-- Instagram -->
+              <a href="https://instagram.com/froidcheikh"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="social-link social-link-instagram"
+                 (click)="onSocialClick('Instagram')"
+                 aria-label="Suivez-nous sur Instagram">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <defs>
+                    <linearGradient id="instagram-gradient-contact" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#f09433"/>
+                      <stop offset="25%" style="stop-color:#e6683c"/>
+                      <stop offset="50%" style="stop-color:#dc2743"/>
+                      <stop offset="75%" style="stop-color:#cc2366"/>
+                      <stop offset="100%" style="stop-color:#bc1888"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#instagram-gradient-contact)"/>
+                  <circle cx="12" cy="12" r="3.5" stroke="white" stroke-width="1.5" fill="none"/>
+                  <circle cx="17" cy="7" r="1" fill="white"/>
+                  <rect x="5.5" y="5.5" width="13" height="13" rx="3" stroke="white" stroke-width="1.5" fill="none"/>
+                </svg>
+                <span>Instagram</span>
+              </a>
+
             </div>
           </div>
         </div>

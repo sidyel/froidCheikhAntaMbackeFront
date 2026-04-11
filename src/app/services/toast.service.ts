@@ -46,7 +46,7 @@ export class ToastService {
       type: 'error',
       title,
       message,
-      duration: duration !== undefined ? duration : 8000 // Erreurs plus longues par défaut
+      duration: duration !== undefined ? duration : 4000 // Erreurs plus longues par défaut
     };
     this.addToast(toast);
   }

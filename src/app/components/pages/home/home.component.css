@@ -1,0 +1,55 @@
+/* ========================================
+   FIX : IMAGES COMPLÈTES SUR MOBILE
+   ======================================== */
+
+/* Images catégories : afficher entièrement sans couper */
+@media (max-width: 768px) {
+  .category-card .category-image {
+    height: auto !important;        /* Plus de hauteur fixe */
+    min-height: 150px;
+    aspect-ratio: 16 / 9;           /* Ratio naturel */
+  }
+
+  .category-card .category-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* contain = image entière visible */
+    object-position: center !important;
+    background-color: #f3f4f6;      /* Fond gris clair si bords vides */
+  }
+}
+
+@media (max-width: 640px) {
+  .category-card .category-image {
+    aspect-ratio: 4 / 3;
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 420px) {
+  .category-card .category-image {
+    aspect-ratio: 1 / 1;            /* Carré sur très petit écran */
+    min-height: 100px;
+  }
+}
+
+/* Images de marques : entières sur mobile */
+@media (max-width: 640px) {
+  .grid img {
+    width: auto !important;
+    height: auto !important;
+    max-height: 48px !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+  }
+}
+
+/* Hero background : image entière visible */
+@media (max-width: 768px) {
+  .absolute.inset-0 > div[style*="background-image"] {
+    background-size: contain !important;  /* Image entière */
+    background-repeat: no-repeat !important;
+    background-position: center top !important;
+    background-color: #1e3a5f;           /* Fond bleu si bords vides */
+  }
+}

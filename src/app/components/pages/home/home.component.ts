@@ -99,7 +99,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
             </div>
 
             <!-- Hero Image avec animations -->
-            <div class="relative transform transition-all duration-1000 delay-300"
+            <div class="relative transform transition-all duration-1000 delay-300 hidden lg:block"
                  [class.translate-x-0]="isLoaded"
                  [class.opacity-100]="isLoaded"
                  [class.translate-x-8]="!isLoaded"
@@ -790,6 +790,61 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       }
     }
 
+    /* ========================================
+   FIX : IMAGES COMPLÈTES SUR MOBILE
+   ======================================== */
+
+    /* Images catégories : afficher entièrement sans couper */
+    @media (max-width: 768px) {
+      .category-card .category-image {
+        height: auto !important;        /* Plus de hauteur fixe */
+        min-height: 150px;
+        aspect-ratio: 16 / 9;           /* Ratio naturel */
+      }
+
+      .category-card .category-image img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important; /* contain = image entière visible */
+        object-position: center !important;
+        background-color: #f3f4f6;      /* Fond gris clair si bords vides */
+      }
+    }
+
+    @media (max-width: 640px) {
+      .category-card .category-image {
+        aspect-ratio: 4 / 3;
+        min-height: 120px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .category-card .category-image {
+        aspect-ratio: 1 / 1;            /* Carré sur très petit écran */
+        min-height: 100px;
+      }
+    }
+
+    /* Images de marques : entières sur mobile */
+    @media (max-width: 640px) {
+      .grid img {
+        width: auto !important;
+        height: auto !important;
+        max-height: 48px !important;
+        max-width: 100% !important;
+        object-fit: contain !important;
+      }
+    }
+
+    /* Hero background : image entière visible */
+    @media (max-width: 768px) {
+      .absolute.inset-0 > div[style*="background-image"] {
+        background-size: contain !important;  /* Image entière */
+        background-repeat: no-repeat !important;
+        background-position: center top !important;
+        background-color: #1e3a5f;           /* Fond bleu si bords vides */
+      }
+    }
     /* Optimisation pour très petits écrans (< 360px) */
     @media (max-width: 360px) {
       .products-grid {
@@ -819,6 +874,84 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
         font-size: 0.85rem;
       }
     }
+
+    /* ========================================
+   HERO SECTION — HAUTEUR RÉDUITE MOBILE
+   ======================================== */
+
+    /* Desktop : hauteur normale */
+    section.relative {
+      min-height: 600px;
+    }
+
+    /* Tablette */
+    @media (max-width: 1024px) {
+      section.relative {
+        min-height: auto;
+      }
+
+      .py-20 {
+        padding-top: 4rem !important;
+        padding-bottom: 4rem !important;
+      }
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .py-20 {
+        padding-top: 2.5rem !important;
+        padding-bottom: 2.5rem !important;
+      }
+
+      /* Réduire la taille du titre */
+      .text-4xl {
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+      }
+
+      /* Réduire le sous-titre */
+      .text-xl.lg\\:text-2xl {
+        font-size: 0.95rem !important;
+      }
+
+      /* Réduire les boutons */
+      .btn-secondary,
+      .btn-outline {
+        padding: 0.6rem 1.2rem !important;
+        font-size: 0.9rem !important;
+      }
+
+      /* Réduire les infos de contact */
+      .pt-8 {
+        padding-top: 1rem !important;
+      }
+
+      /* Indicateurs carrousel plus proches du bas */
+      .bottom-6 {
+        bottom: 0.75rem !important;
+      }
+    }
+
+    /* Très petit mobile */
+    @media (max-width: 420px) {
+      .py-20 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+      }
+
+      .text-4xl {
+        font-size: 1.4rem !important;
+      }
+
+      .text-xl.lg\\:text-2xl {
+        font-size: 0.85rem !important;
+      }
+
+      /* Espacements réduits entre les éléments hero */
+      .space-y-6 {
+        gap: 0.75rem !important;
+      }
+    }
   `]
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -827,16 +960,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Propriétés pour le carrousel d'images
   heroImages = [
     {
+      url: 'assets/images/p1.jpg',
+      alt: 'Électroménager moderne'
+    }
+    ,
+    {
       url: 'assets/images/im.jpg',
       alt: 'Climatiseurs professionnels'
-    },
+    }
+    ,
     {
       url: 'assets/images/im2.jpg',
       alt: 'Équipements de réfrigération'
-    },
-    {
-      url: 'assets/images/im1.jpg',
-      alt: 'Électroménager moderne'
     }
   ];
 

@@ -65,7 +65,93 @@ img.loaded {
     background-attachment: scroll;
   }
 }
+/* ========================================
+   FIX HERO BACKGROUND — MOBILE
+   ======================================== */
 
+.hero-section {
+  /* Desktop : plein écran */
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    /* Mobile : hauteur réduite */
+    min-height: 60vh;
+  }
+
+  .hero-background {
+    /* L'image s'adapte à la hauteur réduite */
+    background-size: cover !important;
+    background-position: center center !important;
+    /* Désactiver le parallax sur mobile (cause les coupures) */
+    background-attachment: scroll !important;
+  }
+
+  /* Réduire le padding du contenu hero */
+  .hero-content {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  /* Titre plus petit */
+  .hero-title {
+    font-size: 1.8rem !important;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Sous-titre plus petit */
+  .hero-subtitle {
+    font-size: 1rem !important;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Stats en colonne sur mobile */
+  .hero-stats {
+    margin-top: 1.5rem;
+    gap: 0.75rem;
+  }
+
+  .stat {
+    padding: 0.75rem 1rem;
+  }
+
+  .stat-number {
+    font-size: 1.75rem !important;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    min-height: 50vh;
+  }
+
+  .hero-title {
+    font-size: 1.4rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 0.875rem !important;
+    margin-bottom: 1rem;
+  }
+
+  .hero-stats {
+    margin-top: 1rem;
+    gap: 0.5rem;
+  }
+
+  .stat {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .stat-number {
+    font-size: 1.5rem !important;
+  }
+}
 .hero-overlay {
   @apply absolute inset-0 bg-gradient-to-r from-blue-900/80 via-blue-800/70 to-primary-900/80;
 }

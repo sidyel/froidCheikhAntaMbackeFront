@@ -81,10 +81,9 @@ export class FooterComponent implements OnInit, OnDestroy {
 
   // Payment Methods
   paymentMethods = [
-    { name: 'WAVE', color: 'bg-orange-500' },
-    { name: 'Orange Money', color: 'bg-orange-600' },
-    { name: 'Virement', color: 'bg-blue-600' },
-    { name: 'Espèces', color: 'bg-green-600' }
+    { name: 'WAVE', color: 'bg-orange-500', logo: 'assets/images/wave.png' },
+    { name: 'Orange Money', color: 'bg-orange-600', logo: 'assets/images/om.png' },
+    { name: 'Espèces', color: 'bg-green-600', logo: 'assets/images/espece.jpg' }
   ];
 
   // Business Hours
@@ -193,6 +192,20 @@ export class FooterComponent implements OnInit, OnDestroy {
       top: 0,
       behavior: 'smooth'
     });
+  }
+
+  onPaymentLogoError(event: any, method: any): void {
+    // Remplace l'image par le nom texte si image absente
+    const img = event.target;
+    img.style.display = 'none';
+    const parent = img.parentElement;
+    parent.style.width = 'auto';
+    parent.style.padding = '4px 8px';
+    parent.textContent = method.name;
+    parent.style.fontSize = '0.7rem';
+    parent.style.fontWeight = '600';
+    parent.style.color = '#fff';
+    parent.classList.add(method.color);
   }
 
   /**
