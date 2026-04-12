@@ -1,9 +1,9 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://p01--froid-cheikh-backend--c9q8fvg5m9k7.code.run/api',
-  uploadUrl: 'https://p01--froid-cheikh-backend--c9q8fvg5m9k7.code.run/api/uploads',
-  //apiUrl: 'http://localhost:8080/api',
-  //uploadUrl: 'http://localhost:8080/uploads',
+  //apiUrl: 'https://froidcheikhantambacke-production.up.railway.app/api',
+  //uploadUrl: 'https://froidcheikhantambacke-production.up.railway.app/uploads',
+  apiUrl: 'http://localhost:8080/api',
+  uploadUrl: 'http://localhost:8080/uploads',
   companyInfo: {
     name: 'Froid Cheikh Anta Mbacké Babacar Dione',
     phones: ['77 335 20 00', '76 888 04 42', '33 820 16 33'],
