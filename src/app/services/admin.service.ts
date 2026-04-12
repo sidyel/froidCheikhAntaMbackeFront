@@ -337,7 +337,9 @@ export class AdminService {
     return this.http.get(`${this.apiUrl}/clients/${clientId}/stats`);
   }
 
-  private apiUrl1 = 'http://localhost:8080/api';
+  //private apiUrl1 = 'http://localhost:8080/api';
+  private apiUrl1 = environment.apiUrl;
+
 
 
 

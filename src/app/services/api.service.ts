@@ -370,10 +370,17 @@ export class ApiService {
     return this.http.delete<void>(`${this.apiUrl}/marques/${marqueId}/logo`);
   }
 
+  // ✅ Simplifié
+  getImageUrl(imagePath: string | null | undefined): string {
+    if (!imagePath) return 'assets/images/placeholder.jpg';
+    if (imagePath.startsWith('http')) return imagePath; // URL Cloudinary directe
+    return 'assets/images/placeholder.jpg';
+  }
+
   /**
    * Construire l'URL complète d'une image
    */
-  getImageUrl(imagePath: string | null | undefined): string {
+  /*getImageUrl(imagePath: string | null | undefined): string {
     if (!imagePath) {
       return 'assets/images/placeholder.jpg';
     }
@@ -385,7 +392,7 @@ export class ApiService {
 
     // Construire l'URL avec le serveur backend
     return `${this.apiUrl.replace('/api', '')}/uploads/${imagePath}`;
-  }
+  }*?
 
   /**
    * Vérifier si un fichier existe

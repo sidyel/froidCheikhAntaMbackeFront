@@ -1,6 +1,39 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
+@Injectable({ providedIn: 'root' })
+export class ImageUrlService {
+  private readonly placeholderImage = 'assets/images/placeholder.jpg';
+
+  getCategoryImageUrl(imageCategorie: string | null | undefined): string {
+    if (!imageCategorie) return this.placeholderImage;
+    if (imageCategorie.startsWith('http')) return imageCategorie; // URL Cloudinary
+    return this.placeholderImage; // Plus de construction d'URL locale
+  }
+
+  getBrandLogoUrl(logo: string | null | undefined): string {
+    if (!logo) return this.placeholderImage;
+    if (logo.startsWith('http')) return logo;
+    return this.placeholderImage;
+  }
+
+  getProductImageUrl(imagePath: string | null | undefined): string {
+    if (!imagePath) return this.placeholderImage;
+    if (imagePath.startsWith('http')) return imagePath;
+    return this.placeholderImage;
+  }
+
+  getFileUrl(filePath: string | null | undefined): string {
+    if (!filePath) return this.placeholderImage;
+    if (filePath.startsWith('http')) return filePath;
+    return this.placeholderImage;
+  }
+
+  getPlaceholderImage(): string {
+    return this.placeholderImage;
+  }
+}
+/*
 @Injectable({
   providedIn: 'root'
 })
@@ -12,9 +45,7 @@ export class ImageUrlService {
     console.log('🔧 ImageUrlService initialisé avec baseUrl:', this.baseUrl);
   }
 
-  /**
-   * Construit l'URL complète d'une image de catégorie
-   */
+
   getCategoryImageUrl(imageCategorie: string | null | undefined): string {
     if (!imageCategorie) {
       return this.placeholderImage;
@@ -37,9 +68,6 @@ export class ImageUrlService {
     return fullUrl;
   }
 
-  /**
-   * Construit l'URL complète d'un logo de marque
-   */
   getBrandLogoUrl(logo: string | null | undefined): string {
     if (!logo) {
       return this.placeholderImage;
@@ -62,9 +90,7 @@ export class ImageUrlService {
     return fullUrl;
   }
 
-  /**
-   * Construit l'URL complète d'une image de produit
-   */
+
   getProductImageUrl(imagePath: string | null | undefined): string {
     if (!imagePath) {
       return this.placeholderImage;
@@ -81,9 +107,7 @@ export class ImageUrlService {
     return fullUrl;
   }
 
-  /**
-   * URL générique pour n'importe quel fichier
-   */
+
   getFileUrl(filePath: string | null | undefined): string {
     if (!filePath) {
       return this.placeholderImage;
@@ -98,9 +122,7 @@ export class ImageUrlService {
     return fullUrl;
   }
 
-  /**
-   * Teste si une image est accessible
-   */
+
   async checkImageExists(imageUrl: string): Promise<boolean> {
     try {
       const response = await fetch(imageUrl, {
@@ -116,10 +138,8 @@ export class ImageUrlService {
     }
   }
 
-  /**
-   * Retourne l'image placeholder
-   */
+
   getPlaceholderImage(): string {
     return this.placeholderImage;
   }
-}
+}*/
