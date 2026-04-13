@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://froidcheikhantambacke.onrender.com/api',
-  uploadUrl: 'https://froidcheikhantambacke.onrender.com/uploads',
+  apiUrl: 'https://api.froidcheikhantambacke.com/api',
+  uploadUrl: 'https://api.froidcheikhantambacke.com/uploads',
   //apiUrl: 'http://localhost:8080/api',
   //uploadUrl: 'http://localhost:8080/uploads',
   companyInfo: {
