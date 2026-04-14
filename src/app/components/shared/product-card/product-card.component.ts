@@ -357,7 +357,8 @@ export class ProductCardComponent {
 
   getMainImageUrl(): string {
     if (this.produit.listeImages && this.produit.listeImages.length > 0) {
-      return `http://localhost:8080/uploads/${this.produit.listeImages[0]}`;
+      const image = this.produit.listeImages[0];
+      if (image.startsWith('http')) return image;
     }
     return 'assets/images/placeholder-product.jpg';
   }
