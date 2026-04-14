@@ -213,7 +213,124 @@ textarea.form-control {
   justify-content: center;
   flex-shrink: 0;
 }
+/* ===== RESPONSIVE ===== */
 
+/* Tablette — 768px à 1024px */
+@media (max-width: 1024px) {
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 40px 0;
+  }
+
+  .contact-info-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .contact-info-section h2 {
+    grid-column: 1 / -1;
+  }
+
+  .contact-item {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border: 0.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+  }
+}
+
+/* Mobile — moins de 768px */
+@media (max-width: 768px) {
+  .contact-header {
+    padding: 40px 0;
+  }
+
+  .contact-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .contact-header p {
+    font-size: 0.95rem;
+  }
+
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 30px 0;
+  }
+
+  .contact-form-section,
+  .contact-info-section {
+    padding: 24px 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Info section : retour en colonne simple sur mobile */
+  .contact-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .contact-item {
+    border: none;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 0;
+    padding: 16px 0;
+    margin-bottom: 0;
+  }
+
+  .contact-item:last-child {
+    border-bottom: none;
+  }
+
+  .submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .social-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .social-link {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+  }
+}
+
+/* Très petit mobile — moins de 400px */
+@media (max-width: 400px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  .contact-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .contact-form-section,
+  .contact-info-section {
+    padding: 20px 12px;
+    border-radius: 10px;
+  }
+
+  .form-header h2 {
+    font-size: 1.4rem;
+  }
+}
 .contact-icon lucide-icon {
   color: #3b82f6;
   width: 20px;

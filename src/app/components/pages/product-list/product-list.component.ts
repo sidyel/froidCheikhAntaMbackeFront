@@ -1016,9 +1016,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
     return 'Découvrez notre gamme complète de produits';
   }
 
+  // ✅ Nouvelle version
   getProductImageUrl(produit: Produit): string {
     if (produit.listeImages && produit.listeImages.length > 0) {
-      return `http://localhost:8080/uploads/${produit.listeImages[0]}`;
+      return this.imageUrlService.getProductImageUrl(produit.listeImages[0]);
     }
     return 'assets/images/placeholder-product.jpg';
   }
