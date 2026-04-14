@@ -472,6 +472,27 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     //   });
   }
 
+  // ✅ Corriger les 3 méthodes
+  getMainImageUrl(): string {
+    if (this.produit?.listeImages && this.produit.listeImages.length > 0) {
+      const imagePath = this.produit.listeImages[this.selectedImageIndex];
+      if (imagePath.startsWith('http')) return imagePath;
+    }
+    return 'assets/images/placeholder-product.jpg';
+  }
+
+  getImageUrl(imagePath: string): string {
+    if (imagePath && imagePath.startsWith('http')) return imagePath;
+    return 'assets/images/placeholder-product.jpg';
+  }
+
+  getTechnicalSheetUrl(): string {
+    if (this.produit?.ficheTechniquePDF) {
+      const filePath = this.produit.ficheTechniquePDF;
+      if (filePath.startsWith('http')) return filePath;
+    }
+    return '';
+  }
   private loadRelatedProducts(): void {
     if (!this.produit?.categorie?.idCategorie) return;
 
@@ -513,41 +534,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Image methods
-  getMainImageUrl(): string {
-    if (this.produit?.listeImages && this.produit.listeImages.length > 0) {
-      const imagePath = this.produit.listeImages[this.selectedImageIndex];
-      console.log('🖼️  Main image path:', imagePath);
 
-      if (imagePath.startsWith('http')) {
-        return imagePath;
-      }
-
-      // CORRECTION: URL directe
-      const fullUrl = `http://localhost:8080/uploads/${imagePath}`;
-      console.log('🔗 Main image URL:', fullUrl);
-      return fullUrl;
-    }
-    return 'assets/images/placeholder-product.jpg';
-  }
-
-  getImageUrl(imagePath: string): string {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    return `http://localhost:8080/uploads/${imagePath}`;
-  }
-
-  getTechnicalSheetUrl(): string {
-    if (this.produit?.ficheTechniquePDF) {
-      const filePath = this.produit.ficheTechniquePDF;
-      if (filePath.startsWith('http')) {
-        return filePath;
-      }
-      return `http://localhost:8080/uploads/${filePath}`;
-    }
-    return '';
-  }
 
   selectImage(index: number): void {
     this.selectedImageIndex = index;
