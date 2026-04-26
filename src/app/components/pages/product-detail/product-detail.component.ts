@@ -29,7 +29,7 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
                 <img
                   [src]="getMainImageUrl()"
                   [alt]="produit.nomProduit"
-                  class="w-full h-[500px] object-cover rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-300"
+                  class="w-full h-[260px] sm:h-[380px] lg:h-[500px] object-contain bg-gray-50 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-300"
                   (click)="openImageGallery()"
                   onerror="this.src='assets/images/placeholder-product.jpg'">
               </div>
@@ -52,7 +52,7 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
                     <img
                       [src]="getImageUrl(image)"
                       [alt]="produit.nomProduit"
-                      class="w-full h-full object-cover"
+                      class="w-full h-full object-contain"
                       onerror="this.src='assets/images/placeholder-product.jpg'">
                   </button>
                 </div>
@@ -526,12 +526,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.produit) {
-      this.breadcrumbs.push({
-        label: this.produit.nomProduit,
-        route: undefined
-      });
-    }
+
   }
 
 
