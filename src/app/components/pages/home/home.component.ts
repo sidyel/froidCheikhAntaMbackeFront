@@ -34,8 +34,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
             *ngFor="let image of heroImages; let i = index"
             (click)="setCurrentImage(i)"
             class="w-3 h-3 rounded-full transition-all duration-300 hover:scale-125"
-            [class.bg-white]="currentImageIndex === i"
-            [class.bg-white/50]="currentImageIndex !== i">
+            [ngClass]="currentImageIndex === i ? 'bg-white' : 'bg-white carousel-dot-inactive'">
           </button>
         </div>
 
@@ -525,6 +524,13 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
     </div>
   `,
   styles: [`
+
+    /* ============================================================
+       CARROUSEL — indicateurs
+       ============================================================ */
+    .carousel-dot-inactive {
+      background: rgba(255, 255, 255, 0.5);
+    }
 
     /* ============================================================
        BOUTON EXPLORER (hero)
