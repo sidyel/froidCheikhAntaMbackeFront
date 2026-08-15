@@ -198,12 +198,6 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
                     {{ categorie.nomCategorie }}
                   </h3>
 
-                  <div class="category-description">
-                    <p class="text-sm text-gray-500" *ngIf="categorie.descriptionCategorie">
-                      {{ categorie.descriptionCategorie | slice:0:80 }}{{ categorie.descriptionCategorie && categorie.descriptionCategorie.length > 80 ? '...' : '' }}
-                    </p>
-                  </div>
-
                   <div class="category-products-count">
                     <p class="text-sm text-primary-600 font-medium" *ngIf="categorie.nombreProduits">
                       {{ categorie.nombreProduits }} produit{{ categorie.nombreProduits > 1 ? 's' : '' }}
@@ -638,24 +632,6 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
     .category-card .category-title {
       flex-shrink: 0;
       margin-bottom: 0.5rem;
-    }
-
-    .category-card .category-description {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 3rem;
-      overflow: hidden;
-    }
-
-    .category-card .category-description p {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-break: break-word;
     }
 
     .category-card .category-products-count {
