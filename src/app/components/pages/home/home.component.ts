@@ -646,6 +646,16 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       align-items: center;
       justify-content: center;
       min-height: 3rem;
+      overflow: hidden;
+    }
+
+    .category-card .category-description p {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: break-word;
     }
 
     .category-card .category-products-count {
@@ -811,7 +821,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       }
 
       .categories-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
       }
 
@@ -1068,7 +1078,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
 
     .categories-modal-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
     }
 
@@ -1148,7 +1158,14 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       to { transform: translateY(0); }
     }
 
-    /* Desktop : modale centrée */
+    /* Tablette : 3 colonnes */
+    @media (min-width: 640px) and (max-width: 767px) {
+      .categories-modal-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Desktop : modale centrée, 4 colonnes */
     @media (min-width: 768px) {
       .categories-modal-overlay {
         align-items: center;
@@ -1169,13 +1186,6 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
     @keyframes scaleInModal {
       from { transform: scale(0.95); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
-    }
-
-    /* Très petits mobiles : 2 colonnes */
-    @media (max-width: 380px) {
-      .categories-modal-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
     }
   `]
 })
