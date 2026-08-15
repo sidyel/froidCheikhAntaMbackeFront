@@ -143,6 +143,14 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">
               Découvrez notre large gamme de produits pour tous vos besoins en climatisation et électroménager
             </p>
+
+            <!-- Bouton Explorer les catégories -->
+            <button
+              (click)="openCategoriesModal()"
+              class="mt-6 inline-flex items-center space-x-2 btn-primary px-6 py-3 transform hover:scale-105 hover:shadow-xl transition-all duration-300">
+              <lucide-icon name="layout-grid" class="w-5 h-5"></lucide-icon>
+              <span>Explorer les catégories</span>
+            </button>
           </div>
 
           <!-- Grille de catégories avec hauteurs uniformes -->
@@ -422,6 +430,50 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
           <div class="absolute top-1/2 right-1/3 w-1.5 h-1.5 bg-accent-400 rounded-full opacity-25 animate-float"></div>
         </div>
       </section>
+    </div>
+
+    <!-- Modal Explorer les catégories -->
+    <div *ngIf="showCategoriesModal" class="categories-modal-overlay" (click)="closeCategoriesModal()">
+      <div class="categories-modal-content" (click)="$event.stopPropagation()">
+
+        <div class="categories-modal-header">
+          <h2>Toutes nos catégories</h2>
+          <button (click)="closeCategoriesModal()" class="categories-modal-close" aria-label="Fermer">
+            <lucide-icon name="x" class="w-6 h-6"></lucide-icon>
+          </button>
+        </div>
+
+        <div class="categories-modal-body">
+          <div class="categories-modal-grid" *ngIf="categories.length > 0">
+            <button
+              *ngFor="let categorie of categories; trackBy: trackByCategory"
+              (click)="selectCategoryFromModal(categorie)"
+              class="categories-modal-item">
+
+              <div class="categories-modal-item-image">
+                <img
+                  *ngIf="!isImageError('modal-' + categorie.idCategorie)"
+                  [src]="getCategoryImageUrl(categorie)"
+                  [alt]="categorie.nomCategorie"
+                  (error)="onImageError('modal-' + categorie.idCategorie)"
+                  loading="lazy">
+                <div *ngIf="isImageError('modal-' + categorie.idCategorie)" class="categories-modal-item-fallback">
+                  <lucide-icon name="package" class="w-8 h-8 text-gray-300"></lucide-icon>
+                </div>
+              </div>
+
+              <span class="categories-modal-item-name">{{ categorie.nomCategorie }}</span>
+              <span *ngIf="categorie.nombreProduits" class="categories-modal-item-count">
+                {{ categorie.nombreProduits }} produit{{ categorie.nombreProduits > 1 ? 's' : '' }}
+              </span>
+            </button>
+          </div>
+
+          <div *ngIf="categories.length === 0" class="categories-modal-empty">
+            Aucune catégorie disponible pour le moment.
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -952,6 +1004,179 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
         gap: 0.75rem !important;
       }
     }
+
+    /* ========================================
+       MODAL EXPLORER LES CATEGORIES
+       Mobile-first : bottom-sheet plein écran
+       Desktop : boîte centrée
+       ======================================== */
+
+    .categories-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      animation: fadeInOverlay 0.2s ease-out;
+    }
+
+    .categories-modal-content {
+      background: white;
+      width: 100%;
+      max-height: 85vh;
+      border-radius: 1.5rem 1.5rem 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUpModal 0.3s ease-out;
+    }
+
+    .categories-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .categories-modal-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .categories-modal-close {
+      padding: 0.5rem;
+      border-radius: 9999px;
+      color: #6b7280;
+      transition: background 0.2s;
+    }
+
+    .categories-modal-close:hover {
+      background: #f3f4f6;
+    }
+
+    .categories-modal-body {
+      overflow-y: auto;
+      padding: 1.25rem;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .categories-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .categories-modal-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s;
+      background: transparent;
+      border: none;
+    }
+
+    .categories-modal-item:hover,
+    .categories-modal-item:active {
+      background: #f3f4f6;
+    }
+
+    .categories-modal-item-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .categories-modal-item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .categories-modal-item-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .categories-modal-item-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #111827;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .categories-modal-item-count {
+      font-size: 0.7rem;
+      color: #2563eb;
+    }
+
+    .categories-modal-empty {
+      text-align: center;
+      color: #6b7280;
+      padding: 2rem 0;
+    }
+
+    @keyframes fadeInOverlay {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUpModal {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    /* Desktop : modale centrée */
+    @media (min-width: 768px) {
+      .categories-modal-overlay {
+        align-items: center;
+      }
+
+      .categories-modal-content {
+        max-width: 640px;
+        max-height: 80vh;
+        border-radius: 1.25rem;
+        animation: scaleInModal 0.25s ease-out;
+      }
+
+      .categories-modal-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @keyframes scaleInModal {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Très petits mobiles : 2 colonnes */
+    @media (max-width: 380px) {
+      .categories-modal-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   `]
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -985,6 +1210,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   isFeaturesVisible = false;
   isBrandsVisible = false;
 
+  // Propriété pour gérer l'ouverture de la modale "Explorer les catégories"
+  showCategoriesModal = false;
+
   // Propriété pour gérer les erreurs d'images avec des clés string
   private imageErrors = new Set<string>();
 
@@ -1015,6 +1243,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.carouselInterval) {
       clearInterval(this.carouselInterval);
     }
+    // Sécurité : rétablir le scroll du body si le composant est détruit modale ouverte
+    document.body.style.overflow = 'auto';
   }
 
   private initializeAnimations(): void {
@@ -1316,5 +1546,34 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onTouchEnd(event: TouchEvent): void {
     // Gérer la fin du touch pour le carrousel mobile
+  }
+
+  // ==========================================================
+  // Modale "Explorer les catégories"
+  // ==========================================================
+
+  /**
+   * Ouvre la modale listant toutes les catégories
+   */
+  openCategoriesModal(): void {
+    this.showCategoriesModal = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  /**
+   * Ferme la modale et rétablit le scroll du body
+   */
+  closeCategoriesModal(): void {
+    this.showCategoriesModal = false;
+    document.body.style.overflow = 'auto';
+  }
+
+  /**
+   * Sélectionne une catégorie depuis la modale : ferme la modale
+   * puis redirige vers la liste des produits de cette catégorie
+   */
+  selectCategoryFromModal(categorie: Categorie): void {
+    this.closeCategoriesModal();
+    this.navigateToCategory(categorie);
   }
 }
