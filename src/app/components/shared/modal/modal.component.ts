@@ -20,16 +20,17 @@ import { ModalConfig } from '../../../models/interfaces';
       <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
         <div
           #modalContent
-          class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 w-full"
+          class="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 w-full flex flex-col max-h-[90vh]"
           [class]="getModalSizeClasses()"
           [class.animate-fade-in]="isOpen"
           (click)="$event.stopPropagation()">
 
-          <!-- Modal Header -->
-          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4" *ngIf="config?.title || showCloseButton">
+          <!-- Modal Header (fixe, ne scroll pas) -->
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 flex-shrink-0 border-b border-gray-100"
+               *ngIf="config?.title || title || showCloseButton">
             <div class="flex items-center justify-between">
-              <h3 *ngIf="config?.title" class="text-lg font-semibold leading-6 text-gray-900">
-                {{ config?.title }}
+              <h3 class="text-lg font-semibold leading-6 text-gray-900">
+                {{ config?.title || title }}
               </h3>
 
               <button
@@ -43,8 +44,9 @@ import { ModalConfig } from '../../../models/interfaces';
             </div>
           </div>
 
-          <!-- Modal Body -->
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6" [class.sm:pt-0]="config?.title || showCloseButton">
+          <!-- Modal Body (scrollable) -->
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 overflow-y-auto flex-1"
+               [class.sm:pt-4]="config?.title || title || showCloseButton">
             <!-- Content Slot -->
             <ng-content></ng-content>
 
@@ -54,8 +56,8 @@ import { ModalConfig } from '../../../models/interfaces';
             </div>
           </div>
 
-          <!-- Modal Footer -->
-          <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6"
+          <!-- Modal Footer (fixe, ne scroll pas) -->
+          <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 flex-shrink-0"
                *ngIf="config?.confirmText || config?.cancelText || showFooter">
 
             <!-- Custom Footer Content -->
@@ -93,6 +95,7 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   @Input() isOpen = false;
   @Input() config?: ModalConfig;
+  @Input() title?: string;
   @Input() size: 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'md';
   @Input() showCloseButton = true;
   @Input() showFooter = false;
@@ -126,12 +129,10 @@ export class ModalComponent implements OnInit, OnDestroy {
       this.isOpen = true;
       this.opened.emit();
 
-      // Focus management
       setTimeout(() => {
         this.focusFirstElement();
       }, 100);
 
-      // Prevent body scroll
       document.body.style.overflow = 'hidden';
     }
   }
@@ -141,8 +142,6 @@ export class ModalComponent implements OnInit, OnDestroy {
       this.isOpen = false;
       this.closed.emit();
       this.restoreFocus();
-
-      // Restore body scroll
       document.body.style.overflow = '';
     }
   }
@@ -204,10 +203,7 @@ export class ModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Public methods for programmatic control
   static create(config: ModalConfig): ModalComponent {
-    // This would be implemented with a service for dynamic modal creation
-    // For now, it's just a placeholder
     const modal = new ModalComponent();
     modal.config = config;
     return modal;
