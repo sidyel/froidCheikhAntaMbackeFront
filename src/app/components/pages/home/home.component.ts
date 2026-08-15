@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, forkJoin, interval } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../../services/api.service';
 import { ImageUrlService } from '../../../services/image-url.service'; // Nouveau service
@@ -147,9 +147,12 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
             <!-- Bouton Explorer les catégories -->
             <button
               (click)="openCategoriesModal()"
-              class="mt-6 inline-flex items-center space-x-2 btn-primary px-6 py-3 transform hover:scale-105 hover:shadow-xl transition-all duration-300">
-              <lucide-icon name="layout-grid" class="w-5 h-5"></lucide-icon>
+              class="explore-categories-btn">
+              <span class="explore-categories-btn-icon">
+                <lucide-icon name="layout-grid" class="w-5 h-5"></lucide-icon>
+              </span>
               <span>Explorer les catégories</span>
+              <lucide-icon name="arrow-right" class="w-4 h-4 explore-categories-btn-arrow"></lucide-icon>
             </button>
           </div>
 
@@ -1024,10 +1027,85 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
     }
 
     /* ========================================
-       MODAL EXPLORER LES CATEGORIES
-       Mobile-first : bottom-sheet plein écran
-       Desktop : boîte centrée
+       BOUTON "EXPLORER LES CATEGORIES"
+       Mis en valeur : gradient, ombre, icône animée
        ======================================== */
+
+    .explore-categories-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      padding: 0.9rem 1.75rem;
+      border: none;
+      border-radius: 9999px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #f59e0b 150%);
+      background-size: 200% 200%;
+      background-position: 0% 50%;
+      box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5);
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, background-position 0.6s ease;
+      animation: exploreBtnPulseRing 2.5s ease-out infinite;
+    }
+
+    .explore-categories-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 14px 32px -8px rgba(37, 99, 235, 0.6);
+      background-position: 100% 50%;
+    }
+
+    .explore-categories-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .explore-categories-btn-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.2);
+      flex-shrink: 0;
+    }
+
+    .explore-categories-btn-arrow {
+      transition: transform 0.25s ease;
+    }
+
+    .explore-categories-btn:hover .explore-categories-btn-arrow {
+      transform: translateX(4px);
+    }
+
+    /* Anneau de pulsation discret pour attirer l'attention au chargement de la page */
+    @keyframes exploreBtnPulseRing {
+      0% {
+        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5), 0 0 0 0 rgba(37, 99, 235, 0.35);
+      }
+      70% {
+        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5), 0 0 0 14px rgba(37, 99, 235, 0);
+      }
+      100% {
+        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5), 0 0 0 0 rgba(37, 99, 235, 0);
+      }
+    }
+
+    @media (max-width: 420px) {
+      .explore-categories-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.85rem 1.25rem;
+        font-size: 0.95rem;
+      }
+    }
+    Mobile-first : bottom-sheet plein écran
+    Desktop : boîte centrée
+    ======================================== */
 
     .categories-modal-overlay {
       position: fixed;
@@ -1249,6 +1327,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.preloadHeroImages();
     this.loadHomeData();
     this.initializeAnimations();
     this.startCarousel();
@@ -1343,35 +1422,67 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadHomeData(): void {
-    forkJoin({
-      categories: this.apiService.getCategories(),
-      products: this.apiService.getLatestProduits({ size: 8 }),
-      brands: this.apiService.getMarquesWithProducts()
-    }).pipe(takeUntil(this.destroy$))
+    this.loadCategories();
+    this.loadFeaturedProducts();
+    this.loadBrands();
+  }
+
+  /**
+   * Charge les catégories indépendamment : elles s'affichent dès qu'elles
+   * sont prêtes, sans attendre les produits ou les marques.
+   */
+  private loadCategories(): void {
+    this.apiService.getCategories()
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
-          this.categories = data.categories;
-          this.featuredProducts = data.products.content;
-          this.brands = data.brands;
-
-          console.log('🏷️ Catégories chargées:', this.categories);
-          console.log('🔖 Marques chargées:', this.brands);
-
-          this.preloadImages();
-
+        next: (categories) => {
+          this.categories = categories;
+          this.preloadCategoryImages();
           this.isLoadingCategories = false;
-          this.isLoadingProducts = false;
-          this.isLoadingBrands = false;
-
-          setTimeout(() => this.isCategoriesVisible = true, 1000);
-          setTimeout(() => this.isProductsVisible = true, 1500);
-          setTimeout(() => this.isFeaturesVisible = true, 2000);
-          setTimeout(() => this.isBrandsVisible = true, 2500);
+          this.isCategoriesVisible = true;
         },
         error: (error) => {
-          console.error('❌ Erreur lors du chargement des données:', error);
+          console.error('❌ Erreur lors du chargement des catégories:', error);
           this.isLoadingCategories = false;
+        }
+      });
+  }
+
+  /**
+   * Charge les produits récents indépendamment des autres appels.
+   */
+  private loadFeaturedProducts(): void {
+    this.apiService.getLatestProduits({ size: 8 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.featuredProducts = response.content;
           this.isLoadingProducts = false;
+          this.isProductsVisible = true;
+          this.isFeaturesVisible = true;
+        },
+        error: (error) => {
+          console.error('❌ Erreur lors du chargement des produits:', error);
+          this.isLoadingProducts = false;
+        }
+      });
+  }
+
+  /**
+   * Charge les marques indépendamment des autres appels.
+   */
+  private loadBrands(): void {
+    this.apiService.getMarquesWithProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (brands) => {
+          this.brands = brands;
+          this.preloadBrandLogos();
+          this.isLoadingBrands = false;
+          this.isBrandsVisible = true;
+        },
+        error: (error) => {
+          console.error('❌ Erreur lors du chargement des marques:', error);
           this.isLoadingBrands = false;
         }
       });
@@ -1421,44 +1532,47 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Précharge les images pour une meilleure UX
+   * Précharge les images des catégories pour une meilleure UX
    */
-  private preloadImages(): void {
-    // Précharger images de catégories
+  private preloadCategoryImages(): void {
     this.categories.forEach(categorie => {
       if (categorie.imageCategorie) {
         const img = new Image();
         const url = this.getCategoryImageUrl(categorie);
         img.onload = () => {
-          console.log('✅ Image catégorie préchargée:', categorie.nomCategorie);
           this.imageErrors.delete(categorie.idCategorie.toString());
         };
         img.onerror = () => {
-          console.log('❌ Erreur préchargement catégorie:', categorie.nomCategorie);
           this.imageErrors.add(categorie.idCategorie.toString());
         };
         img.src = url;
       }
     });
+  }
 
-    // Précharger logos de marques
+  /**
+   * Précharge les logos de marques pour une meilleure UX
+   */
+  private preloadBrandLogos(): void {
     this.brands.forEach(marque => {
       if (marque.logo) {
         const img = new Image();
         const url = this.getBrandLogoUrl(marque);
         img.onload = () => {
-          console.log('✅ Logo marque préchargé:', marque.nomMarque);
           this.imageErrors.delete('brand-' + marque.idMarque);
         };
         img.onerror = () => {
-          console.log('❌ Erreur préchargement marque:', marque.nomMarque);
           this.imageErrors.add('brand-' + marque.idMarque);
         };
         img.src = url;
       }
     });
+  }
 
-    // Précharger images du carrousel hero
+  /**
+   * Précharge les images du carrousel hero
+   */
+  private preloadHeroImages(): void {
     this.heroImages.forEach(image => {
       const img = new Image();
       img.src = image.url;
