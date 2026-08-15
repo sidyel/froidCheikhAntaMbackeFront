@@ -18,6 +18,14 @@
     background-color: #f3f4f6;      /* Fond gris clair si bords vides */
   }
 }
+@media (max-width: 768px) {
+  .absolute.inset-0 > div[style*="background-image"] {
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center top !important;
+    background-color: #1e3a5f;
+  }
+}
 
 @media (max-width: 640px) {
   .category-card .category-image {

@@ -549,6 +549,15 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       transition: all 0.3s ease;
     }
 
+    @media (max-width: 768px) {
+      .absolute.inset-0 > div[style*="background-image"] {
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
+        background-position: center top !important;
+        background-color: #1e3a5f;
+      }
+    }
+
     .btn-explore:hover {
       background: rgba(255,255,255,0.25);
       border-color: white;
