@@ -811,7 +811,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       }
 
       .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 1rem;
       }
 
@@ -1068,7 +1068,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
 
     .categories-modal-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
     }
 
@@ -1148,14 +1148,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       to { transform: translateY(0); }
     }
 
-    /* Tablette : 3 colonnes */
-    @media (min-width: 640px) and (max-width: 767px) {
-      .categories-modal-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    /* Desktop : modale centrée, 4 colonnes */
+    /* Desktop : modale centrée */
     @media (min-width: 768px) {
       .categories-modal-overlay {
         align-items: center;
@@ -1176,6 +1169,13 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
     @keyframes scaleInModal {
       from { transform: scale(0.95); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Très petits mobiles : 2 colonnes */
+    @media (max-width: 380px) {
+      .categories-modal-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   `]
 })
