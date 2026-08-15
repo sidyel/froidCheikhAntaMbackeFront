@@ -768,7 +768,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       }
 
       .category-card {
-        min-height: 280px;
+        min-height: 220px;
       }
 
       .category-card .category-image {
@@ -802,7 +802,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       }
 
       .category-card {
-        min-height: 320px;
+        min-height: 200px;
       }
 
       .category-card .category-image {
@@ -860,6 +860,38 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       .category-card .category-image {
         aspect-ratio: 1 / 1;            /* Carré sur très petit écran */
         min-height: 100px;
+      }
+    }
+
+    /* Bandeau titre (category-content) plus compact sur mobile,
+       car il n'y a plus que le nom + le nombre de produits */
+    @media (max-width: 768px) {
+      .category-card .category-content {
+        padding: 0.75rem 1rem;
+        justify-content: flex-start;
+      }
+
+      .category-card .category-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .category-card .category-products-count {
+        margin-top: 0.15rem;
+      }
+
+      .category-card .category-products-count p {
+        font-size: 0.75rem;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .category-card .category-content {
+        padding: 0.5rem 0.75rem;
+      }
+
+      .category-card .category-title {
+        font-size: 0.85rem;
       }
     }
 
