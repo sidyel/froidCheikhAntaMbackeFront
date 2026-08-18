@@ -147,12 +147,9 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
             <!-- Bouton Explorer les catégories -->
             <button
               (click)="openCategoriesModal()"
-              class="explore-categories-btn">
-              <span class="explore-categories-btn-icon">
-                <lucide-icon name="layout-grid" class="w-5 h-5"></lucide-icon>
-              </span>
+              class="mt-6 inline-flex items-center space-x-2 btn-primary px-6 py-3 transform hover:scale-105 hover:shadow-xl transition-all duration-300">
+              <lucide-icon name="layout-grid" class="w-5 h-5"></lucide-icon>
               <span>Explorer les catégories</span>
-              <lucide-icon name="arrow-right" class="w-4 h-4 explore-categories-btn-arrow"></lucide-icon>
             </button>
           </div>
 
@@ -1027,85 +1024,10 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
     }
 
     /* ========================================
-       BOUTON "EXPLORER LES CATEGORIES"
-       Mis en valeur : gradient, ombre, icône animée
+       MODAL EXPLORER LES CATEGORIES
+       Mobile-first : bottom-sheet plein écran
+       Desktop : boîte centrée
        ======================================== */
-
-    .explore-categories-btn {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-      padding: 0.9rem 1.75rem;
-      border: none;
-      border-radius: 9999px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: white;
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #f59e0b 150%);
-      background-size: 200% 200%;
-      background-position: 0% 50%;
-      box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5);
-      cursor: pointer;
-      overflow: hidden;
-      transition: transform 0.25s ease, box-shadow 0.25s ease, background-position 0.6s ease;
-      animation: exploreBtnPulseRing 2.5s ease-out infinite;
-    }
-
-    .explore-categories-btn:hover {
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 14px 32px -8px rgba(37, 99, 235, 0.6);
-      background-position: 100% 50%;
-    }
-
-    .explore-categories-btn:active {
-      transform: translateY(0) scale(0.98);
-    }
-
-    .explore-categories-btn-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      height: 2rem;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.2);
-      flex-shrink: 0;
-    }
-
-    .explore-categories-btn-arrow {
-      transition: transform 0.25s ease;
-    }
-
-    .explore-categories-btn:hover .explore-categories-btn-arrow {
-      transform: translateX(4px);
-    }
-
-    /* Anneau de pulsation discret pour attirer l'attention au chargement de la page */
-    @keyframes exploreBtnPulseRing {
-      0% {
-        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5), 0 0 0 0 rgba(37, 99, 235, 0.35);
-      }
-      70% {
-        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5), 0 0 0 14px rgba(37, 99, 235, 0);
-      }
-      100% {
-        box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.5), 0 0 0 0 rgba(37, 99, 235, 0);
-      }
-    }
-
-    @media (max-width: 420px) {
-      .explore-categories-btn {
-        width: 100%;
-        justify-content: center;
-        padding: 0.85rem 1.25rem;
-        font-size: 0.95rem;
-      }
-    }
-    Mobile-first : bottom-sheet plein écran
-    Desktop : boîte centrée
-    ======================================== */
 
     .categories-modal-overlay {
       position: fixed;
