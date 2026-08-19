@@ -9,7 +9,7 @@ export class ToastService {
   private toastsSubject = new BehaviorSubject<Toast[]>([]);
   public toasts$ = this.toastsSubject.asObservable();
 
-  private readonly DEFAULT_DURATION = 5000; // 5 secondes
+  private readonly DEFAULT_DURATION = 2000; // 5 secondes
 
   constructor() {}
 
@@ -46,7 +46,7 @@ export class ToastService {
       type: 'error',
       title,
       message,
-      duration: duration !== undefined ? duration : 4000 // Erreurs plus longues par défaut
+      duration: duration !== undefined ? duration : 3000 // Erreurs plus longues par défaut
     };
     this.addToast(toast);
   }

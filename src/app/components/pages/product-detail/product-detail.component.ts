@@ -112,14 +112,14 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
               </div>
 
               <!-- Product Name -->
-              <h1 class="text-3xl font-bold text-gray-900 mb-4">
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
                 {{ produit.nomProduit }}
               </h1>
 
               <!-- Price -->
               <div class="mb-6">
                 <div class="flex items-center space-x-3">
-                  <span class="text-4xl font-bold text-primary-600">
+                  <span class="text-3xl sm:text-4xl font-bold text-primary-600">
                     {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
                   </span>
                 </div>
@@ -189,20 +189,21 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
                   </div>
                 </div>
 
-                <div class="flex space-x-3">
+                <!-- Boutons Ajouter au panier / Acheter — compacts sur mobile -->
+                <div class="flex space-x-2 sm:space-x-3">
                   <button
                     (click)="addToCart()"
                     [disabled]="isAddingToCart"
-                    class="flex-1 btn-primary py-3 text-lg flex items-center justify-center space-x-2">
-                    <lucide-icon name="shopping-cart" class="w-5 h-5" *ngIf="!isAddingToCart"></lucide-icon>
-                    <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" *ngIf="isAddingToCart"></div>
+                    class="flex-1 btn-primary py-2 sm:py-3 text-sm sm:text-lg flex items-center justify-center space-x-1 sm:space-x-2">
+                    <lucide-icon name="shopping-cart" class="w-4 h-4 sm:w-5 sm:h-5" *ngIf="!isAddingToCart"></lucide-icon>
+                    <div class="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" *ngIf="isAddingToCart"></div>
                     <span>{{ isAddingToCart ? 'Ajout...' : 'Ajouter au panier' }}</span>
                   </button>
 
                   <button
                     (click)="buyNow()"
-                    class="px-8 btn-secondary py-3 text-lg flex items-center space-x-2">
-                    <lucide-icon name="credit-card" class="w-5 h-5"></lucide-icon>
+                    class="px-4 sm:px-8 btn-secondary py-2 sm:py-3 text-sm sm:text-lg flex items-center space-x-1 sm:space-x-2">
+                    <lucide-icon name="credit-card" class="w-4 h-4 sm:w-5 sm:h-5"></lucide-icon>
                     <span>Acheter</span>
                   </button>
                 </div>
@@ -244,19 +245,13 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
                   </a>
                 </div>
 
-                <!-- Share - TAILLE AUGMENTÉE -->
+                <!-- Share : uniquement WhatsApp (bouton Copier retiré) -->
                 <div class="flex items-center space-x-4">
                   <span class="text-base font-medium text-gray-700">Négocier sur whatsapp:</span>
                   <button
                     (click)="shareProduct('whatsapp')"
                     class="flex items-center space-x-2 text-green-600 hover:text-green-800 transition-colors bg-green-50 hover:bg-green-100 px-4 py-3 rounded-lg">
                     <span class="text-base font-medium">WhatsApp</span>
-                  </button>
-                  <button
-                    (click)="shareProduct('copy')"
-                    class="flex items-center space-x-2 text-gray-600 hover:text-gray-700 transition-colors bg-gray-50 hover:bg-gray-100 px-3 py-3 rounded-lg">
-                    <lucide-icon name="copy" class="w-5 h-5"></lucide-icon>
-                    <span class="text-sm">Copier</span>
                   </button>
                 </div>
               </div>
@@ -285,10 +280,10 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
           </div>
         </div>
 
-        <!-- Related Products -->
+        <!-- Related Products : 2 par ligne sur mobile -->
         <div class="mt-12" *ngIf="relatedProducts.length > 0">
           <h2 class="text-2xl font-bold text-gray-900 mb-6">Produits similaires</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             <app-product-card
               *ngFor="let relatedProduct of relatedProducts.slice(0, 4)"
               [produit]="relatedProduct">
@@ -622,11 +617,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       case 'whatsapp':
         const message = `Bonjour, je suis intéressé(e) par ce produit: ${this.produit?.nomProduit}\nPrix: ${this.produit?.prix} XOF\nLien: ${url}`;
         window.open(`https://wa.me/221773352000?text=${encodeURIComponent(message)}`, '_blank');
-        break;
-      case 'copy':
-        navigator.clipboard.writeText(url).then(() => {
-          this.toastService.success('Lien copié', 'Le lien du produit a été copié dans le presse-papiers');
-        });
         break;
     }
   }
