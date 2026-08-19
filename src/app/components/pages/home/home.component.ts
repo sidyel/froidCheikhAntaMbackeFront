@@ -785,15 +785,15 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       }
     }
 
-    /* Très petits mobiles: 1 colonne */
+    /* Très petits mobiles: 2 colonnes (comme les catégories) */
     @media (max-width: 420px) {
       .products-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
       }
 
       .products-grid > div {
-        min-height: 420px;
+        min-height: 320px;
       }
 
       .categories-grid {
@@ -922,7 +922,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
       }
 
       .products-grid > div {
-        min-height: 380px;
+        min-height: 300px;
       }
 
       .categories-grid {

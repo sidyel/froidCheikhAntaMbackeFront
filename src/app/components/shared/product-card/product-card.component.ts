@@ -15,11 +15,11 @@ import { ToastService } from '../../../services/toast.service';
 
       <!-- Product Image -->
       <div class="relative overflow-hidden">
-        <div class="aspect-w-1 aspect-h-1 w-full">
+        <div class="product-image-wrapper">
           <img
             [src]="getMainImageUrl()"
             [alt]="produit.nomProduit"
-            class="w-full h-48 sm:h-56 md:h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+            class="product-image transition-transform duration-300 group-hover:scale-105"
             onerror="this.src='assets/images/placeholder-product.jpg'"
           >
         </div>
@@ -167,6 +167,29 @@ import { ToastService } from '../../../services/toast.service';
       flex-direction: column;
     }
 
+    /* ========================================
+       IMAGE PRODUIT — netteté garantie
+       Ratio carré fixe + object-fit: contain
+       (l'image entière reste visible, jamais recadrée,
+       quelle que soit la largeur de la carte)
+       ======================================== */
+    .product-image-wrapper {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background-color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 0.5rem;
+    }
+
     /* Spinner pour le chargement */
     .spinner {
       width: 16px;
@@ -229,12 +252,6 @@ import { ToastService } from '../../../services/toast.service';
         margin-top: 0.5rem;
       }
 
-      /* Optimiser la hauteur de l'image sur mobile */
-      .aspect-w-1 img {
-        height: 180px;
-        object-fit: cover;
-      }
-
       /* Ajuster les badges sur mobile */
       .badge {
         font-size: 0.625rem;
@@ -252,7 +269,7 @@ import { ToastService } from '../../../services/toast.service';
       }
     }
 
-    /* Ajustements pour très petits écrans */
+    /* Ajustements pour très petits écrans (2 colonnes) */
     @media (max-width: 420px) {
       .card-body h3 {
         font-size: 0.875rem;
@@ -273,12 +290,10 @@ import { ToastService } from '../../../services/toast.service';
       .card-body {
         padding: 0.5rem;
       }
-    }
 
-    /* Ajustements pour écrans moyens (tablettes) */
-    @media (min-width: 641px) and (max-width: 900px) {
-      .aspect-w-1 img {
-        height: 224px;
+      /* Moins de marge autour de l'image sur carte très étroite */
+      .product-image {
+        padding: 0.35rem;
       }
     }
 
