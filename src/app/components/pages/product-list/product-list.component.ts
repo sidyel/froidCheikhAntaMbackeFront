@@ -17,7 +17,6 @@ import { environment } from '../../../../environments/environment';
       <app-breadcrumb [breadcrumbs]="breadcrumbs"></app-breadcrumb>
 
       <!-- Barre de catégories scrollable -->
-      <!-- Barre de catégories scrollable -->
       <section class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm categories-section">
         <div class="container mx-auto px-2 sm:px-4">
           <div class="flex items-center space-x-2 sm:space-x-4 py-2 sm:py-3">
@@ -379,12 +378,10 @@ import { environment } from '../../../../environments/environment';
   `,
   styles: [`
     /* Barre de catégories scrollable */
-    /* Section complète responsive */
     section.categories-section {
       overflow-x: hidden;
     }
 
-    /* Barre de catégories scrollable */
     .categories-scroll-container {
       display: flex;
       gap: 0.75rem;
@@ -491,7 +488,6 @@ import { environment } from '../../../../environments/environment';
 
     /* ========================================
        GRILLE PRODUITS RESPONSIVE
-       Identique à la page d'accueil
        ======================================== */
 
     .products-grid-3-columns {
@@ -509,7 +505,6 @@ import { environment } from '../../../../environments/environment';
       min-height: 420px;
     }
 
-    /* Assure que les cartes de produits occupent toute la hauteur disponible */
     .product-card-uniform ::ng-deep app-product-card {
       display: flex;
       flex-direction: column;
@@ -553,26 +548,27 @@ import { environment } from '../../../../environments/environment';
       }
     }
 
-    /* ⭐ MOBILE: 1 COLONNE (comme les catégories) ⭐ */
+    /* ✅ MOBILE: 2 COLONNES (corrigé) */
     @media (max-width: 480px) {
       .products-grid-3-columns {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
       }
 
       .product-card-uniform {
-        min-height: 420px;
+        min-height: 340px;
       }
     }
 
-    /* Très petits écrans: optimisation maximale */
+    /* Très petits écrans: 2 colonnes serrées */
     @media (max-width: 360px) {
       .products-grid-3-columns {
-        gap: 0.75rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.375rem;
       }
 
       .product-card-uniform {
-        min-height: 400px;
+        min-height: 300px;
       }
     }
 
@@ -644,7 +640,6 @@ import { environment } from '../../../../environments/environment';
         padding: 0.5rem 0.25rem;
       }
 
-      /* Réduire la taille de l'icône dans le cercle */
       .category-circle lucide-icon {
         width: 1.25rem !important;
         height: 1.25rem !important;
@@ -1016,8 +1011,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
     return 'Découvrez notre gamme complète de produits';
   }
 
-  // ✅ Nouvelle version
-  // ✅ Corriger
   getProductImageUrl(produit: Produit): string {
     if (produit.listeImages && produit.listeImages.length > 0) {
       const image = produit.listeImages[0];

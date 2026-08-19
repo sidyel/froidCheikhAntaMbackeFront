@@ -59,7 +59,7 @@ import { ToastService } from '../../../services/toast.service';
           </span>
         </div>
 
-        <!-- Discount Badge (if needed) -->
+        <!-- Discount Badge -->
         <div class="absolute top-2 right-2" *ngIf="hasDiscount()">
           <span class="badge bg-red-500 text-white px-2 py-1 text-xs font-semibold">
             -{{ getDiscountPercentage() }}%
@@ -71,64 +71,62 @@ import { ToastService } from '../../../services/toast.service';
           *ngIf="isAuthenticated"
           (click)="toggleWishlist($event)"
           [class]="isInWishlist ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-700'"
-          class="sm:hidden absolute bottom-2 right-2 p-2 rounded-full shadow-lg hover:scale-105 transition-all"
+          class="sm:hidden absolute bottom-2 right-2 p-1.5 rounded-full shadow-lg hover:scale-105 transition-all"
           [title]="isInWishlist ? 'Retirer des favoris' : 'Ajouter aux favoris'">
-          <lucide-icon name="heart" class="w-4 h-4" [class.fill-current]="isInWishlist"></lucide-icon>
+          <lucide-icon name="heart" class="w-3.5 h-3.5" [class.fill-current]="isInWishlist"></lucide-icon>
         </button>
       </div>
 
       <!-- Product Info -->
-      <div class="card-body p-3 sm:p-4">
-        <!-- Brand & Reference - Compact sur mobile -->
-        <div class="flex items-center justify-between mb-2">
-          <span *ngIf="produit.marque" class="text-xs sm:text-sm text-gray-500 font-medium truncate">
+      <div class="card-body">
+        <!-- Brand & Reference -->
+        <div class="flex items-center justify-between mb-1">
+          <span *ngIf="produit.marque" class="brand-label truncate">
             {{ produit.marque.nomMarque }}
           </span>
-          <span *ngIf="produit.refProduit" class="text-xs text-gray-400 ml-2">
+          <span *ngIf="produit.refProduit" class="ref-label ml-1 flex-shrink-0">
             {{ produit.refProduit }}
           </span>
         </div>
 
-        <!-- Product Name - Taille adaptative -->
-        <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
+        <!-- Product Name -->
+        <h3 class="product-name line-clamp-2 group-hover:text-primary-600 transition-colors">
           {{ produit.nomProduit }}
         </h3>
 
-        <!-- Price - Taille adaptative -->
-        <div class="flex items-center justify-between mb-3 sm:mb-4">
-          <div class="flex items-center space-x-1 sm:space-x-2">
-            <span class="text-lg sm:text-xl md:text-2xl font-bold text-primary-600">
-              {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
-            </span>
-            <span *ngIf="hasDiscount()" class="text-sm sm:text-base md:text-lg text-gray-500 line-through">
-              {{ getOriginalPrice() | currency:'XOF':'symbol':'1.0-0' }}
-            </span>
-          </div>
+        <!-- Price -->
+        <div class="price-row">
+          <span class="price-main">
+            {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
+          </span>
+          <span *ngIf="hasDiscount()" class="price-original">
+            {{ getOriginalPrice() | currency:'XOF':'symbol':'1.0-0' }}
+          </span>
         </div>
 
-        <!-- Actions - Layout adaptatif -->
-        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <!-- Bouton Ajouter au panier - Pleine largeur sur mobile -->
+        <!-- Actions -->
+        <div class="actions-row">
+          <!-- Bouton Ajouter au panier -->
           <button
             (click)="addToCart($event)"
             [disabled]="!produit.disponibilite || produit.stockDisponible === 0 || isAddingToCart"
-            class="flex-1 btn-primary text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed py-2 sm:py-2.5"
+            class="btn-add-cart"
             [class.opacity-50]="!produit.disponibilite">
-            <lucide-icon name="shopping-cart" class="w-3 h-3 sm:w-4 sm:h-4" *ngIf="!isAddingToCart"></lucide-icon>
-            <div class="spinner-small sm:spinner" *ngIf="isAddingToCart"></div>
+            <lucide-icon name="shopping-cart" class="btn-icon" *ngIf="!isAddingToCart"></lucide-icon>
+            <div class="spinner-small" *ngIf="isAddingToCart"></div>
             <span class="truncate">{{ getAddToCartText() }}</span>
           </button>
 
-          <!-- Bouton Voir - Plus petit sur mobile -->
+          <!-- Bouton Voir — masqué sur très petits écrans -->
           <button
             (click)="navigateToProduct($event)"
-            class="px-3 sm:px-4 py-2 sm:py-2.5 border border-primary-600 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-xs sm:text-sm">
-            <lucide-icon name="eye" class="w-3 h-3 sm:w-4 sm:h-4"></lucide-icon>
+            class="btn-view hidden sm:flex">
+            <lucide-icon name="eye" class="btn-icon"></lucide-icon>
           </button>
         </div>
 
-        <!-- Stock Info - Taille réduite sur mobile -->
-        <div class="mt-2 text-xs sm:text-sm text-gray-500" *ngIf="produit.disponibilite">
+        <!-- Stock Info -->
+        <div class="stock-info" *ngIf="produit.disponibilite">
           <span *ngIf="produit.stockDisponible > 10">
             En stock ({{ produit.stockDisponible }}+)
           </span>
@@ -144,7 +142,9 @@ import { ToastService } from '../../../services/toast.service';
     </div>
   `,
   styles: [`
-    /* Styles de base pour la carte */
+    /* ========================================
+       CARTE DE BASE
+       ======================================== */
     .card {
       display: flex;
       flex-direction: column;
@@ -161,17 +161,9 @@ import { ToastService } from '../../../services/toast.service';
       transform: translateY(-4px);
     }
 
-    .card-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
     /* ========================================
-       IMAGE PRODUIT — netteté garantie
+       IMAGE PRODUIT
        Ratio carré fixe + object-fit: contain
-       (l'image entière reste visible, jamais recadrée,
-       quelle que soit la largeur de la carte)
        ======================================== */
     .product-image-wrapper {
       width: 100%;
@@ -190,30 +182,141 @@ import { ToastService } from '../../../services/toast.service';
       padding: 0.5rem;
     }
 
-    /* Spinner pour le chargement */
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    /* ========================================
+       CARD BODY — flex colonne
+       ======================================== */
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0.875rem;
+      gap: 0.375rem;
     }
 
-    .spinner-small {
-      width: 12px;
-      height: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    /* ========================================
+       TEXTES
+       ======================================== */
+    .brand-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: 500;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .ref-label {
+      font-size: 0.65rem;
+      color: #9ca3af;
     }
 
-    /* Badge styles */
+    .product-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #111827;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ========================================
+       PRIX
+       ======================================== */
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.375rem;
+      margin-top: 0.25rem;
+    }
+
+    .price-main {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2563eb;
+    }
+
+    .price-original {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-decoration: line-through;
+    }
+
+    /* ========================================
+       ACTIONS
+       ======================================== */
+    .actions-row {
+      display: flex;
+      gap: 0.375rem;
+      margin-top: auto;
+      padding-top: 0.5rem;
+    }
+
+    .btn-add-cart {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      background-color: #2563eb;
+      color: white;
+      font-weight: 600;
+      font-size: 0.75rem;
+      padding: 0.5rem 0.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 0;
+    }
+
+    .btn-add-cart:hover:not(:disabled) {
+      background-color: #1d4ed8;
+    }
+
+    .btn-add-cart:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-view {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0.625rem;
+      border: 1px solid #2563eb;
+      color: #2563eb;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      background: transparent;
+      flex-shrink: 0;
+    }
+
+    .btn-view:hover {
+      background-color: #eff6ff;
+    }
+
+    .btn-icon {
+      width: 0.875rem;
+      height: 0.875rem;
+      flex-shrink: 0;
+    }
+
+    /* ========================================
+       STOCK INFO
+       ======================================== */
+    .stock-info {
+      font-size: 0.7rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+
+    /* ========================================
+       BADGE
+       ======================================== */
     .badge {
       display: inline-block;
       border-radius: 0.375rem;
@@ -222,114 +325,123 @@ import { ToastService } from '../../../services/toast.service';
       letter-spacing: 0.025em;
     }
 
-    /* Line clamp pour tronquer le texte */
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    /* ========================================
+       SPINNER
+       ======================================== */
+    .spinner-small {
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
     }
 
-    /* Boutons responsive */
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      font-weight: 600;
-      border-radius: 0.5rem;
-      transition: all 0.3s ease;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
-    /* Ajustements pour petits écrans */
-    @media (max-width: 640px) {
+    /* ========================================
+       MOBILE — cartes étroites (2 colonnes)
+       ======================================== */
+    @media (max-width: 480px) {
       .card-body {
-        padding: 0.75rem;
+        padding: 0.625rem;
+        gap: 0.25rem;
       }
 
-      /* Réduire l'espace entre les éléments sur mobile */
-      .card-body > * + * {
-        margin-top: 0.5rem;
-      }
-
-      /* Ajuster les badges sur mobile */
-      .badge {
-        font-size: 0.625rem;
-        padding: 0.25rem 0.5rem;
-      }
-
-      /* Réduire la taille du bouton wishlist mobile */
-      .sm\\:hidden {
-        padding: 0.5rem;
-      }
-
-      .sm\\:hidden lucide-icon {
-        width: 1rem;
-        height: 1rem;
-      }
-    }
-
-    /* Ajustements pour très petits écrans (2 colonnes) */
-    @media (max-width: 420px) {
-      .card-body h3 {
-        font-size: 0.875rem;
+      .product-name {
+        font-size: 0.8rem;
         line-height: 1.25;
       }
 
-      .btn-primary {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.75rem;
+      .price-main {
+        font-size: 0.95rem;
       }
 
-      /* Prix plus compact */
-      .text-lg {
-        font-size: 1rem;
+      .brand-label {
+        font-size: 0.65rem;
       }
 
-      /* Réduire le padding global */
-      .card-body {
-        padding: 0.5rem;
+      .actions-row {
+        padding-top: 0.375rem;
       }
 
-      /* Moins de marge autour de l'image sur carte très étroite */
+      .btn-add-cart {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.375rem;
+        gap: 0.2rem;
+      }
+
+      /* Icône légèrement plus petite */
+      .btn-icon {
+        width: 0.75rem;
+        height: 0.75rem;
+      }
+
+      /* Stock info encore plus compact */
+      .stock-info {
+        font-size: 0.625rem;
+      }
+
+      /* Badge plus petit */
+      .badge {
+        font-size: 0.55rem;
+        padding: 0.2rem 0.375rem;
+      }
+
+      /* Image padding réduit */
       .product-image {
         padding: 0.35rem;
       }
     }
 
-    /* Optimisation du hover pour desktop uniquement */
+    /* Très petits écrans (≤ 360px) */
+    @media (max-width: 360px) {
+      .card-body {
+        padding: 0.5rem;
+      }
+
+      .product-name {
+        font-size: 0.75rem;
+      }
+
+      .price-main {
+        font-size: 0.875rem;
+      }
+
+      .btn-add-cart {
+        font-size: 0.65rem;
+        padding: 0.375rem 0.25rem;
+      }
+
+      .product-image {
+        padding: 0.25rem;
+      }
+    }
+
+    /* ========================================
+       DESKTOP — hover optimisé
+       ======================================== */
     @media (hover: hover) and (pointer: fine) {
       .card:hover {
         transform: translateY(-6px);
       }
-
-      .group:hover .group-hover\\:scale-105 {
-        transform: scale(1.05);
-      }
     }
 
-    /* Désactiver les transformations sur mobile pour de meilleures performances */
+    /* Désactiver les transformations sur mobile */
     @media (hover: none) {
       .card:active {
         transform: scale(0.98);
       }
     }
 
-    /* Améliorer la lisibilité du texte tronqué */
+    /* Utilitaires */
     .truncate {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-    }
-
-    /* Style pour les boutons désactivés */
-    .disabled\\:opacity-50:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .disabled\\:cursor-not-allowed:disabled {
-      cursor: not-allowed;
     }
   `]
 })
@@ -353,7 +465,6 @@ export class ProductCardComponent {
   ) {
     this.isAuthenticated = this.authService.isAuthenticated();
 
-    // Vérifier si le produit est dans la wishlist
     if (this.isAuthenticated) {
       this.checkWishlistStatus();
     }
@@ -395,7 +506,6 @@ export class ProductCardComponent {
 
     this.isAddingToCart = true;
 
-    // Simuler un délai pour l'UX
     setTimeout(() => {
       this.cartService.addToCart(this.produit, 1);
       this.isAddingToCart = false;
@@ -446,15 +556,9 @@ export class ProductCardComponent {
   }
 
   getAddToCartText(): string {
-    if (!this.produit.disponibilite) {
-      return 'Indisponible';
-    }
-    if (this.produit.stockDisponible === 0) {
-      return 'Rupture';
-    }
-    if (this.isAddingToCart) {
-      return 'Ajout...';
-    }
+    if (!this.produit.disponibilite) return 'Indisponible';
+    if (this.produit.stockDisponible === 0) return 'Rupture';
+    if (this.isAddingToCart) return 'Ajout...';
     return 'Ajouter';
   }
 
@@ -463,22 +567,17 @@ export class ProductCardComponent {
   }
 
   hasDiscount(): boolean {
-    // Logique pour détecter une remise (à adapter selon vos besoins)
-    // Pour l'instant, on retourne false car pas de champ discount dans le modèle
     return false;
   }
 
   getDiscountPercentage(): number {
-    // Logique pour calculer le pourcentage de remise
     return 0;
   }
 
   getOriginalPrice(): number {
-    // Logique pour récupérer le prix original avant remise
     return this.produit.prix;
   }
 
-  // Méthodes utiles pour le parent
   isProductInCart(): boolean {
     return this.cartService.isInCart(this.produit.idProduit);
   }
