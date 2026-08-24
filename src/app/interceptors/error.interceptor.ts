@@ -108,8 +108,18 @@ export class ErrorInterceptor implements HttpInterceptor {
   }
 
   private handle403Error(error: HttpErrorResponse): void {
-    // Erreur 403 - Accès interdit
-    this.toastService.error('Accès interdit', 'Vous n\'avez pas l\'autorisation d\'effectuer cette action');
+    // La vérification de wishlist peut retourner 403
+    // lorsque l'utilisateur n'est pas authentifié.
+    // Dans ce cas, ne pas afficher de toast.
+    if (error.url?.includes('/clients/wishlist')) {
+      return;
+    }
+
+    // Pour les autres erreurs 403, afficher le toast
+    // this.toastService.error(
+    //   'Accès interdit',
+    //   'Vous n\'avez pas l\'autorisation d\'effectuer cette action'
+    // );
   }
 
   private handle404Error(error: HttpErrorResponse): void {
