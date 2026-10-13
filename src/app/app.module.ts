@@ -1,8 +1,9 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ConfigService } from './services/config.service';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -138,6 +139,8 @@ import { ProduitFormComponent } from './components/admin/produits/produit-form/p
 import { ImageUploadComponent } from './components/image-upload/image-upload.component';
 import { LazyLoadDirective } from './directives/lazy-load.directive';
 import { AdminContactsComponent } from './components/admin/contacts/admin-contacts/admin-contacts.component';
+import { SiteSettingsComponent } from './components/admin/site-settings/site-settings.component';
+import { InstallWizardComponent } from './components/pages/install-wizard/install-wizard.component';
 
 @NgModule({
   declarations: [
@@ -188,7 +191,9 @@ import { AdminContactsComponent } from './components/admin/contacts/admin-contac
     ProduitFormComponent,
     ImageUploadComponent,
     LazyLoadDirective,
-    AdminContactsComponent
+    AdminContactsComponent,
+    SiteSettingsComponent,
+    InstallWizardComponent
   ],
   imports: [
     BrowserModule,
@@ -307,6 +312,12 @@ import { AdminContactsComponent } from './components/admin/contacts/admin-contac
     })
   ],
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (configService: ConfigService) => () => configService.loadConfig(),
+      deps: [ConfigService],
+      multi: true
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

@@ -1,16 +1,9 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.froidcheikhantambacke.com/api',
-  uploadUrl: 'https://api.froidcheikhantambacke.com/uploads',
-  //apiUrl: 'http://localhost:8080/api',
-  //uploadUrl: 'http://localhost:8080/uploads',
-  companyInfo: {
-    name: 'Froid Cheikh Anta Mbacké Babacar Dione',
-    phones: ['77 335 20 00', '76 888 04 42', '33 820 16 33'],
-    address: 'Ouest Foire, Cité Aelmas, derrière station Shell',
-    ninea: '0151340-2B1',
-    email: 'froidcheikhantambacke.dione65@gmail.com'
-  },
+  // apiUrl: 'https://api.froidcheikhantambacke.com/api',
+  // uploadUrl: 'https://api.froidcheikhantambacke.com/uploads',
+  apiUrl: 'http://localhost:8080/api',
+  uploadUrl: 'http://localhost:8080/uploads',
   pagination: {
     defaultPageSize: 12,
     pageSizeOptions: [6, 12, 24, 48]

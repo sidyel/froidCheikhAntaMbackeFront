@@ -88,6 +88,15 @@ import { Observable } from 'rxjs';
                 <lucide-icon name="warehouse" class="mr-3 h-5 w-5"></lucide-icon>
                 Stock
               </a>
+
+              <hr class="my-2 border-gray-200">
+
+              <a routerLink="/admin/parametres-site"
+                 routerLinkActive="bg-primary-100 text-primary-700"
+                 class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                <lucide-icon name="settings" class="mr-3 h-5 w-5"></lucide-icon>
+                Paramètres site
+              </a>
             </div>
           </nav>
         </aside>

@@ -1,11 +1,14 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subject, Observable, combineLatest } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth.service';
 import { CartService } from '../../../services/cart.service';
 import { ApiService } from '../../../services/api.service';
+import { ConfigService } from '../../../services/config.service';
 import { UserInfo, Categorie, Cart } from '../../../models/interfaces';
+import { SiteConfig } from '../../../models/site-config.interface';
 
 @Component({
   selector: 'app-header',
@@ -16,13 +19,13 @@ import { UserInfo, Categorie, Cart } from '../../../models/interfaces';
         <div class="container mx-auto px-4">
           <div class="flex justify-between items-center text-sm">
             <div class="flex items-center space-x-4">
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-2" *ngIf="config.telephones?.length">
                 <lucide-icon name="phone" class="w-4 h-4"></lucide-icon>
-                <span>77 335 20 00 / 76 888 04 42</span>
+                <span>{{ config.telephones![0].numero }}<ng-container *ngIf="config.telephones!.length > 1"> / {{ config.telephones![1].numero }}</ng-container></span>
               </div>
-              <div class="hidden md:flex items-center space-x-2">
+              <div class="hidden md:flex items-center space-x-2" *ngIf="config.adresseComplete">
                 <lucide-icon name="map-pin" class="w-4 h-4"></lucide-icon>
-                <span>Ouest Foire, Cité Aelmas</span>
+                <span>{{ config.adresseComplete }}</span>
               </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -66,10 +69,10 @@ import { UserInfo, Categorie, Cart } from '../../../models/interfaces';
                   class="h-16 w-auto object-contain"
                 >
               </div>
-              <!-- Texte du logo (optionnel - peut être masqué sur mobile) -->
-              <div class="hidden sm:block">
-                <h1 class="text-xl font-bold text-gray-900">Froid Cheikh</h1>
-                <p class="text-sm text-gray-600">Anta Mbacké</p>
+              <!-- Texte du logo -->
+              <div class="hidden sm:block" *ngIf="config.nomSite">
+                <h1 class="text-xl font-bold text-gray-900">{{ config.nomSite }}</h1>
+                <p class="text-sm text-gray-600" *ngIf="config.sloganSite">{{ config.sloganSite }}</p>
               </div>
             </a>
           </div>
@@ -263,16 +266,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
   categories: Categorie[] = [];
   isMobileMenuOpen = false;
   isUserMenuOpen = false;
+  config: SiteConfig;
 
   constructor(
     private authService: AuthService,
     private cartService: CartService,
     private apiService: ApiService,
-    private router: Router
+    private configService: ConfigService,
+    private router: Router,
+    @Inject(DOCUMENT) private document: Document
   ) {
     this.currentUser$ = this.authService.currentUser$;
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.cart$ = this.cartService.cart$;
+    this.config = this.configService.config;
   }
 
   ngOnInit(): void {
@@ -332,7 +339,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private setupClickOutside(): void {
     // Fermer les menus quand on clique ailleurs
-    document.addEventListener('click', (event) => {
+    this.document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.relative')) {
         this.isUserMenuOpen = false;
