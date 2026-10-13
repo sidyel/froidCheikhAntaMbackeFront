@@ -148,7 +148,7 @@
           </div>
           <div class="contact-details">
             <h4>Adresse</h4>
-            <p>{{ contactInfo.address }}</p>
+            <p>{{ config.adresseComplete }}</p>
           </div>
         </div>
 
@@ -159,8 +159,8 @@
           </div>
           <div class="contact-details">
             <h4>Téléphones</h4>
-            <p *ngFor="let phone of contactInfo.phones">
-              <a [href]="'tel:' + phone">{{ phone }}</a>
+            <p *ngFor="let tel of config.telephones">
+              <a [href]="'tel:' + tel.numero">{{ tel.numero }}</a>
             </p>
           </div>
         </div>
@@ -173,7 +173,7 @@
           <div class="contact-details">
             <h4>Email</h4>
             <p>
-              <a [href]="'mailto:' + contactInfo.email">{{ contactInfo.email }}</a>
+              <a [href]="'mailto:' + config.emailContact">{{ config.emailContact }}</a>
             </p>
           </div>
         </div>
@@ -185,9 +185,9 @@
           </div>
           <div class="contact-details">
             <h4>Horaires d'ouverture</h4>
-            <p>{{ contactInfo.hours.weekdays }}</p>
-            <p>{{ contactInfo.hours.saturday }}</p>
-            <p>{{ contactInfo.hours.sunday }}</p>
+            <p>Lun – Ven : 8h00 – 18h00</p>
+            <p>Samedi : 8h00 – 17h00</p>
+            <p>Dimanche : Fermé</p>
           </div>
         </div>
 

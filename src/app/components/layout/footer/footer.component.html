@@ -16,7 +16,7 @@
               >
             </div>
             <div class="company-title">
-              <h3>{{ companyInfo.name }}</h3>
+              <h3>{{ config.nomSite }}</h3>
               <p class="company-subtitle">Qualité & Service</p>
             </div>
           </div>
@@ -28,11 +28,11 @@
           <div class="company-details">
             <div class="detail-item">
               <lucide-icon name="map-pin" class="detail-icon"></lucide-icon>
-              <span style="margin-top: 10px">{{ companyInfo.address }}</span>
+              <span style="margin-top: 10px">{{ config.adresseComplete }}</span>
             </div>
             <div class="detail-item">
               <lucide-icon name="shield" class="detail-icon"></lucide-icon>
-              <span style="margin-top: 10px" class="ninea">NINEA: {{ companyInfo.ninea }}</span>
+              <span style="margin-top: 10px" class="ninea" *ngIf="false">NINEA</span>
             </div>
           </div>
         </div>
@@ -70,23 +70,23 @@
           <h4 class="section-title">Nous Contacter</h4>
 
           <div class="contact-info">
-            <div *ngFor="let phone of companyInfo.phones" class="contact-item">
+            <div *ngFor="let tel of config.telephones" class="contact-item">
               <lucide-icon name="phone" class="contact-icon"></lucide-icon>
-              <a style="margin-top: 10px;margin-left: 5px" [href]="'tel:' "
+              <a style="margin-top: 10px;margin-left: 5px" [href]="'tel:' + tel.numero"
                  class="contact-link"
-                 (click)="onPhoneClick(phone)"
-                 [attr.aria-label]="'Appeler le ' + phone">
-                {{ phone }}
+                 (click)="onPhoneClick(tel.numero)"
+                 [attr.aria-label]="'Appeler le ' + tel.numero">
+                {{ tel.numero }}
               </a>
             </div>
 
-            <div class="contact-item" *ngIf="companyInfo.email">
+            <div class="contact-item" *ngIf="config.emailContact">
               <lucide-icon name="mail" class="contact-icon"></lucide-icon>
-              <a style="margin-top: 10px;margin-left: 5px" [href]="'mailto:' + companyInfo.email"
+              <a style="margin-top: 10px;margin-left: 5px" [href]="'mailto:' + config.emailContact"
                  class="contact-link"
                  (click)="onEmailClick()"
-                 [attr.aria-label]="'Envoyer un email à ' + companyInfo.email">
-                {{ companyInfo.email }}
+                 [attr.aria-label]="'Envoyer un email à ' + config.emailContact">
+                {{ config.emailContact }}
               </a>
             </div>
           </div>
@@ -173,7 +173,7 @@
 
         <!-- Copyright -->
         <div class="copyright" data-aos="fade-up">
-          <p>© {{ currentYear }} {{ companyInfo.name }}. Tous droits réservés.</p>
+          <p>© {{ currentYear }} {{ config.nomSite }}. Tous droits réservés.</p>
         </div>
 
         <!-- Payment Methods -->
@@ -215,7 +215,7 @@
             </a>
 
             <!-- WhatsApp -->
-            <a [href]="'https://wa.me/' + formatPhoneForWhatsApp(companyInfo.phones[0])"
+            <a [href]="'https://wa.me/' + formatPhoneForWhatsApp(config.telephones?.[0]?.numero || '')"
                target="_blank"
                rel="noopener noreferrer"
                class="social-link social-link-whatsapp"
