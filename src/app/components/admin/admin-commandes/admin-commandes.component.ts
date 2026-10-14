@@ -315,8 +315,40 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
                 </div>
               </ng-template>
 
-              <div class="border-t border-gray-200 pt-3 mt-3">
-                <div class="flex justify-between">
+              <!-- Récapitulatif financier -->
+              <div class="border-t border-gray-200 pt-3 mt-3 space-y-1">
+                <!-- Détail livraison — commandes récentes avec champs zone -->
+                <ng-container *ngIf="selectedCommande.zoneNom; else livraisonSimple">
+                  <div class="flex justify-between text-sm text-gray-600">
+                    <span>Zone ({{ selectedCommande.zoneNom }}) — {{ selectedCommande.zoneModeApplique }}:</span>
+                    <span *ngIf="selectedCommande.livraisonGratuiteAppliquee; else prixZone" class="text-green-600 font-medium">Gratuit</span>
+                    <ng-template #prixZone>
+                      <span>{{ selectedCommande.zonePrixApplique | currency:('' | devise):'symbol':'1.0-0' }}</span>
+                    </ng-template>
+                  </div>
+                  <div class="flex justify-between text-sm text-gray-600"
+                       *ngIf="selectedCommande.supplementExpressApplique && selectedCommande.supplementExpressApplique > 0">
+                    <span>Supplément express:</span>
+                    <span>{{ selectedCommande.supplementExpressApplique | currency:('' | devise):'symbol':'1.0-0' }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm text-gray-600"
+                       *ngIf="selectedCommande.supplementGabaritApplique && selectedCommande.supplementGabaritApplique > 0">
+                    <span>Supplément gabarit lourd:</span>
+                    <span>{{ selectedCommande.supplementGabaritApplique | currency:('' | devise):'symbol':'1.0-0' }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm text-gray-600 font-medium">
+                    <span>Total livraison:</span>
+                    <span>{{ selectedCommande.fraisLivraison | currency:('' | devise):'symbol':'1.0-0' }}</span>
+                  </div>
+                </ng-container>
+                <!-- Livraison simple — anciennes commandes sans champs zone -->
+                <ng-template #livraisonSimple>
+                  <div class="flex justify-between text-sm text-gray-600" *ngIf="selectedCommande.fraisLivraison > 0">
+                    <span>Frais de livraison:</span>
+                    <span>{{ selectedCommande.fraisLivraison | currency:('' | devise):'symbol':'1.0-0' }}</span>
+                  </div>
+                </ng-template>
+                <div class="flex justify-between border-t border-gray-200 pt-2 mt-2">
                   <span class="text-base font-medium text-gray-900">Total commande:</span>
                   <span class="text-base font-medium text-gray-900">{{ selectedCommande.montantTotal | currency:('' | devise):'symbol':'1.0-0' }}</span>
                 </div>

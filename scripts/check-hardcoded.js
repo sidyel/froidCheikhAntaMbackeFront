@@ -36,8 +36,6 @@ const FILE_PATTERN_EXCLUSIONS = [
   { file: 'site-settings.component.ts', patterns: ['Couleur hex en dur (#16a34a)'] },
   // URLs de domaine commentées, non affichées
   { file: 'environment.ts',             patterns: ['Nom boutique en dur'] },
-  // Zone de livraison (module ZoneLivraison planifié — exclure "Ouest Foire")
-  { file: 'checkout.component.ts',      patterns: ['Adresse en dur (Ouest Foire)'] },
 ];
 
 // Extensions à analyser
