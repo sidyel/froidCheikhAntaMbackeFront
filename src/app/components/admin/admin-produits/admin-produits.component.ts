@@ -79,6 +79,16 @@ import { environment } from "../../../../environments/environment";
             </select>
           </div>
         </div>
+
+        <!-- Filtre fiches incomplètes -->
+        <div class="mt-3 flex items-center gap-2">
+          <input type="checkbox" id="ficheIncomplete" [(ngModel)]="ficheIncomplete" (change)="onFilterChange()"
+            class="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+          <label for="ficheIncomplete" class="text-sm text-gray-700">
+            Fiches incomplètes uniquement
+            <span class="ml-1 text-xs text-orange-500">(score &lt; 80 %)</span>
+          </label>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -105,6 +115,9 @@ import { environment } from "../../../../environments/environment";
             </th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Statut
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Complétude
             </th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Actions
@@ -164,6 +177,30 @@ import { environment } from "../../../../environments/environment";
                       }">
                   {{ getStockStatus(produit) }}
                 </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <ng-container *ngIf="produit.scoreCompletude !== undefined; else noScore">
+                <div class="flex items-center gap-2">
+                  <div class="w-16 bg-gray-200 rounded-full h-2">
+                    <div class="h-2 rounded-full transition-all"
+                      [style.width.%]="produit.scoreCompletude"
+                      [ngClass]="{
+                        'bg-green-500': produit.scoreCompletude >= 80,
+                        'bg-yellow-500': produit.scoreCompletude >= 50 && produit.scoreCompletude < 80,
+                        'bg-red-500': produit.scoreCompletude < 50
+                      }"></div>
+                  </div>
+                  <span class="text-xs font-medium"
+                    [ngClass]="{
+                      'text-green-700': produit.scoreCompletude >= 80,
+                      'text-yellow-700': produit.scoreCompletude >= 50 && produit.scoreCompletude < 80,
+                      'text-red-700': produit.scoreCompletude < 50
+                    }">{{ produit.scoreCompletude }}%</span>
+                </div>
+              </ng-container>
+              <ng-template #noScore>
+                <span class="text-xs text-gray-400">—</span>
+              </ng-template>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div class="flex justify-end space-x-2">
@@ -447,6 +484,7 @@ export class AdminProduitsComponent implements OnInit, OnDestroy {
   selectedCategorie = '';
   selectedMarque = '';
   stockFilter = '';
+  ficheIncomplete = false;
 
   showStockModal = false;
   showDetailsModal = false;
@@ -511,6 +549,7 @@ export class AdminProduitsComponent implements OnInit, OnDestroy {
     if (this.selectedCategorie) filters.categorieId = parseInt(this.selectedCategorie);
     if (this.selectedMarque) filters.marqueId = parseInt(this.selectedMarque);
     if (this.stockFilter) filters.stockFilter = this.stockFilter;
+    if (this.ficheIncomplete) filters.ficheIncomplete = true;
 
     this.adminService.getAllProduitsAdmin(this.currentPage, this.pageSize, filters)
       .pipe(takeUntil(this.destroy$))
