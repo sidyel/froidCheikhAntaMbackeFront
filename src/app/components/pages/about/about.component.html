@@ -54,11 +54,11 @@
       <h2 class="section-title">Nos Partenaires</h2>
       <p class="section-subtitle">Nous travaillons avec les meilleures marques du marché</p>
       <div class="partners-grid">
-        <div class="partner-card" *ngFor="let partner of companyInfo.partners">
+        <div class="partner-card" *ngFor="let partner of partenaires">
           <div class="partner-logo">
             <img
-              [src]="partner.logo"
-              [alt]="partner.name"
+              [src]="partner.urlLogo"
+              [alt]="partner.nom"
               loading="eager"
               decoding="async"
               (load)="onImageLoad($event)"
@@ -66,7 +66,7 @@
               class="partner-image"
             />
           </div>
-          <h4>{{ partner.name }}</h4>
+          <h4>{{ partner.nom }}</h4>
           <p>{{ partner.description }}</p>
         </div>
       </div>
@@ -79,11 +79,11 @@
       <h2 class="section-title">Nos Services</h2>
       <p class="section-subtitle">Une gamme complète de services pour répondre à tous vos besoins</p>
       <div class="services-grid">
-        <div class="service-card" *ngFor="let service of companyInfo.services">
+        <div class="service-card" *ngFor="let service of prestations">
           <div class="service-icon">
             <img
-              [src]="service.image"
-              [alt]="service.title"
+              [src]="service.urlImage"
+              [alt]="service.titre"
               loading="lazy"
               decoding="async"
               (load)="onImageLoad($event)"
@@ -91,10 +91,10 @@
               class="service-image"
             />
           </div>
-          <h4>{{ service.title }}</h4>
+          <h4>{{ service.titre }}</h4>
           <p>{{ service.description }}</p>
           <ul class="service-features">
-            <li *ngFor="let feature of service.features">
+            <li *ngFor="let feature of service.caracteristiques">
               <lucide-icon name="check" class="check-icon"></lucide-icon>
               {{ feature }}
             </li>
@@ -110,11 +110,11 @@
       <h2 class="section-title">Notre Équipe</h2>
       <p class="section-subtitle">Des professionnels passionnés à votre service</p>
       <div class="team-grid">
-        <div class="team-member" *ngFor="let member of companyInfo.team">
+        <div class="team-member" *ngFor="let member of equipe">
           <div class="member-photo">
             <img
-              [src]="member.photo"
-              [alt]="member.name"
+              [src]="member.urlPhoto"
+              [alt]="member.nom"
               loading="eager"
               decoding="async"
               (load)="onImageLoad($event)"
@@ -123,22 +123,22 @@
             />
             <div class="member-overlay">
               <div class="social-links">
-                <a *ngIf="member.linkedin" [href]="member.linkedin" target="_blank" rel="noopener">
+                <a *ngIf="member.urlLinkedin" [href]="member.urlLinkedin" target="_blank" rel="noopener">
                   <lucide-icon name="linkedin"></lucide-icon>
                 </a>
-                <a *ngIf="member.email" [href]="'mailto:' + member.email">
+                <a *ngIf="member.emailMembre" [href]="'mailto:' + member.emailMembre">
                   <lucide-icon name="mail"></lucide-icon>
                 </a>
               </div>
             </div>
           </div>
           <div class="member-info">
-            <h4>{{ member.name }}</h4>
-            <p class="member-position">{{ member.position }}</p>
+            <h4>{{ member.nom }}</h4>
+            <p class="member-position">{{ member.poste }}</p>
             <p class="member-experience">{{ member.experience }}</p>
             <p class="member-bio">{{ member.bio }}</p>
             <div class="member-skills">
-              <span class="skill-tag" *ngFor="let skill of member.skills">{{ skill }}</span>
+              <span class="skill-tag" *ngFor="let skill of member.competences">{{ skill }}</span>
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@
       <h2 class="section-title">Nos Réalisations</h2>
       <p class="section-subtitle">Découvrez quelques-uns de nos projets les plus marquants</p>
       <div class="achievements-grid">
-        <div class="achievement-card" *ngFor="let achievement of companyInfo.achievements; let i = index">
+        <div class="achievement-card" *ngFor="let achievement of realisations; let i = index">
 
           <!-- Carrousel d'Images -->
           <div class="achievement-carousel">
@@ -163,7 +163,7 @@
                    [class.active]="currentSlides[i] === slideIndex">
                 <img
                   [src]="image"
-                  [alt]="achievement.title + ' - Image ' + (slideIndex + 1)"
+                  [alt]="achievement.titre + ' - Image ' + (slideIndex + 1)"
                   loading="eager"
                   decoding="async"
                   (load)="onImageLoad($event)"
@@ -174,25 +174,25 @@
 
               <!-- Overlay avec catégorie -->
               <div class="achievement-overlay">
-                <div class="achievement-category">{{ achievement.category }}</div>
+                <div class="achievement-category">{{ achievement.categorie }}</div>
               </div>
 
               <!-- Boutons de navigation -->
               <div class="carousel-controls">
                 <button class="carousel-btn prev-btn"
                         (click)="previousSlide(i)"
-                        [disabled]="achievement.images.length <= 1">
+                        [disabled]="(achievement.images?.length ?? 0) <= 1">
                   <lucide-icon name="chevron-left"></lucide-icon>
                 </button>
                 <button class="carousel-btn next-btn"
                         (click)="nextSlide(i)"
-                        [disabled]="achievement.images.length <= 1">
+                        [disabled]="(achievement.images?.length ?? 0) <= 1">
                   <lucide-icon name="chevron-right"></lucide-icon>
                 </button>
               </div>
 
               <!-- Indicateurs de slides -->
-              <div class="carousel-indicators" *ngIf="achievement.images.length > 1">
+              <div class="carousel-indicators" *ngIf="(achievement.images?.length ?? 0) > 1">
                 <button class="indicator"
                         *ngFor="let image of achievement.images; let slideIndex = index"
                         [class.active]="currentSlides[i] === slideIndex"
@@ -201,18 +201,18 @@
               </div>
 
               <!-- Compteur d'images -->
-              <div class="image-counter" *ngIf="achievement.images.length > 1">
-                {{ currentSlides[i] + 1 }} / {{ achievement.images.length }}
+              <div class="image-counter" *ngIf="(achievement.images?.length ?? 0) > 1">
+                {{ currentSlides[i] + 1 }} / {{ achievement.images?.length }}
               </div>
             </div>
           </div>
 
           <!-- Contenu de la carte -->
           <div class="achievement-content">
-            <h4>{{ achievement.title }}</h4>
+            <h4>{{ achievement.titre }}</h4>
             <p class="achievement-location">
               <lucide-icon name="map-pin" class="location-icon"></lucide-icon>
-              {{ achievement.location }}
+              {{ achievement.localisation }}
             </p>
             <p class="achievement-description">{{ achievement.description }}</p>
             <div class="achievement-details">
@@ -222,11 +222,11 @@
               </div>
               <div class="detail-item">
                 <span class="detail-label">Durée:</span>
-                <span class="detail-value">{{ achievement.duration }}</span>
+                <span class="detail-value">{{ achievement.duree }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Année:</span>
-                <span class="detail-value">{{ achievement.year }}</span>
+                <span class="detail-value">{{ achievement.annee }}</span>
               </div>
             </div>
             <div class="achievement-tags">

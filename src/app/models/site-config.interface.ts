@@ -54,6 +54,13 @@ export interface SiteConfig {
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string;
+
+  // SECTIONS VISIBILITE
+  afficherHeroSlider?: boolean;
+  afficherPartenaires?: boolean;
+  afficherPrestations?: boolean;
+  afficherEquipe?: boolean;
+  afficherRealisations?: boolean;
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {

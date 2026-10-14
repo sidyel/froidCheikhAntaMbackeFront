@@ -36,6 +36,11 @@ import { ProduitFormComponent } from "./components/admin/produits/produit-form/p
 import {AdminContactsComponent} from "./components/admin/contacts/admin-contacts/admin-contacts.component";
 import { SiteSettingsComponent } from './components/admin/site-settings/site-settings.component';
 import { InstallWizardComponent } from './components/pages/install-wizard/install-wizard.component';
+import { AdminHeroComponent } from './components/admin/admin-hero/admin-hero.component';
+import { AdminPartenairesComponent } from './components/admin/admin-partenaires/admin-partenaires.component';
+import { AdminPrestationsComponent } from './components/admin/admin-prestations/admin-prestations.component';
+import { AdminEquipeComponent } from './components/admin/admin-equipe/admin-equipe.component';
+import { AdminRealisationsComponent } from './components/admin/admin-realisations/admin-realisations.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -200,7 +205,12 @@ const routes: Routes = [
         path: 'parametres-site',
         component: SiteSettingsComponent,
         data: { title: 'Paramètres du site' }
-      }
+      },
+      { path: 'contenu/hero', component: AdminHeroComponent, data: { title: 'Images Hero' } },
+      { path: 'contenu/partenaires', component: AdminPartenairesComponent, data: { title: 'Partenaires' } },
+      { path: 'contenu/prestations', component: AdminPrestationsComponent, data: { title: 'Prestations' } },
+      { path: 'contenu/equipe', component: AdminEquipeComponent, data: { title: 'Équipe' } },
+      { path: 'contenu/realisations', component: AdminRealisationsComponent, data: { title: 'Réalisations' } }
     ]
   },
 

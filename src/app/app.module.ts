@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ConfigService } from './services/config.service';
 import { DevisePipe } from './pipes/devise.pipe';
 
@@ -142,6 +143,12 @@ import { LazyLoadDirective } from './directives/lazy-load.directive';
 import { AdminContactsComponent } from './components/admin/contacts/admin-contacts/admin-contacts.component';
 import { SiteSettingsComponent } from './components/admin/site-settings/site-settings.component';
 import { InstallWizardComponent } from './components/pages/install-wizard/install-wizard.component';
+import { ContentManagerComponent } from './components/admin/content-manager/content-manager.component';
+import { AdminHeroComponent } from './components/admin/admin-hero/admin-hero.component';
+import { AdminPartenairesComponent } from './components/admin/admin-partenaires/admin-partenaires.component';
+import { AdminPrestationsComponent } from './components/admin/admin-prestations/admin-prestations.component';
+import { AdminEquipeComponent } from './components/admin/admin-equipe/admin-equipe.component';
+import { AdminRealisationsComponent } from './components/admin/admin-realisations/admin-realisations.component';
 
 @NgModule({
   declarations: [
@@ -195,6 +202,12 @@ import { InstallWizardComponent } from './components/pages/install-wizard/instal
     AdminContactsComponent,
     SiteSettingsComponent,
     InstallWizardComponent,
+    ContentManagerComponent,
+    AdminHeroComponent,
+    AdminPartenairesComponent,
+    AdminPrestationsComponent,
+    AdminEquipeComponent,
+    AdminRealisationsComponent,
     DevisePipe
   ],
   imports: [
@@ -204,6 +217,7 @@ import { InstallWizardComponent } from './components/pages/install-wizard/instal
     HttpClientModule,
     ReactiveFormsModule,
     FormsModule,
+    DragDropModule,
     LucideAngularModule.pick({
       // Navigation et UI de base
       ShoppingCart,
