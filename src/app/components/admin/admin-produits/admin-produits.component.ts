@@ -135,7 +135,7 @@ import { environment } from "../../../../environments/environment";
               {{ produit.categorie?.nomCategorie || '-' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
+              {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center space-x-2">
@@ -327,7 +327,7 @@ import { environment } from "../../../../environments/environment";
                 </div>
                 <div>
                   <dt class="text-xs font-medium text-gray-500">Prix</dt>
-                  <dd class="text-sm text-gray-900">{{ selectedProduit.prix | currency:'XOF':'symbol':'1.0-0' }}</dd>
+                  <dd class="text-sm text-gray-900">{{ selectedProduit.prix | currency:('' | devise):'symbol':'1.0-0' }}</dd>
                 </div>
                 <div>
                   <dt class="text-xs font-medium text-gray-500">Stock</dt>

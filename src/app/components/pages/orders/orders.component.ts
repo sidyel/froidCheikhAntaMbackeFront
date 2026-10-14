@@ -84,7 +84,7 @@ import { Commande, PagedResponse, StatutCommande, Breadcrumb } from '../../../mo
                   </div>
                   <div>
                     <span class="text-sm text-gray-600">Total</span>
-                    <p class="font-semibold text-primary-600">{{ order.montantTotal | currency:'XOF':'symbol':'1.0-0' }}</p>
+                    <p class="font-semibold text-primary-600">{{ order.montantTotal | currency:('' | devise):'symbol':'1.0-0' }}</p>
                   </div>
                 </div>
 
@@ -132,7 +132,7 @@ import { Commande, PagedResponse, StatutCommande, Breadcrumb } from '../../../mo
 
                     <!-- Price -->
                     <div class="text-sm font-medium text-gray-900">
-                      {{ ligne.sousTotal | currency:'XOF':'symbol':'1.0-0' }}
+                      {{ ligne.sousTotal | currency:('' | devise):'symbol':'1.0-0' }}
                     </div>
                   </div>
 

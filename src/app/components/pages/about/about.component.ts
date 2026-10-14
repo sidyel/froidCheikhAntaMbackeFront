@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ConfigService } from '../../../services/config.service';
+import { SiteConfig } from '../../../models/site-config.interface';
 
 @Component({
   selector: 'app-about',
@@ -10,13 +12,10 @@ export class AboutComponent implements OnInit {
   imagesLoaded = false;
   currentSlides: { [key: number]: number } = {};
 
-  companyInfo = {
-    name: 'Froid Cheikh Anta Mbacké',
-    foundedYear: 2015,
-    description: 'Spécialiste en climatisation et réfrigération au Sénégal',
-    mission: 'Fournir des solutions de climatisation et de réfrigération de qualité supérieure pour le confort de nos clients',
-    vision: 'Être le leader de la climatisation au Sénégal en offrant des produits innovants et un service client exceptionnel',
+  config: SiteConfig;
 
+  companyInfo = {
+    // TODO LOT2: charger depuis l'API (Partenaire)
     // Partenaires avec logos
     partners: [
       {
@@ -51,6 +50,7 @@ export class AboutComponent implements OnInit {
       }
     ],
 
+    // TODO LOT2: charger depuis l'API (Prestation)
     // Services étendus avec descriptions détaillées
     services: [
       {
@@ -122,6 +122,7 @@ export class AboutComponent implements OnInit {
       }
     ],
 
+    // TODO LOT2: charger depuis l'API (MembreEquipe)
     // Équipe avec photos et informations détaillées
     team: [
       {
@@ -184,6 +185,7 @@ export class AboutComponent implements OnInit {
       }
     ],
 
+    // TODO LOT2: charger depuis l'API (Realisation)
     // Réalisations avec galeries de photos
     achievements: [
       {
@@ -284,7 +286,9 @@ export class AboutComponent implements OnInit {
     ]
   };
 
-  constructor() { }
+  constructor(private configService: ConfigService) {
+    this.config = this.configService.config;
+  }
 
   ngOnInit(): void {
     // Initialiser les slides pour chaque réalisation

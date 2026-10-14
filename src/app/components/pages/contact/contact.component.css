@@ -61,7 +61,7 @@
 
 .success-message {
   background: #dcfce7;
-  border: 1px solid #16a34a;
+  border: 1px solid rgb(var(--color-secondary-600));
   color: #15803d;
   padding: 15px;
   border-radius: 8px;
@@ -108,11 +108,11 @@
 }
 
 .form-control.error {
-  border-color: #ef4444;
+  border-color: rgb(var(--color-accent-600));
 }
 
 .error-message {
-  color: #ef4444;
+  color: rgb(var(--color-accent-600));
   font-size: 0.875rem;
   margin-top: 5px;
 }

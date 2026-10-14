@@ -301,7 +301,7 @@ import { environment } from '../../../../environments/environment';
                         <!-- Price and Actions -->
                         <div class="text-right lg:w-64 flex-shrink-0">
                           <div class="text-2xl lg:text-3xl font-bold text-primary-600 mb-6">
-                            {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
+                            {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
                           </div>
 
                           <div class="space-y-3">

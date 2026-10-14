@@ -120,7 +120,7 @@
               </div>
 
               <div class="product-price">
-                {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }} FCFA
+                {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }} FCFA
               </div>
 
               <div class="product-actions">
@@ -204,7 +204,7 @@
               </div>
 
               <div class="product-price">
-                {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }} FCFA
+                {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }} FCFA
               </div>
 
               <div class="product-actions">

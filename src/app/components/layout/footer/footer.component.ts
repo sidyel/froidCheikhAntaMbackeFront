@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import { ConfigService } from '../../../services/config.service';
+import { SiteConfig } from '../../../models/site-config.interface';
 import { NewsletterService } from '../../../services/newsletter.service';
 import { ToastService } from '../../../services/toast.service';
+import { ApiService } from '../../../services/api.service';
 
 interface SocialLink {
   name: string;
@@ -32,8 +34,7 @@ interface CategoryLink {
 export class FooterComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  // Company Information
-  companyInfo = environment.companyInfo;
+  config: SiteConfig;
   currentYear = new Date().getFullYear();
 
   // Newsletter Form
@@ -49,35 +50,28 @@ export class FooterComponent implements OnInit, OnDestroy {
     { label: 'Contact', route: '/contact', icon: 'mail' }
   ];
 
-  categoryLinks: CategoryLink[] = [
-    { label: 'Climatiseurs', route: '/produits/categorie/1', categoryId: 1 },
-    { label: 'Réfrigérateurs', route: '/produits/categorie/2', categoryId: 2 },
-    { label: 'Chambres Froides', route: '/produits/categorie/3', categoryId: 3 },
-    { label: 'Ventilateurs', route: '/produits/categorie/4', categoryId: 4 },
-    { label: 'Électroménager', route: '/produits/categorie/5', categoryId: 5 }
-  ];
+  categoryLinks: CategoryLink[] = [];
 
-  // Social Media Links
-  socialLinks: SocialLink[] = [
-    {
-      name: 'Facebook',
-      url: 'https://facebook.com/froidcheikh',
-      icon: 'facebook',
-      ariaLabel: 'Suivez-nous sur Facebook'
-    },
-    {
-      name: 'WhatsApp',
-      url: `https://wa.me/${this.formatPhoneForWhatsApp(environment.companyInfo.phones[0])}`,
-      icon: 'message-circle',
-      ariaLabel: 'Contactez-nous sur WhatsApp'
-    },
-    {
-      name: 'Instagram',
-      url: 'https://instagram.com/froidcheikh',
-      icon: 'camera',
-      ariaLabel: 'Suivez-nous sur Instagram'
+  get socialLinks(): SocialLink[] {
+    const links: SocialLink[] = [];
+    if (this.config.facebookUrl) {
+      links.push({ name: 'Facebook', url: this.config.facebookUrl, icon: 'external-link', ariaLabel: 'Suivez-nous sur Facebook' });
     }
-  ];
+    const whatsappTel = this.config.telephones?.find(t => t.whatsapp);
+    if (whatsappTel) {
+      links.push({ name: 'WhatsApp', url: `https://wa.me/${this.formatPhoneForWhatsApp(whatsappTel.numero)}`, icon: 'message-circle', ariaLabel: 'Contactez-nous sur WhatsApp' });
+    }
+    if (this.config.instagramUrl) {
+      links.push({ name: 'Instagram', url: this.config.instagramUrl, icon: 'camera', ariaLabel: 'Suivez-nous sur Instagram' });
+    }
+    if (this.config.twitterUrl) {
+      links.push({ name: 'Twitter/X', url: this.config.twitterUrl, icon: 'external-link', ariaLabel: 'Suivez-nous sur X' });
+    }
+    if (this.config.youtubeUrl) {
+      links.push({ name: 'YouTube', url: this.config.youtubeUrl, icon: 'video', ariaLabel: 'Notre chaîne YouTube' });
+    }
+    return links;
+  }
 
   // Payment Methods
   paymentMethods = [
@@ -86,21 +80,44 @@ export class FooterComponent implements OnInit, OnDestroy {
     { name: 'Espèces', color: 'bg-green-600', logo: 'assets/images/espece.jpg' }
   ];
 
-  // Business Hours
-  businessHours = [
-    { day: 'Lun - Ven', hours: '8h00 - 18h00' },
-    { day: 'Samedi', hours: '8h00 - 17h00' },
-    { day: 'Dimanche', hours: 'Fermé' }
-  ];
+  get businessHours(): { day: string; hours: string }[] {
+    const horaires = this.config.horairesOuverture;
+    if (horaires && horaires.length > 0) {
+      return horaires.map(h => ({
+        day: h.jour,
+        hours: h.ferme ? 'Fermé' : `${h.heureDebut} - ${h.heureFin}`
+      }));
+    }
+    return [
+      { day: 'Lun - Ven', hours: '8h00 - 18h00' },
+      { day: 'Samedi', hours: '8h00 - 17h00' },
+      { day: 'Dimanche', hours: 'Fermé' }
+    ];
+  }
 
   constructor(
     private router: Router,
+    private configService: ConfigService,
     private newsletterService: NewsletterService,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private apiService: ApiService
+  ) {
+    this.config = this.configService.config;
+  }
 
   ngOnInit(): void {
-    // Initialisation si nécessaire
+    this.apiService.getCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cats) => {
+          this.categoryLinks = cats.slice(0, 5).map(c => ({
+            label: c.nomCategorie,
+            route: `/produits/categorie/${c.idCategorie}`,
+            categoryId: c.idCategorie
+          }));
+        },
+        error: () => {}
+      });
   }
 
   ngOnDestroy(): void {

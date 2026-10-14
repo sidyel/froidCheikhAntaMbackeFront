@@ -37,7 +37,7 @@ import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces
               </span>
               <div class="text-right">
                 <div class="text-2xl font-bold text-primary-600">
-                  {{ commande.montantTotal | currency:'XOF':'symbol':'1.0-0' }}
+                  {{ commande.montantTotal | currency:('' | devise):'symbol':'1.0-0' }}
                 </div>
                 <div class="text-sm text-gray-500">TTC</div>
               </div>
@@ -103,14 +103,14 @@ import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces
                       </p>
                       <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                         <span>Quantité: {{ ligne.quantite }}</span>
-                        <span>Prix unitaire: {{ ligne.prixUnitaire | currency:'XOF':'symbol':'1.0-0' }}</span>
+                        <span>Prix unitaire: {{ ligne.prixUnitaire | currency:('' | devise):'symbol':'1.0-0' }}</span>
                       </div>
                     </div>
 
                     <!-- Total -->
                     <div class="text-right">
                       <div class="font-medium text-gray-900">
-                        {{ ligne.sousTotal | currency:'XOF':'symbol':'1.0-0' }}
+                        {{ ligne.sousTotal | currency:('' | devise):'symbol':'1.0-0' }}
                       </div>
                     </div>
                   </div>
@@ -174,20 +174,20 @@ import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces
               <div class="space-y-3">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Sous-total</span>
-                  <span class="font-medium">{{ getSubtotal() | currency:'XOF':'symbol':'1.0-0' }}</span>
+                  <span class="font-medium">{{ getSubtotal() | currency:('' | devise):'symbol':'1.0-0' }}</span>
                 </div>
 
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Frais de livraison</span>
                   <span class="font-medium text-green-600">
-                    {{ commande.fraisLivraison > 0 ? (commande.fraisLivraison | currency:'XOF':'symbol':'1.0-0') : 'Gratuit' }}
+                    {{ commande.fraisLivraison > 0 ? (commande.fraisLivraison | currency:('' | devise):'symbol':'1.0-0') : 'Gratuit' }}
                   </span>
                 </div>
 
                 <div class="border-t border-gray-200 pt-3">
                   <div class="flex justify-between">
                     <span class="text-lg font-semibold text-gray-900">Total</span>
-                    <span class="text-lg font-bold text-primary-600">{{ commande.montantTotal | currency:'XOF':'symbol':'1.0-0' }}</span>
+                    <span class="text-lg font-bold text-primary-600">{{ commande.montantTotal | currency:('' | devise):'symbol':'1.0-0' }}</span>
                   </div>
                 </div>
               </div>

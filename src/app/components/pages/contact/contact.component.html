@@ -148,7 +148,7 @@
           </div>
           <div class="contact-details">
             <h4>Adresse</h4>
-            <p>{{ contactInfo.address }}</p>
+            <p>{{ config.adresseComplete }}</p>
           </div>
         </div>
 
@@ -159,8 +159,8 @@
           </div>
           <div class="contact-details">
             <h4>Téléphones</h4>
-            <p *ngFor="let phone of contactInfo.phones">
-              <a [href]="'tel:' + phone">{{ phone }}</a>
+            <p *ngFor="let tel of config.telephones">
+              <a [href]="'tel:' + tel.numero">{{ tel.numero }}</a>
             </p>
           </div>
         </div>
@@ -173,7 +173,7 @@
           <div class="contact-details">
             <h4>Email</h4>
             <p>
-              <a [href]="'mailto:' + contactInfo.email">{{ contactInfo.email }}</a>
+              <a [href]="'mailto:' + config.emailContact">{{ config.emailContact }}</a>
             </p>
           </div>
         </div>
@@ -185,9 +185,16 @@
           </div>
           <div class="contact-details">
             <h4>Horaires d'ouverture</h4>
-            <p>{{ contactInfo.hours.weekdays }}</p>
-            <p>{{ contactInfo.hours.saturday }}</p>
-            <p>{{ contactInfo.hours.sunday }}</p>
+            <div *ngIf="config.horairesOuverture && config.horairesOuverture.length > 0">
+              <p *ngFor="let h of config.horairesOuverture">
+                {{ h.jour }} : {{ h.ferme ? 'Fermé' : (h.heureDebut + ' – ' + h.heureFin) }}
+              </p>
+            </div>
+            <div *ngIf="!config.horairesOuverture || config.horairesOuverture.length === 0">
+              <p>Lun – Ven : 8h00 – 18h00</p>
+              <p>Samedi : 8h00 – 17h00</p>
+              <p>Dimanche : Fermé</p>
+            </div>
           </div>
         </div>
 
@@ -202,7 +209,8 @@
             <div class="social-links">
 
               <!-- Facebook -->
-              <a href="https://facebook.com/froidcheikh"
+              <a *ngIf="config.facebookUrl"
+                 [href]="config.facebookUrl"
                  target="_blank"
                  rel="noopener noreferrer"
                  class="social-link social-link-facebook"
@@ -216,7 +224,7 @@
               </a>
 
               <!-- WhatsApp -->
-              <a href="https://wa.me/221773352000"
+              <a [href]="'https://wa.me/' + formatPhoneForWhatsApp(config.telephones?.[0]?.numero || '')"
                  target="_blank"
                  rel="noopener noreferrer"
                  class="social-link social-link-whatsapp"
@@ -230,7 +238,8 @@
               </a>
 
               <!-- Instagram -->
-              <a href="https://instagram.com/froidcheikh"
+              <a *ngIf="config.instagramUrl"
+                 [href]="config.instagramUrl"
                  target="_blank"
                  rel="noopener noreferrer"
                  class="social-link social-link-instagram"

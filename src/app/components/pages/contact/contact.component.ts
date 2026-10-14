@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContactService } from "../../../services/contact.service";
+import { ConfigService } from '../../../services/config.service';
+import { SiteConfig } from '../../../models/site-config.interface';
 
 @Component({
   selector: 'app-contact',
@@ -13,36 +15,16 @@ export class ContactComponent implements OnInit {
   submitSuccess = false;
   errorMessage = '';
 
-  contactInfo = {
-    address: 'Ouest Foire Cité Aelmas, derrière station Shell Dakar, Sénégal',
-    phones: ['+221 77 335 20 00', '+221 76 888 04 42', '33 820 16 33'],
-    email: 'froidcheikhantambacke.dione65@gmail.com',
-    hours: {
-      weekdays: 'Lundi - Vendredi: 8h00 - 18h00',
-      saturday: 'Samedi: 8h00 - 13h00',
-      sunday: 'Dimanche: Fermé'
-    },
-    socialMedia: [
-      {
-        name: 'Facebook',
-        url: 'https://facebook.com/froidcheikh',
-        icon: 'facebook',
-        ariaLabel: 'Suivez-nous sur Facebook'
-      },
-      {
-        name: 'WhatsApp',
-        url: `https://wa.me/${this.formatPhoneForWhatsApp('+221 77 335 20 00')}`,
-        icon: 'message-circle',
-        ariaLabel: 'Contactez-nous sur WhatsApp'
-      },
-      {
-        name: 'Instagram',
-        url: 'https://instagram.com/froidcheikh',
-        icon: 'camera',
-        ariaLabel: 'Suivez-nous sur Instagram'
-      }
-    ]
-  };
+  config: SiteConfig;
+
+  get socialMedia() {
+    const links = [];
+    if (this.config.facebookUrl) links.push({ name: 'Facebook', url: this.config.facebookUrl, icon: 'external-link', ariaLabel: 'Facebook' });
+    const whatsapp = this.config.telephones?.find(t => t.whatsapp);
+    if (whatsapp) links.push({ name: 'WhatsApp', url: `https://wa.me/${whatsapp.numero.replace(/\D/g, '')}`, icon: 'message-circle', ariaLabel: 'WhatsApp' });
+    if (this.config.instagramUrl) links.push({ name: 'Instagram', url: this.config.instagramUrl, icon: 'camera', ariaLabel: 'Instagram' });
+    return links;
+  }
 
   subjects = [
     'Demande d\'information sur un produit',
@@ -55,8 +37,10 @@ export class ContactComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private contactService: ContactService
+    private contactService: ContactService,
+    private configService: ConfigService
   ) {
+    this.config = this.configService.config;
     this.contactForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
       prenom: ['', [Validators.required, Validators.minLength(2)]],

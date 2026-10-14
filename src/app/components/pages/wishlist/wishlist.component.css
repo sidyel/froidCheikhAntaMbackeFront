@@ -29,7 +29,7 @@
 }
 
 .header-content h1 lucide-icon {
-  color: #ef4444;
+  color: rgb(var(--color-accent-600));
   width: 40px;
   height: 40px;
 }
@@ -92,7 +92,7 @@
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: rgb(var(--color-accent-600));
   color: white;
 }
 
@@ -127,7 +127,7 @@
 .empty-icon lucide-icon {
   width: 50px;
   height: 50px;
-  color: #ef4444;
+  color: rgb(var(--color-accent-600));
 }
 
 .empty-state h2 {
@@ -164,7 +164,7 @@
 .section-title lucide-icon {
   width: 24px;
   height: 24px;
-  color: #10b981;
+  color: rgb(var(--color-secondary-500));
 }
 
 .section-title.unavailable lucide-icon {

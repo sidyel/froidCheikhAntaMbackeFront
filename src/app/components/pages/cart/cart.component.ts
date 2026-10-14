@@ -109,10 +109,10 @@ import { Cart, CartItem, Breadcrumb } from '../../../models/interfaces';
                       <!-- Prices -->
                       <div class="text-right">
                         <div class="text-sm text-gray-500">
-                          {{ item.produit.prix | currency:'XOF':'symbol':'1.0-0' }} × {{ item.quantite }}
+                          {{ item.produit.prix | currency:('' | devise):'symbol':'1.0-0' }} × {{ item.quantite }}
                         </div>
                         <div class="text-lg font-bold text-primary-600">
-                          {{ item.sousTotal | currency:'XOF':'symbol':'1.0-0' }}
+                          {{ item.sousTotal | currency:('' | devise):'symbol':'1.0-0' }}
                         </div>
                       </div>
                     </div>
@@ -131,7 +131,7 @@ import { Cart, CartItem, Breadcrumb } from '../../../models/interfaces';
               <div class="space-y-3 border-b border-gray-200 pb-4 mb-4">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Sous-total ({{ cart.totalItems }} article{{ cart.totalItems > 1 ? 's' : '' }})</span>
-                  <span class="font-medium">{{ cart.totalPrice | currency:'XOF':'symbol':'1.0-0' }}</span>
+                  <span class="font-medium">{{ cart.totalPrice | currency:('' | devise):'symbol':'1.0-0' }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Frais de livraison</span>
@@ -142,7 +142,7 @@ import { Cart, CartItem, Breadcrumb } from '../../../models/interfaces';
               <!-- Total -->
               <div class="flex justify-between text-lg font-bold text-gray-900 mb-6">
                 <span>Total</span>
-                <span class="text-primary-600">{{ cart.totalPrice | currency:'XOF':'symbol':'1.0-0' }}</span>
+                <span class="text-primary-600">{{ cart.totalPrice | currency:('' | devise):'symbol':'1.0-0' }}</span>
               </div>
 
               <!-- Action Buttons -->

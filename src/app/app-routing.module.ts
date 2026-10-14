@@ -34,13 +34,22 @@ import { AdminStockComponent } from "./components/admin/admin-stock/admin-stock.
 import { AdminCategoriesComponent } from "./components/admin/admin-categories/admin-categories.component";
 import { ProduitFormComponent } from "./components/admin/produits/produit-form/produit-form.component";
 import {AdminContactsComponent} from "./components/admin/contacts/admin-contacts/admin-contacts.component";
+import { SiteSettingsComponent } from './components/admin/site-settings/site-settings.component';
+import { InstallWizardComponent } from './components/pages/install-wizard/install-wizard.component';
 
 const routes: Routes = [
+  // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
+  {
+    path: 'installer',
+    component: InstallWizardComponent,
+    data: { title: 'Installation du site' }
+  },
+
   // Page d'accueil
   {
     path: '',
     component: HomeComponent,
-    data: { title: 'Accueil - Froid Cheikh Anta Mbacké' }
+    data: { title: 'Accueil' }
   },
 
   // Pages de produits
@@ -186,6 +195,11 @@ const routes: Routes = [
         path: 'stock',
         component: AdminStockComponent,
         data: { title: 'Gestion du Stock' }
+      },
+      {
+        path: 'parametres-site',
+        component: SiteSettingsComponent,
+        data: { title: 'Paramètres du site' }
       }
     ]
   },

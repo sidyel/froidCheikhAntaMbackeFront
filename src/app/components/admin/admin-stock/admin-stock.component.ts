@@ -251,7 +251,7 @@ import {environment} from "../../../../environments/environment";
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ (produit.stockDisponible * produit.prix) | currency:'XOF':'symbol':'1.0-0' }}
+                {{ (produit.stockDisponible * produit.prix) | currency:('' | devise):'symbol':'1.0-0' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex justify-end space-x-2">
