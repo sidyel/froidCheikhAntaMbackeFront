@@ -7,6 +7,7 @@ import { CartService } from '../../../services/cart.service';
 import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
+import { ConfigService } from '../../../services/config.service';
 import { Cart, Breadcrumb } from '../../../models/interfaces';
 import { Observable } from 'rxjs';
 import { ModeLivraison, Commande } from '../../../models/interfaces';
@@ -151,7 +152,7 @@ interface VilleOption {
                       <option *ngFor="let adresse of adressesDisponibles" [value]="adresse.value">
                         {{ adresse.label }}
                         <span *ngIf="adresse.prixLivraison && adresse.prixLivraison > 0">
-                          ({{ adresse.prixLivraison | currency:'XOF':'symbol':'1.0-0' }} livraison)
+                          ({{ adresse.prixLivraison | currency:devise:'symbol':'1.0-0' }} livraison)
                         </span>
                         <span *ngIf="!adresse.prixLivraison || adresse.prixLivraison === 0">
                           (Livraison gratuite)
@@ -166,7 +167,7 @@ interface VilleOption {
                         ✅ Livraison gratuite pour ce quartier
                       </span>
                       <span *ngIf="selectedQuartierPrixLivraison > 0">
-                        ℹ️ Frais de livraison: {{ selectedQuartierPrixLivraison | currency:'XOF':'symbol':'1.0-0' }}
+                        ℹ️ Frais de livraison: {{ selectedQuartierPrixLivraison | currency:devise:'symbol':'1.0-0' }}
                       </span>
                     </div>
                   </div>
@@ -225,8 +226,8 @@ interface VilleOption {
                             <div class="text-sm text-gray-500">Livraison sous 24-48h</div>
                           </div>
                           <div [class]="getDeliveryFees() > 0 ? 'text-gray-900 font-medium' : 'text-green-600 font-medium'">
-                            {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:'XOF':'symbol':'1.0-0') : 'Gratuit' }}
-                          </div>
+                            {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:devise:'symbol':'1.0-0') : 'Gratuit' }}
+</div>
                         </div>
                       </div>
                     </div>
@@ -357,7 +358,7 @@ interface VilleOption {
                       <div class="text-xs text-gray-500">Qté: {{ item.quantite }}</div>
                     </div>
                     <div class="text-sm font-medium text-gray-900">
-                      {{ item.sousTotal | currency:'XOF':'symbol':'1.0-0' }}
+                      {{ item.sousTotal | currency:devise:'symbol':'1.0-0' }}
                     </div>
                   </div>
                 </div>
@@ -366,13 +367,13 @@ interface VilleOption {
                 <div class="border-t border-gray-200 pt-4 space-y-2">
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Sous-total</span>
-                    <span class="font-medium">{{ cart.totalPrice | currency:'XOF':'symbol':'1.0-0' }}</span>
+                    <span class="font-medium">{{ cart.totalPrice | currency:devise:'symbol':'1.0-0' }}</span>
                   </div>
 
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Frais de livraison</span>
                     <span class="font-medium" [class]="getDeliveryFees() > 0 ? 'text-gray-900' : 'text-green-600'">
-                      {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:'XOF':'symbol':'1.0-0') : 'Gratuit' }}
+                      {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:devise:'symbol':'1.0-0') : 'Gratuit' }}
                     </span>
                   </div>
 
@@ -381,14 +382,14 @@ interface VilleOption {
                       Zone de livraison gratuite
                     </span>
                     <!--<span *ngIf="selectedQuartierPrixLivraison > 0">
-                      Frais quartier: {{ selectedQuartierPrixLivraison | currency:'XOF':'symbol':'1.0-0' }}
+                      Frais quartier: {{ selectedQuartierPrixLivraison | currency:devise:'symbol':'1.0-0' }}
                     </span>-->
                   </div>
 
                   <div class="border-t border-gray-200 pt-2">
                     <div class="flex justify-between text-lg font-bold">
                       <span class="text-gray-900">Total</span>
-                      <span class="text-primary-600">{{ getTotalWithDelivery() | currency:'XOF':'symbol':'1.0-0' }}</span>
+                      <span class="text-primary-600">{{ getTotalWithDelivery() | currency:devise:'symbol':'1.0-0' }}</span>
                     </div>
                   </div>
                 </div>
@@ -529,13 +530,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     { label: 'Commande', route: undefined }
   ];
 
+  get devise(): string {
+    return this.configService.config.devise || 'XOF';
+  }
+
   constructor(
     private fb: FormBuilder,
     private cartService: CartService,
     private apiService: ApiService,
     private authService: AuthService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private configService: ConfigService
   ) {
     this.checkoutForm = this.createCheckoutForm();
   }
