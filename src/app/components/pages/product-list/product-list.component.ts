@@ -178,6 +178,17 @@ import { environment } from '../../../../environments/environment';
                       class="form-checkbox text-primary-600">
                     <span class="text-sm text-gray-700">Produits disponibles uniquement</span>
                   </label>
+
+                  <label class="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      formControlName="enPromotion"
+                      class="form-checkbox text-red-600">
+                    <span class="text-sm text-gray-700 flex items-center space-x-1">
+                      <lucide-icon name="percent" class="w-4 h-4 text-red-600"></lucide-icon>
+                      <span>En promotion</span>
+                    </span>
+                  </label>
                 </div>
 
                 <!-- Filter Actions -->
@@ -732,7 +743,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
       prixMax: [null],
       categorieId: [null],
       marqueId: [null],
-      disponibilite: [true]
+      disponibilite: [true],
+      enPromotion: [false]
     });
   }
 
@@ -796,6 +808,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
       this.filtersForm.patchValue({
         marqueId: this.currentMarqueId
       }, { emitEvent: false });
+    }
+
+    if (queryParams['enPromotion']) {
+      this.filtersForm.patchValue({ enPromotion: true }, { emitEvent: false });
     }
 
     if (queryParams['q']) {
@@ -875,6 +891,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     if (formValue.categorieId) filters.categorieId = formValue.categorieId;
     if (formValue.marqueId) filters.marqueId = formValue.marqueId;
     if (formValue.disponibilite) filters.disponibilite = formValue.disponibilite;
+    if (formValue.enPromotion) filters.enPromotion = true;
 
     return filters;
   }

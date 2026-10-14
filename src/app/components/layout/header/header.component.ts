@@ -202,6 +202,13 @@ import { SiteConfig } from '../../../models/site-config.interface';
                  class="nav-link">
                 À Propos
               </a>
+              <a *ngIf="hasActivePromos"
+                 routerLink="/produits"
+                 [queryParams]="{enPromotion: true}"
+                 class="nav-link flex items-center space-x-1 text-red-600 hover:text-red-700">
+                <lucide-icon name="percent" class="w-4 h-4"></lucide-icon>
+                <span>Promotions</span>
+              </a>
               <a routerLink="/contact"
                  routerLinkActive="text-primary-600"
                  class="nav-link">
@@ -243,6 +250,14 @@ import { SiteConfig } from '../../../models/site-config.interface';
                  class="block py-2 text-gray-700 hover:text-primary-600">
                 À Propos
               </a>
+              <a *ngIf="hasActivePromos"
+                 routerLink="/produits"
+                 [queryParams]="{enPromotion: true}"
+                 (click)="closeMobileMenu()"
+                 class="flex items-center space-x-1 py-2 text-red-600 hover:text-red-700 font-medium">
+                <lucide-icon name="percent" class="w-4 h-4"></lucide-icon>
+                <span>Promotions</span>
+              </a>
               <a routerLink="/contact"
                  (click)="closeMobileMenu()"
                  routerLinkActive="text-primary-600"
@@ -264,6 +279,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   cart$: Observable<Cart>;
 
   categories: Categorie[] = [];
+  hasActivePromos = false;
   isMobileMenuOpen = false;
   isUserMenuOpen = false;
   config: SiteConfig;
@@ -284,6 +300,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCategories();
+    this.checkActivePromos();
     this.setupClickOutside();
   }
 
@@ -295,6 +312,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private checkActivePromos(): void {
+    this.apiService.getProduits({ filters: { enPromotion: true }, page: 0, size: 1 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.hasActivePromos = response.totalElements > 0;
+        },
+        error: () => { this.hasActivePromos = false; }
+      });
   }
 
   private loadCategories(): void {
