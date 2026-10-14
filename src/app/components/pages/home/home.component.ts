@@ -6,6 +6,7 @@ import { ApiService } from '../../../services/api.service';
 import { ImageUrlService } from '../../../services/image-url.service'; // Nouveau service
 import { Produit, Categorie, Marque } from '../../../models/interfaces';
 import { ConfigService } from '../../../services/config.service';
+import { ContenuService } from '../../../services/contenu.service';
 import { SiteConfig } from '../../../models/site-config.interface';
 
 @Component({
@@ -1200,23 +1201,9 @@ import { SiteConfig } from '../../../models/site-config.interface';
 export class HomeComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  // Propriétés pour le carrousel d'images
-  // TODO LOT2: remplacer par une entité ImageHero chargée depuis l'API
-  heroImages = [
-    {
-      url: 'assets/images/p1.jpg',
-      alt: 'Électroménager moderne'
-    }
-    ,
-    {
-      url: 'assets/images/im.jpg',
-      alt: 'Climatiseurs professionnels'
-    }
-    ,
-    {
-      url: 'assets/images/im2.jpg',
-      alt: 'Équipements de réfrigération'
-    }
+  // Propriétés pour le carrousel d'images — chargées depuis l'API ImageHero
+  heroImages: { url: string; alt: string }[] = [
+    { url: 'assets/images/p1.jpg', alt: 'Chargement...' }
   ];
 
   currentImageIndex = 0;
@@ -1260,11 +1247,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private imageUrlService: ImageUrlService,
     private router: Router,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private contenuService: ContenuService
   ) {}
 
   ngOnInit(): void {
-    this.preloadHeroImages();
+    this.contenuService.getHeroImages().subscribe({
+      next: (images) => {
+        if (images && images.length > 0) {
+          this.heroImages = images
+            .filter(img => img.actif !== false)
+            .sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0))
+            .map(img => ({ url: img.urlImage || '', alt: img.altText || '' }));
+          this.preloadHeroImages();
+        }
+      },
+      error: () => {}
+    });
     this.loadHomeData();
     this.initializeAnimations();
     this.startCarousel();
