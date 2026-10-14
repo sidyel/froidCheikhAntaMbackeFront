@@ -19,7 +19,10 @@ import {
   Paiement, ResetPasswordResponse,
   PromotionRequest,
   PromotionResponse,
-  PromotionApercuPage
+  PromotionApercuPage,
+  ImageProduit,
+  AttributProduit,
+  ModeleAttribut
 } from '../models/interfaces';
 
 @Injectable({
@@ -277,45 +280,64 @@ export class ApiService {
     return this.http.post<Commande>(`${this.apiUrl}/commandes/${commandeId}/paiement`, paiement);
   }
 
-  /**
-  // ==================== UPLOAD DE FICHIERS ====================
-  uploadImages(produitId: number, files: File[]): Observable<string[]> {
-    const formData = new FormData();
-    files.forEach(file => formData.append('images', file));
-    return this.http.post<string[]>(`${this.apiUrl}/produits/${produitId}/images`, formData);
-  }
-
-  uploadFicheTechnique(produitId: number, file: File): Observable<string> {
-    const formData = new FormData();
-    formData.append('ficheTechnique', file);
-    return this.http.post<string>(`${this.apiUrl}/produits/${produitId}/fiche-technique`, formData);
-  }
-
-  uploadCategorieImage(categorieId: number, file: File): Observable<string> {
-    const formData = new FormData();
-    formData.append('image', file);
-    return this.http.post<string>(`${this.apiUrl}/categories/${categorieId}/image`, formData);
-  }
-
-  uploadMarqueLogo(marqueId: number, file: File): Observable<string> {
-    const formData = new FormData();
-    formData.append('logo', file);
-    return this.http.post<string>(`${this.apiUrl}/marques/${marqueId}/logo`, formData);
-  }
-   */
 
   // ==================== UPLOAD DE FICHIERS - VERSION CORRIGÉE ====================
 
   /**
    * Upload d'images pour un produit
    */
-  uploadImages(produitId: number, files: File[]): Observable<string[]> {
+  uploadImages(produitId: number, files: File[]): Observable<ImageProduit[]> {
     const formData = new FormData();
-    files.forEach(file => {
-      formData.append('images', file, file.name);
-    });
+    files.forEach(file => formData.append('images', file, file.name));
+    return this.http.post<ImageProduit[]>(`${this.apiUrl}/produits/${produitId}/images`, formData);
+  }
 
-    return this.http.post<string[]>(`${this.apiUrl}/produits/${produitId}/images`, formData);
+  deleteProductImage(produitId: number, imageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/produits/${produitId}/images/${imageId}`);
+  }
+
+  setImagePrincipale(produitId: number, imageId: number): Observable<ImageProduit> {
+    return this.http.patch<ImageProduit>(`${this.apiUrl}/produits/${produitId}/images/${imageId}/principale`, {});
+  }
+
+  reorderImages(produitId: number, orderedIds: number[]): Observable<ImageProduit[]> {
+    return this.http.put<ImageProduit[]>(`${this.apiUrl}/produits/${produitId}/images/reorder`, orderedIds);
+  }
+
+  getModelesByCategorie(categorieId: number): Observable<ModeleAttribut[]> {
+    return this.http.get<ModeleAttribut[]>(`${this.apiUrl}/modeles-attributs/categorie/${categorieId}`);
+  }
+
+  getModeles(): Observable<ModeleAttribut[]> {
+    return this.http.get<ModeleAttribut[]>(`${this.apiUrl}/admin/modeles-attributs`);
+  }
+
+  createModele(modele: Partial<ModeleAttribut>): Observable<ModeleAttribut> {
+    return this.http.post<ModeleAttribut>(`${this.apiUrl}/admin/modeles-attributs`, modele);
+  }
+
+  updateModele(id: number, modele: Partial<ModeleAttribut>): Observable<ModeleAttribut> {
+    return this.http.put<ModeleAttribut>(`${this.apiUrl}/admin/modeles-attributs/${id}`, modele);
+  }
+
+  deleteModele(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/modeles-attributs/${id}`);
+  }
+
+  getAttributsProduit(produitId: number): Observable<AttributProduit[]> {
+    return this.http.get<AttributProduit[]>(`${this.apiUrl}/produits/${produitId}/attributs`);
+  }
+
+  createAttribut(produitId: number, attr: Partial<AttributProduit>): Observable<AttributProduit> {
+    return this.http.post<AttributProduit>(`${this.apiUrl}/produits/${produitId}/attributs`, attr);
+  }
+
+  updateAttribut(produitId: number, attrId: number, attr: Partial<AttributProduit>): Observable<AttributProduit> {
+    return this.http.put<AttributProduit>(`${this.apiUrl}/produits/${produitId}/attributs/${attrId}`, attr);
+  }
+
+  deleteAttribut(produitId: number, attrId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/produits/${produitId}/attributs/${attrId}`);
   }
 
   /**
@@ -351,13 +373,6 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/marques/${marqueId}/logo`, formData, {
       responseType: 'text' // Spécifier que nous attendons du texte, pas du JSON
     });
-  }
-
-  /**
-   * Supprimer une image de produit
-   */
-  deleteProductImage(produitId: number, imageIndex: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/produits/${produitId}/images/${imageIndex}`);
   }
 
   /**

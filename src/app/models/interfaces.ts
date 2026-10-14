@@ -76,6 +76,27 @@ export interface PagedResponse<T> {
 }
 
 // Produits
+export interface ImageProduit {
+  idImage: number;
+  url: string;
+  publicId?: string;
+  texteAlternatif?: string;
+  ordre: number;
+  principale: boolean;
+}
+
+export interface ModeleAttribut {
+  idModele: number;
+  nomAttribut: string;
+  description?: string;
+  typeValeur: 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT';
+  valeursAutorisees?: string;  // JSON array ex: '["R32","R410A"]'
+  unite?: string;
+  obligatoire: boolean;
+  ordre: number;
+  categorieIds?: number[];
+}
+
 export interface Produit {
   idProduit: number;
   nomProduit: string;
@@ -91,13 +112,17 @@ export interface Produit {
   dimensions?: string;
   poids?: number;
   ficheTechniquePDF?: string;
-  listeImages: string[];
+  modeleFabricant?: string;
+  ean?: string;
+  listeImages: string[];          // rétrocompat public — utiliser images[] dans l'admin
+  images?: ImageProduit[];        // admin — vide avant migration
   videosOptionnelles?: string[];
   disponibilite: boolean;
   dateAjout: string;
   categorie?: Categorie;
   marque?: Marque;
   attributs?: AttributProduit[];
+  scoreCompletude?: number;
   prixPromo?: number;
   pourcentageReduction?: number;
   dateFinPromo?: string;
@@ -105,9 +130,10 @@ export interface Produit {
 }
 
 export interface AttributProduit {
-  idAttribut: number;
+  idAttribut?: number;
   nomAttribut: string;
   valeurAttribut: string;
+  modeleAttributId?: number;
 }
 
 export interface Categorie {
