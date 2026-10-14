@@ -192,6 +192,7 @@ export interface Commande {
   numeroSuivi?: string;
   commentaire?: string;
   modeLivraison?: ModeLivraison;
+  zoneId?: number;
   dateModification: string;
   clientId?: number;
   emailInvite?: string;
@@ -232,6 +233,98 @@ export interface Paiement {
   datePaiement?: string;
   referencePaiement?: string;
   referenceExterne?: string;
+}
+
+// Zones de livraison
+export interface ZoneLivraisonPublic {
+  id: number;
+  villeLabel: string;
+  quartierLabel: string;
+  prixStandard: number;
+  prixExpress?: number;
+  expressDisponible: boolean;
+  delaiEstime: string;
+  eligibleLivraisonGratuite: boolean;
+  ordre: number;
+}
+
+export interface ZoneLivraisonAdmin {
+  id: number;
+  ville: string;
+  villeLabel: string;
+  quartier: string;
+  quartierLabel: string;
+  prixStandard: number;
+  prixExpress?: number;
+  expressDisponible: boolean;
+  delaiEstime: string;
+  actif: boolean;
+  eligibleLivraisonGratuite: boolean;
+  ordre: number;
+}
+
+export interface ZoneLivraisonCreate {
+  ville: string;
+  villeLabel: string;
+  quartier: string;
+  quartierLabel: string;
+  prixStandard: number;
+  prixExpress?: number;
+  expressDisponible: boolean;
+  delaiEstime: string;
+  actif: boolean;
+  eligibleLivraisonGratuite: boolean;
+  ordre: number;
+}
+
+export interface EstimationLigne {
+  produitId: number;
+  quantite: number;
+}
+
+export interface EstimationLivraisonRequest {
+  zoneId: number | null;
+  modeLivraison: string;
+  lignes: EstimationLigne[];
+}
+
+export interface EstimationLivraisonResponse {
+  montantArticles: number;
+  fraisZone: number;
+  supplementExpress: number;
+  supplementGabarit: number;
+  fraisLivraisonTotal: number;
+  montantTotal: number;
+  livraisonGratuite: boolean;
+  delaiEstime: string;
+  modeLivraisonLabel: string;
+}
+
+export interface CsvLigne {
+  numeroLigne: number;
+  ville: string;
+  villeLabel: string;
+  quartier: string;
+  quartierLabel: string;
+  prixStandard: number;
+  prixExpress?: number;
+  delaiEstime: string;
+  expressDisponible: boolean;
+  eligibleLivraisonGratuite: boolean;
+}
+
+export interface CsvErreur {
+  numeroLigne: number;
+  contenu: string;
+  motif: string;
+}
+
+export interface CsvPreviewResponse {
+  lignesACreer: CsvLigne[];
+  lignesAModifier: CsvLigne[];
+  lignesEnErreur: CsvErreur[];
+  totalTraitees: number;
+  token: string;
 }
 
 // Panier (stockage local)
