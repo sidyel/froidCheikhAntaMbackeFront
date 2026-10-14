@@ -1,3 +1,8 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 /* Variables CSS — valeurs par défaut écrasées au démarrage par ConfigService */
 :root {
   /* Primary (bleu) */
@@ -39,13 +44,6 @@
   /* Police */
   --font-sans: 'Inter', ui-sans-serif, system-ui;
 }
-
-/* You can add global styles to this file, and also import other style files */
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* Styles personnalisés */
 @layer base {
