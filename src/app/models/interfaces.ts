@@ -98,6 +98,10 @@ export interface Produit {
   categorie?: Categorie;
   marque?: Marque;
   attributs?: AttributProduit[];
+  prixPromo?: number;
+  pourcentageReduction?: number;
+  dateFinPromo?: string;
+  nomPromotion?: string;
 }
 
 export interface AttributProduit {
@@ -219,6 +223,9 @@ export interface LigneCommande {
   nomProduitCommande?: string;
   refProduitCommande?: string;
   produit?: Produit; // Pour l'affichage
+  prixUnitaireOrigine?: number;
+  promotionId?: number;
+  promotionNom?: string;
 }
 
 export interface AdresseLivraison {
@@ -355,6 +362,60 @@ export interface ProductFilters {
   marqueId?: number;
   labelEnergie?: LabelEnergie;
   disponibilite?: boolean;
+  enPromotion?: boolean;
+}
+
+// Promotions
+export type TypePromotion = 'POURCENTAGE' | 'MONTANT_FIXE';
+export type CiblePromotion = 'TOUS' | 'PRODUITS' | 'CATEGORIES' | 'MARQUES';
+
+export interface PromotionRequest {
+  nom: string;
+  typePromotion: TypePromotion;
+  valeur: number;
+  dateDebut: string;
+  dateFin?: string;
+  actif?: boolean;
+  priorite?: number;
+  cible: CiblePromotion;
+  produitIds?: number[];
+  categorieIds?: number[];
+  marqueIds?: number[];
+}
+
+export interface PromotionResponse {
+  idPromotion: number;
+  nom: string;
+  typePromotion: TypePromotion;
+  valeur: number;
+  dateDebut: string;
+  dateFin?: string;
+  actif: boolean;
+  priorite: number;
+  cible: CiblePromotion;
+  produitIds: number[];
+  categorieIds: number[];
+  marqueIds: number[];
+  dateCreation: string;
+  dateModification?: string;
+  statut: 'ACTIVE' | 'PROGRAMMEE' | 'EXPIREE' | 'INACTIVE';
+}
+
+export interface PromotionApercuProduit {
+  idProduit: number;
+  nomProduit: string;
+  prixOrigine: number;
+  prixApresPromo: number;
+  pourcentageReduction?: number;
+  prixPlancher: boolean;
+}
+
+export interface PromotionApercuPage {
+  produits: PromotionApercuProduit[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
 }
 
 export interface SearchParams {

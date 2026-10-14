@@ -42,6 +42,7 @@ import { AdminPrestationsComponent } from './components/admin/admin-prestations/
 import { AdminEquipeComponent } from './components/admin/admin-equipe/admin-equipe.component';
 import { AdminRealisationsComponent } from './components/admin/admin-realisations/admin-realisations.component';
 import { AdminZonesLivraisonComponent } from './components/admin/admin-zones-livraison/admin-zones-livraison.component';
+import { AdminPromotionsComponent } from './components/admin/admin-promotions/admin-promotions.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -212,7 +213,8 @@ const routes: Routes = [
       { path: 'contenu/prestations', component: AdminPrestationsComponent, data: { title: 'Prestations' } },
       { path: 'contenu/equipe', component: AdminEquipeComponent, data: { title: 'Équipe' } },
       { path: 'contenu/realisations', component: AdminRealisationsComponent, data: { title: 'Réalisations' } },
-      { path: 'livraison/zones', component: AdminZonesLivraisonComponent, data: { title: 'Zones de livraison' } }
+      { path: 'livraison/zones', component: AdminZonesLivraisonComponent, data: { title: 'Zones de livraison' } },
+      { path: 'promotions', component: AdminPromotionsComponent, data: { title: 'Promotions' } }
     ]
   },
 

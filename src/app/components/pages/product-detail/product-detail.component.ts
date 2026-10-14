@@ -119,11 +119,24 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
 
               <!-- Price -->
               <div class="mb-6">
-                <div class="flex items-center space-x-3">
-                  <span class="text-3xl sm:text-4xl font-bold text-primary-600">
+                <div *ngIf="produit.prixPromo" class="flex items-center space-x-2 mb-2">
+                  <span class="bg-red-600 text-white text-sm font-bold px-2 py-0.5 rounded">
+                    -{{ produit.pourcentageReduction }}%
+                  </span>
+                  <span *ngIf="produit.nomPromotion" class="text-sm text-gray-500 italic">{{ produit.nomPromotion }}</span>
+                </div>
+                <div class="flex items-baseline space-x-3">
+                  <span [class]="produit.prixPromo ? 'text-3xl sm:text-4xl font-bold text-green-600' : 'text-3xl sm:text-4xl font-bold text-primary-600'">
+                    {{ (produit.prixPromo || produit.prix) | currency:('' | devise):'symbol':'1.0-0' }}
+                  </span>
+                  <span *ngIf="produit.prixPromo" class="text-xl text-gray-400 line-through">
                     {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
                   </span>
                 </div>
+                <p *ngIf="countdownText" class="text-sm text-orange-600 font-medium mt-1 flex items-center space-x-1">
+                  <lucide-icon name="clock" class="w-4 h-4"></lucide-icon>
+                  <span>Fin dans {{ countdownText }}</span>
+                </p>
                 <p class="text-sm text-gray-600 mt-1">Prix TTC</p>
               </div>
 
@@ -374,6 +387,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   selectedImageIndex = 0;
   selectedQuantity = 1;
   currentProductId: number = 0;
+  countdownText: string | null = null;
+  private countdownInterval: any = null;
 
   get firstTelephone(): string {
     const tels = this.configService.config.telephones;
@@ -413,6 +428,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 
   private loadProduct(productId: number): void {
@@ -438,6 +454,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.produit = product;
           this.updateBreadcrumbs();
           this.isLoading = false;
+          this.startCountdown();
 
           // Charger les données supplémentaires en arrière-plan
           this.loadAdditionalData(productId);
@@ -448,6 +465,38 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         }
       });
+  }
+
+  private startCountdown(): void {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.countdownText = null;
+
+    if (!this.produit?.dateFinPromo) return;
+    const fin = new Date(this.produit.dateFinPromo).getTime();
+    const LIMIT = 48 * 60 * 60 * 1000;
+
+    const update = () => {
+      const reste = fin - Date.now();
+      if (reste <= 0) {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
+        this.countdownText = null;
+        this.reloadProduit();
+        return;
+      }
+      if (reste > LIMIT) { this.countdownText = null; return; }
+      const h = Math.floor(reste / 3_600_000);
+      const m = Math.floor((reste % 3_600_000) / 60_000);
+      const s = Math.floor((reste % 60_000) / 1_000);
+      this.countdownText = `${h}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+    };
+
+    update();
+    this.countdownInterval = setInterval(update, 1_000);
+  }
+
+  private reloadProduit(): void {
+    if (this.currentProductId) this.loadProduct(this.currentProductId);
   }
 
   private loadAdditionalData(productId: number): void {

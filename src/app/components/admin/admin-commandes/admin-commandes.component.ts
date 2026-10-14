@@ -303,7 +303,18 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
                     <p class="text-sm text-gray-500">Quantité: {{ ligne.quantite }}</p>
                   </div>
                   <div class="text-right">
-                    <p class="font-medium text-gray-900">{{ ligne.prixUnitaire | currency:('' | devise):'symbol':'1.0-0' }}</p>
+                    <ng-container *ngIf="ligne.promotionNom; else prixNormal">
+                      <p class="text-xs text-gray-400 line-through">
+                        {{ ligne.prixUnitaireOrigine | currency:('' | devise):'symbol':'1.0-0' }}
+                      </p>
+                      <p class="font-medium text-green-700">
+                        {{ ligne.prixUnitaire | currency:('' | devise):'symbol':'1.0-0' }}
+                      </p>
+                      <p class="text-xs text-red-600 font-semibold">{{ ligne.promotionNom }}</p>
+                    </ng-container>
+                    <ng-template #prixNormal>
+                      <p class="font-medium text-gray-900">{{ ligne.prixUnitaire | currency:('' | devise):'symbol':'1.0-0' }}</p>
+                    </ng-template>
                     <p class="text-sm text-gray-500">Total: {{ ligne.sousTotal | currency:('' | devise):'symbol':'1.0-0' }}</p>
                   </div>
                 </div>

@@ -135,7 +135,15 @@ import { environment } from "../../../../environments/environment";
               {{ produit.categorie?.nomCategorie || '-' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
+              <div>{{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}</div>
+              <div *ngIf="produit.prixPromo" class="flex items-center gap-1 mt-0.5">
+                <span class="text-xs font-semibold text-green-700">
+                  {{ produit.prixPromo | currency:('' | devise):'symbol':'1.0-0' }}
+                </span>
+                <span class="text-xs bg-red-100 text-red-700 rounded px-1 font-bold">
+                  -{{ produit.pourcentageReduction }}%
+                </span>
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center space-x-2">
