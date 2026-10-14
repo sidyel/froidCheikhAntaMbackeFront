@@ -193,6 +193,12 @@ export interface Commande {
   commentaire?: string;
   modeLivraison?: ModeLivraison;
   zoneId?: number;
+  zoneNom?: string;
+  zonePrixApplique?: number;
+  zoneModeApplique?: string;
+  supplementExpressApplique?: number;
+  supplementGabaritApplique?: number;
+  livraisonGratuiteAppliquee?: boolean;
   dateModification: string;
   clientId?: number;
   emailInvite?: string;
