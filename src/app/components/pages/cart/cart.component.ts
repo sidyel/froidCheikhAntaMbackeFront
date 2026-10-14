@@ -109,9 +109,18 @@ import { Cart, CartItem, Breadcrumb } from '../../../models/interfaces';
                       <!-- Prices -->
                       <div class="text-right">
                         <div class="text-sm text-gray-500">
-                          {{ item.produit.prix | currency:('' | devise):'symbol':'1.0-0' }} × {{ item.quantite }}
+                          <span *ngIf="item.produit.prixPromo; else prixNormal">
+                            <span class="line-through text-gray-400">{{ item.produit.prix | currency:('' | devise):'symbol':'1.0-0' }}</span>
+                            <span class="text-green-600 font-medium ml-1">{{ item.produit.prixPromo | currency:('' | devise):'symbol':'1.0-0' }}</span>
+                            <span class="text-red-600 text-xs font-bold ml-1">-{{ item.produit.pourcentageReduction }}%</span>
+                            × {{ item.quantite }}
+                          </span>
+                          <ng-template #prixNormal>
+                            {{ item.produit.prix | currency:('' | devise):'symbol':'1.0-0' }} × {{ item.quantite }}
+                          </ng-template>
                         </div>
-                        <div class="text-lg font-bold text-primary-600">
+                        <div *ngIf="item.produit.nomPromotion" class="text-xs text-gray-400 italic">{{ item.produit.nomPromotion }}</div>
+                        <div [class]="item.produit.prixPromo ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-primary-600'">
                           {{ item.sousTotal | currency:('' | devise):'symbol':'1.0-0' }}
                         </div>
                       </div>
