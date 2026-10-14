@@ -180,6 +180,7 @@ export class AdminService {
       if (filters.categorieId) params = params.set('categorieId', filters.categorieId.toString());
       if (filters.marqueId) params = params.set('marqueId', filters.marqueId.toString());
       if (filters.stockFilter) params = params.set('stockFilter', filters.stockFilter);
+      if (filters.ficheIncomplete) params = params.set('ficheIncomplete', 'true');
     }
 
     // Utiliser l'endpoint admin au lieu de l'endpoint public
