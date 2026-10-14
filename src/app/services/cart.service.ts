@@ -104,17 +104,19 @@ export class CartService {
         return;
       }
 
+      const prix = produit.prixPromo ?? produit.prix;
       currentCart.items[existingItemIndex] = {
         ...existingItem,
         quantite: newQuantite,
-        sousTotal: newQuantite * produit.prix
+        sousTotal: newQuantite * prix
       };
     } else {
       // Nouveau produit
+      const prix = produit.prixPromo ?? produit.prix;
       const newItem: CartItem = {
         produit,
         quantite,
-        sousTotal: quantite * produit.prix
+        sousTotal: quantite * prix
       };
       currentCart.items.push(newItem);
     }
@@ -150,10 +152,11 @@ export class CartService {
         return;
       }
 
+      const prix = item.produit.prixPromo ?? item.produit.prix;
       currentCart.items[itemIndex] = {
         ...item,
         quantite,
-        sousTotal: quantite * item.produit.prix
+        sousTotal: quantite * prix
       };
 
       this.updateCart(currentCart);
@@ -253,13 +256,16 @@ export class CartService {
       const updatedProduit = produits.find(p => p.idProduit === item.produit.idProduit);
 
       if (updatedProduit) {
-        // Vérifier si le prix a changé
-        if (updatedProduit.prix !== item.produit.prix) {
+        const oldEffective = item.produit.prixPromo ?? item.produit.prix;
+        const newEffective = updatedProduit.prixPromo ?? updatedProduit.prix;
+
+        // Détecte un changement de prix catalogue ou de promo (activation/expiration)
+        if (updatedProduit.prix !== item.produit.prix || newEffective !== oldEffective) {
           hasChanges = true;
           return {
             ...item,
             produit: updatedProduit,
-            sousTotal: item.quantite * updatedProduit.prix
+            sousTotal: item.quantite * newEffective
           };
         }
 

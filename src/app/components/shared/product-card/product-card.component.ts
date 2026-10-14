@@ -98,10 +98,10 @@ import { ToastService } from '../../../services/toast.service';
         <div class="flex items-center justify-between mb-3 sm:mb-4">
           <div class="flex items-center space-x-1 sm:space-x-2">
             <span class="text-lg sm:text-xl md:text-2xl font-bold text-primary-600">
-              {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
+              {{ getEffectivePrice() | currency:('' | devise):'symbol':'1.0-0' }}
             </span>
             <span *ngIf="hasDiscount()" class="text-sm sm:text-base md:text-lg text-gray-500 line-through">
-              {{ getOriginalPrice() | currency:('' | devise):'symbol':'1.0-0' }}
+              {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
             </span>
           </div>
         </div>
@@ -463,18 +463,18 @@ export class ProductCardComponent {
   }
 
   hasDiscount(): boolean {
-    // Logique pour détecter une remise (à adapter selon vos besoins)
-    // Pour l'instant, on retourne false car pas de champ discount dans le modèle
-    return false;
+    return !!this.produit.prixPromo && this.produit.prixPromo < this.produit.prix;
+  }
+
+  getEffectivePrice(): number {
+    return this.hasDiscount() ? this.produit.prixPromo! : this.produit.prix;
   }
 
   getDiscountPercentage(): number {
-    // Logique pour calculer le pourcentage de remise
-    return 0;
+    return this.produit.pourcentageReduction ?? 0;
   }
 
   getOriginalPrice(): number {
-    // Logique pour récupérer le prix original avant remise
     return this.produit.prix;
   }
 
