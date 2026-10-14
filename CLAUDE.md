@@ -103,7 +103,7 @@ Les valeurs par défaut sont définies dans le bloc `:root` de `src/styles.css` 
 | Module | Statut | Branche |
 |---|---|---|
 | Site configurable (ConfigService, SiteConfig, remplacement hardcodes, garde-fou) | ✅ Mergé dans `main` | — |
-| Entités de contenu gérable (Partenaire, Prestation, MembreEquipe, Realisation, ImageHero) | 🔄 En cours | `feature/contenu-gerable` |
+| Entités de contenu gérable (ImageHero, Partenaire, Prestation, MembreEquipe, Realisation) | ✅ Mergé dans `main` | — |
 | Zones de livraison (ZoneLivraison, checkout dynamique) | ⏳ Planifié | — |
 
 ### Nouveau : `npm run check:hardcoded`
@@ -131,8 +131,8 @@ Script Node.js pur (`scripts/check-hardcoded.js`) qui parcourt `src/` (frontend)
 ### #2 — `environment.ts` modifié mais non commité
 `src/environments/environment.ts` avait des modifications locales (bascule `production: true` + API localhost) non commitées au départ de ce projet. Ce fichier est sur la branche `feature/site-configurable` dans son état corrigé. À revoir avant merge.
 
-### #3 — `AboutComponent` : données riches en dur
-Partenaires, équipe, réalisations et services sont codés en dur dans `about.component.ts`. À terme, les migrer vers des entités backend ou un CMS léger. Pour l'instant c'est volontaire (hors scope).
+### #3 — ~~`AboutComponent` : données riches en dur~~ ✅ Résolu dans LOT 2
+Partenaires, équipe, réalisations et services sont désormais chargés depuis l'API (`ContenuService`). `about.component.ts` ne contient plus aucune donnée statique Froid Cheikh.
 
 ### #4 — Pas de gestion d'erreur sur le parsing `horairesJson`
 `FooterComponent` parse `config.horairesJson` (JSON string) pour afficher les horaires. Toujours entourer d'un `try/catch` avec fallback sur les horaires par défaut.
