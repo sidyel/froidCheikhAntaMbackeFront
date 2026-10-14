@@ -4,18 +4,31 @@ export interface TelephoneSite {
   whatsapp?: boolean;
 }
 
+export interface HoraireJour {
+  jour: string;
+  heureDebut?: string;
+  heureFin?: string;
+  ferme?: boolean;
+}
+
 export interface SiteConfig {
   // IDENTITE
   nomSite?: string;
   sloganSite?: string;
   descriptionSite?: string;
+  mission?: string;
+  vision?: string;
+  anneesExperience?: number;
+  descriptionLivraison?: string;
   logoUrl?: string;
   faviconUrl?: string;
 
   // CONTACT
   emailContact?: string;
   telephones?: TelephoneSite[];
+  horairesOuverture?: HoraireJour[];
   adresseComplete?: string;
+  adresseCourte?: string;
   ville?: string;
   pays?: string;
 
