@@ -98,6 +98,19 @@ Les valeurs par défaut sont définies dans le bloc `:root` de `src/styles.css` 
 
 ---
 
+## État d'avancement (oct. 2026)
+
+| Module | Statut | Branche |
+|---|---|---|
+| Site configurable (ConfigService, SiteConfig, remplacement hardcodes, garde-fou) | ✅ Mergé dans `main` | — |
+| Entités de contenu gérable (Partenaire, Prestation, MembreEquipe, Realisation, ImageHero) | 🔄 En cours | `feature/contenu-gerable` |
+| Zones de livraison (ZoneLivraison, checkout dynamique) | ⏳ Planifié | — |
+
+### Nouveau : `npm run check:hardcoded`
+Script Node.js pur (`scripts/check-hardcoded.js`) qui parcourt `src/` (frontend) et `src/main/` (backend) de façon récursive, sans `grep` ni `execSync`. Échoue si une valeur Froid Cheikh est détectée hors `DataInitializer.java`. À lancer en CI.
+
+---
+
 ## Feuille de route des modules restants
 
 1. **Module zones de livraison** — remplacer la table de ~30 quartiers/prix codée en dur dans `checkout.component.ts` par des données venant d'une API dédiée. Voir point connu #1.
