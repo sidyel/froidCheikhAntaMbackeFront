@@ -1,30 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CartService } from '../../../services/cart.service';
 import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfigService } from '../../../services/config.service';
-import { Cart, Breadcrumb } from '../../../models/interfaces';
-import { Observable } from 'rxjs';
-import { ModeLivraison, Commande } from '../../../models/interfaces';
-
-// Interfaces pour les listes de sélection
-interface AdresseOption {
-  value: string;
-  label: string;
-  ville?: string;
-  prixLivraison?: number; // Prix de livraison par quartier
-}
-
-interface VilleOption {
-  value: string;
-  label: string;
-  codePostal?: string;
-}
+import { LivraisonService } from '../../../services/livraison.service';
+import {
+  Cart,
+  Breadcrumb,
+  ModeLivraison,
+  Commande,
+  ZoneLivraisonPublic,
+  EstimationLivraisonResponse
+} from '../../../models/interfaces';
 
 @Component({
   selector: 'app-checkout',
@@ -81,7 +73,6 @@ interface VilleOption {
                     </div>
                   </div>
 
-                  <!-- Email (optionnel) -->
                   <div>
                     <label class="form-label">Email <span class="text-gray-400 text-sm">(optionnel)</span></label>
                     <input
@@ -95,7 +86,6 @@ interface VilleOption {
                     </div>
                   </div>
 
-                  <!-- Téléphone (obligatoire, min 9 chiffres) -->
                   <div>
                     <label class="form-label">Téléphone *</label>
                     <input
@@ -107,8 +97,8 @@ interface VilleOption {
                     <div *ngIf="isFieldInvalid('telephone')" class="text-red-500 text-sm mt-1">
                       <span *ngIf="checkoutForm.get('telephone')?.errors?.['required']">Le téléphone est requis</span>
                       <span *ngIf="checkoutForm.get('telephone')?.errors?.['minlength'] || checkoutForm.get('telephone')?.errors?.['pattern']">
-      Le numéro doit contenir au minimum 9 chiffres
-    </span>
+                        Le numéro doit contenir au minimum 9 chiffres
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -117,6 +107,12 @@ interface VilleOption {
               <!-- Delivery Address -->
               <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Adresse de livraison</h2>
+
+                <!-- Loading zones -->
+                <div *ngIf="zonesLoading" class="flex items-center space-x-2 text-gray-500 mb-4">
+                  <div class="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span class="text-sm">Chargement des zones de livraison...</span>
+                </div>
 
                 <div class="space-y-4">
                   <!-- Ville (sélection) -->
@@ -128,8 +124,8 @@ interface VilleOption {
                       [class.border-red-500]="isFieldInvalid('ville')"
                       (change)="onVilleChange($event)">
                       <option value="">Sélectionnez votre ville</option>
-                      <option *ngFor="let ville of villesDisponibles" [value]="ville.value">
-                        {{ ville.label }}
+                      <option *ngFor="let villeLabel of villesDisponibles" [value]="villeLabel">
+                        {{ villeLabel }}
                       </option>
                     </select>
                     <div *ngIf="isFieldInvalid('ville')" class="text-red-500 text-sm mt-1">
@@ -137,43 +133,48 @@ interface VilleOption {
                     </div>
                   </div>
 
-                  <!-- Adresse ligne 1 (sélection) -->
+                  <!-- Quartier (sélection) -->
                   <div>
                     <label class="form-label">Quartier/Zone *</label>
+
+                    <!-- Filtre de recherche -->
+                    <div *ngIf="zonesQuartierDisponibles.length > 5" class="relative mb-1">
+                      <input
+                        type="text"
+                        [(ngModel)]="quartierSearchTerm"
+                        [ngModelOptions]="{standalone: true}"
+                        placeholder="Rechercher un quartier..."
+                        class="form-input text-sm py-1.5">
+                    </div>
+
                     <select
                       formControlName="adresseLigne1"
                       class="form-input"
                       [class.border-red-500]="isFieldInvalid('adresseLigne1')"
-                      [disabled]="!selectedVille"
+                      [attr.disabled]="!selectedVilleLabel ? '' : null"
                       (change)="onQuartierChange($event)">
-                      <option value="">
-                        Sélectionnez votre quartier
-                      </option>
-                      <option *ngFor="let adresse of adressesDisponibles" [value]="adresse.value">
-                        {{ adresse.label }}
-                        <span *ngIf="adresse.prixLivraison && adresse.prixLivraison > 0">
-                          ({{ adresse.prixLivraison | currency:devise:'symbol':'1.0-0' }} livraison)
-                        </span>
-                        <span *ngIf="!adresse.prixLivraison || adresse.prixLivraison === 0">
-                          (Livraison gratuite)
-                        </span>
-                      </option>
+                      <option value="">Sélectionnez votre quartier</option>
+                      <ng-container *ngFor="let zone of zonesQuartiersFiltres">
+                        <option [value]="zone.quartierLabel">
+                          {{ zone.quartierLabel }}
+                          <span *ngIf="zone.prixStandard > 0"> — {{ zone.prixStandard | currency:devise:'symbol':'1.0-0' }}</span>
+                          <span *ngIf="zone.prixStandard === 0"> — Livraison gratuite</span>
+                        </option>
+                      </ng-container>
                     </select>
                     <div *ngIf="isFieldInvalid('adresseLigne1')" class="text-red-500 text-sm mt-1">
                       Le quartier est requis
                     </div>
-                    <div *ngIf="selectedQuartierPrixLivraison !== null" class="text-xs text-blue-600 mt-1">
-                      <span *ngIf="selectedQuartierPrixLivraison === 0">
-                        ✅ Livraison gratuite pour ce quartier
-                      </span>
-                      <span *ngIf="selectedQuartierPrixLivraison > 0">
-                        ℹ️ Frais de livraison: {{ selectedQuartierPrixLivraison | currency:devise:'symbol':'1.0-0' }}
-                      </span>
+
+                    <!-- Délai estimé -->
+                    <div *ngIf="selectedZone" class="text-xs text-blue-600 mt-1 flex items-center space-x-1">
+                      <lucide-icon name="clock" class="w-3 h-3"></lucide-icon>
+                      <span>Délai estimé : {{ selectedZone.delaiEstime }}</span>
                     </div>
                   </div>
 
                   <div>
-                    <label class="form-label">Complément d'adresse (point de repaire)</label>
+                    <label class="form-label">Complément d'adresse (point de repère)</label>
                     <input
                       type="text"
                       formControlName="adresseLigne2"
@@ -189,17 +190,12 @@ interface VilleOption {
                     <input
                       type="text"
                       formControlName="codePostal"
-                      class="form-input"
-                      [value]="selectedVilleCodePostal"
-                      readonly>
-                    <div class="text-xs text-gray-500 mt-1">
-                      Rempli automatiquement selon la ville sélectionnée
-                    </div>
+                      placeholder="Optionnel"
+                      class="form-input">
                   </div>
                 </div>
               </div>
 
-              <!-- Delivery Method -->
               <!-- Delivery Method -->
               <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Mode de livraison</h2>
@@ -223,11 +219,46 @@ interface VilleOption {
                         <div class="flex items-center justify-between">
                           <div>
                             <div class="font-medium text-gray-900">Livraison à domicile</div>
-                            <div class="text-sm text-gray-500">Livraison sous 24-48h</div>
+                            <div class="text-sm text-gray-500">Livraison selon délai de la zone</div>
                           </div>
                           <div [class]="getDeliveryFees() > 0 ? 'text-gray-900 font-medium' : 'text-green-600 font-medium'">
-                            {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:devise:'symbol':'1.0-0') : 'Gratuit' }}
-</div>
+                            <span *ngIf="isModeLivraison('LIVRAISON_DOMICILE') && estimationLoading" class="text-gray-400 text-sm">Calcul...</span>
+                            <span *ngIf="!estimationLoading">{{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:devise:'symbol':'1.0-0') : (isModeLivraison('LIVRAISON_DOMICILE') && selectedZoneId ? 'Gratuit' : '—') }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <!-- Livraison express -->
+                  <label
+                    class="flex items-center p-4 border border-gray-200 rounded-lg transition-colors"
+                    [class.cursor-pointer]="!isExpressDisabled()"
+                    [class.cursor-not-allowed]="isExpressDisabled()"
+                    [class.opacity-50]="isExpressDisabled()"
+                    [class.hover:border-primary-300]="!isExpressDisabled()">
+                    <input
+                      type="radio"
+                      value="LIVRAISON_EXPRESS"
+                      formControlName="modeLivraison"
+                      class="form-radio text-primary-600"
+                      [disabled]="isExpressDisabled()">
+                    <div class="ml-3 flex items-center space-x-3 flex-1">
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <div class="font-medium text-gray-900">Livraison express</div>
+                            <div class="text-sm text-gray-500">
+                              <span *ngIf="!selectedZone">Sélectionnez d'abord une zone</span>
+                              <span *ngIf="selectedZone && !selectedZone.expressDisponible" class="text-orange-500">Non disponible pour cette zone</span>
+                              <span *ngIf="selectedZone && selectedZone.expressDisponible">Livraison prioritaire</span>
+                            </div>
+                          </div>
+                          <div class="text-gray-900 font-medium">
+                            <span *ngIf="isModeLivraison('LIVRAISON_EXPRESS') && estimationLoading" class="text-gray-400 text-sm">Calcul...</span>
+                            <span *ngIf="isModeLivraison('LIVRAISON_EXPRESS') && !estimationLoading && estimation">{{ estimation.fraisLivraisonTotal | currency:devise:'symbol':'1.0-0' }}</span>
+                            <span *ngIf="!isModeLivraison('LIVRAISON_EXPRESS')">—</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -259,16 +290,20 @@ interface VilleOption {
                   </label>
 
                 </div>
+
+                <!-- Estimation error -->
+                <div *ngIf="estimationError && !isModeLivraison('RETRAIT_MAGASIN')" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2">
+                  <lucide-icon name="alert-circle" class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5"></lucide-icon>
+                  <p class="text-sm text-red-700">{{ estimationError }}</p>
+                </div>
               </div>
 
-              <!-- Payment Method -->
               <!-- Payment Method -->
               <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Mode de paiement</h2>
 
                 <div class="space-y-3">
 
-                  <!-- Wave -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
@@ -288,7 +323,6 @@ interface VilleOption {
                     </div>
                   </label>
 
-                  <!-- Orange Money -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
@@ -308,7 +342,6 @@ interface VilleOption {
                     </div>
                   </label>
 
-                  <!-- Paiement à la livraison -->
                   <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
                     <input
                       type="radio"
@@ -370,21 +403,49 @@ interface VilleOption {
                     <span class="font-medium">{{ cart.totalPrice | currency:devise:'symbol':'1.0-0' }}</span>
                   </div>
 
-                  <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Frais de livraison</span>
-                    <span class="font-medium" [class]="getDeliveryFees() > 0 ? 'text-gray-900' : 'text-green-600'">
-                      {{ getDeliveryFees() > 0 ? (getDeliveryFees() | currency:devise:'symbol':'1.0-0') : 'Gratuit' }}
-                    </span>
-                  </div>
+                  <!-- Frais de livraison -->
+                  <ng-container *ngIf="isModeLivraison('RETRAIT_MAGASIN')">
+                    <div class="flex justify-between text-sm">
+                      <span class="text-gray-600">Frais de livraison</span>
+                      <span class="text-green-600 font-medium">Gratuit</span>
+                    </div>
+                  </ng-container>
 
-                  <div *ngIf="selectedQuartierPrixLivraison !== null" class="text-xs text-gray-500 italic">
-                    <span *ngIf="selectedQuartierPrixLivraison === 0">
-                      Zone de livraison gratuite
-                    </span>
-                    <!--<span *ngIf="selectedQuartierPrixLivraison > 0">
-                      Frais quartier: {{ selectedQuartierPrixLivraison | currency:devise:'symbol':'1.0-0' }}
-                    </span>-->
-                  </div>
+                  <ng-container *ngIf="!isModeLivraison('RETRAIT_MAGASIN')">
+                    <div *ngIf="estimationLoading" class="flex justify-between text-sm">
+                      <span class="text-gray-600">Frais de livraison</span>
+                      <span class="text-gray-400 text-xs animate-pulse">Calcul en cours...</span>
+                    </div>
+
+                    <div *ngIf="!estimationLoading && estimation" class="space-y-1">
+                      <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Frais zone</span>
+                        <span [class]="estimation.livraisonGratuite ? 'text-green-600 font-medium' : 'font-medium'">
+                          {{ estimation.livraisonGratuite ? 'Gratuit' : (estimation.fraisZone | currency:devise:'symbol':'1.0-0') }}
+                        </span>
+                      </div>
+                      <div *ngIf="estimation.supplementExpress > 0" class="flex justify-between text-sm">
+                        <span class="text-gray-600">Supplément express</span>
+                        <span class="font-medium">{{ estimation.supplementExpress | currency:devise:'symbol':'1.0-0' }}</span>
+                      </div>
+                      <div *ngIf="estimation.supplementGabarit > 0" class="flex justify-between text-sm">
+                        <span class="text-gray-600">Supplément gabarit</span>
+                        <span class="font-medium">{{ estimation.supplementGabarit | currency:devise:'symbol':'1.0-0' }}</span>
+                      </div>
+                      <div *ngIf="estimation.delaiEstime" class="text-xs text-blue-600">
+                        Délai estimé : {{ estimation.delaiEstime }}
+                      </div>
+                    </div>
+
+                    <div *ngIf="!estimationLoading && !estimation && !estimationError" class="flex justify-between text-sm">
+                      <span class="text-gray-600">Frais de livraison</span>
+                      <span class="text-gray-400 text-xs">Sélectionnez une zone</span>
+                    </div>
+
+                    <div *ngIf="estimationError" class="text-xs text-red-500">
+                      {{ estimationError }}
+                    </div>
+                  </ng-container>
 
                   <div class="border-t border-gray-200 pt-2">
                     <div class="flex justify-between text-lg font-bold">
@@ -397,7 +458,7 @@ interface VilleOption {
                 <!-- Submit Button -->
                 <button
                   type="submit"
-                  [disabled]="isSubmitting || !checkoutForm.valid"
+                  [disabled]="!canSubmit"
                   class="w-full btn-primary py-3 text-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
                   <div *ngIf="isSubmitting" class="flex items-center justify-center space-x-2">
                     <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -408,6 +469,16 @@ interface VilleOption {
                     <span>Valider ma commande</span>
                   </div>
                 </button>
+
+                <!-- Estimation required notice -->
+                <div *ngIf="!canSubmit && checkoutForm.valid && !isModeLivraison('RETRAIT_MAGASIN') && !selectedZoneId && !isSubmitting"
+                     class="mt-2 text-xs text-center text-orange-600">
+                  Sélectionnez votre zone de livraison pour valider
+                </div>
+                <div *ngIf="!canSubmit && checkoutForm.valid && !isModeLivraison('RETRAIT_MAGASIN') && selectedZoneId && estimationError && !isSubmitting"
+                     class="mt-2 text-xs text-center text-red-600">
+                  Estimation impossible — veuillez modifier votre sélection
+                </div>
 
                 <!-- Security Info -->
                 <div class="mt-4 pt-4 border-t border-gray-200">
@@ -443,86 +514,21 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   isAuthenticated = false;
 
-  // Propriétés pour les listes de sélection
-  villesDisponibles: VilleOption[] = [];
-  adressesDisponibles: AdresseOption[] = [];
-  selectedVille: string = '';
-  selectedVilleCodePostal: string = '';
+  // Zones livraison
+  zonesLoading = false;
+  zones: ZoneLivraisonPublic[] = [];
+  villesDisponibles: string[] = [];
+  zonesParVille = new Map<string, ZoneLivraisonPublic[]>();
+  zonesQuartierDisponibles: ZoneLivraisonPublic[] = [];
+  quartierSearchTerm = '';
+  selectedVilleLabel = '';
+  selectedZoneId: number | null = null;
+  selectedZone: ZoneLivraisonPublic | null = null;
 
-  // Propriété pour gérer les prix de livraison (suppression de l'express)
-  selectedQuartierPrixLivraison: number | null = null;
-
-  // Données statiques avec prix de livraison par quartier (suppression des prix express)
-  private readonly villesData: VilleOption[] = [
-    { value: 'dakar', label: 'Dakar', codePostal: '10000' },
-    { value: 'pikine', label: 'Pikine', codePostal: '12000' },
-    { value: 'guediawaye', label: 'Guédiawaye', codePostal: '13000' },
-    { value: 'rufisque', label: 'Rufisque', codePostal: '14000' },
-    { value: 'thies', label: 'Thiès', codePostal: '21000' },
-    { value: 'kaolack', label: 'Kaolack', codePostal: '22000' },
-    { value: 'saint-louis', label: 'Saint-Louis', codePostal: '32000' },
-    { value: 'ziguinchor', label: 'Ziguinchor', codePostal: '27000' }
-  ];
-
-  private readonly adressesData: AdresseOption[] = [
-    // Dakar - Quartiers centraux (gratuit ou peu cher)
-    { value: 'plateau', label: 'Plateau', ville: 'dakar', prixLivraison: 0 },
-    { value: 'medina', label: 'Medina', ville: 'dakar', prixLivraison: 0 },
-    { value: 'fann', label: 'Fann', ville: 'dakar', prixLivraison: 1000 },
-    { value: 'liberte', label: 'Liberte', ville: 'dakar', prixLivraison: 1000 },
-    { value: 'point-e', label: 'Point-e', ville: 'dakar', prixLivraison: 1000 },
-    { value: 'mermoz', label: 'Mermoz', ville: 'dakar', prixLivraison: 1500 },
-    { value: 'sacre-coeur', label: 'Sacre-coeur', ville: 'dakar', prixLivraison: 1500 },
-
-    // Dakar - Quartiers périphériques (plus cher)
-    { value: 'almadies', label: 'Almadies', ville: 'dakar', prixLivraison: 2500 },
-    { value: 'ngor', label: 'Ngor', ville: 'dakar', prixLivraison: 3000 },
-    { value: 'ouakam', label: 'Ouakam', ville: 'dakar', prixLivraison: 2500 },
-    { value: 'yoff', label: 'Yoff / Ouest Foire / Nord Foire', ville: 'dakar', prixLivraison: 3000 },
-    { value: 'hann-bel-air', label: 'Hann Bel-Air', ville: 'dakar', prixLivraison: 2000 },
-    { value: 'parcelles-assainies', label: 'Parcelles Assainies', ville: 'dakar', prixLivraison: 2000 },
-
-    // Pikine - Tarifs variables selon l'éloignement
-    { value: 'pikine-nord', label: 'Pikine Nord', ville: 'pikine', prixLivraison: 2000 },
-    { value: 'pikine-sud', label: 'Pikine Sud', ville: 'pikine', prixLivraison: 2500 },
-    { value: 'pikine-est', label: 'Pikine Est', ville: 'pikine', prixLivraison: 3000 },
-    { value: 'pikine-ouest', label: 'Pikine Ouest', ville: 'pikine', prixLivraison: 2500 },
-    { value: 'thiaroye', label: 'Thiaroye', ville: 'pikine', prixLivraison: 3500 },
-    { value: 'yeumbeul', label: 'Yeumbeul', ville: 'pikine', prixLivraison: 4000 },
-
-    // Guédiawaye
-    { value: 'golf-sud', label: 'Golf Sud', ville: 'guediawaye', prixLivraison: 2500 },
-    { value: 'medina-gounass', label: 'Médina Gounass', ville: 'guediawaye', prixLivraison: 3000 },
-    { value: 'sam-notaire', label: 'Sam Notaire', ville: 'guediawaye', prixLivraison: 3000 },
-    { value: 'wakhinane-nimzatt', label: 'Wakhinane Nimzatt', ville: 'guediawaye', prixLivraison: 3500 },
-
-    // Rufisque
-    { value: 'rufisque-centre', label: 'Rufisque Centre', ville: 'rufisque', prixLivraison: 3000 },
-    { value: 'rufisque-est', label: 'Rufisque Est', ville: 'rufisque', prixLivraison: 3500 },
-    { value: 'rufisque-ouest', label: 'Rufisque Ouest', ville: 'rufisque', prixLivraison: 3500 },
-    { value: 'rufisque-nord', label: 'Rufisque Nord', ville: 'rufisque', prixLivraison: 4000 },
-
-    // Thiès - Plus éloigné
-    { value: 'thies-centre', label: 'Thiès Centre', ville: 'thies', prixLivraison: 5000 },
-    { value: 'thies-nord', label: 'Thiès Nord', ville: 'thies', prixLivraison: 5500 },
-    { value: 'thies-est', label: 'Thiès Est', ville: 'thies', prixLivraison: 5500 },
-    { value: 'thies-ouest', label: 'Thiès Ouest', ville: 'thies', prixLivraison: 6000 },
-
-    // Kaolack - Très éloigné
-    { value: 'kaolack-centre', label: 'Kaolack Centre', ville: 'kaolack', prixLivraison: 7000 },
-    { value: 'kaolack-nord', label: 'Kaolack Nord', ville: 'kaolack', prixLivraison: 7500 },
-    { value: 'kaolack-sud', label: 'Kaolack Sud', ville: 'kaolack', prixLivraison: 7500 },
-
-    // Saint-Louis - Très éloigné
-    { value: 'saint-louis-centre', label: 'Saint-Louis Centre', ville: 'saint-louis', prixLivraison: 8000 },
-    { value: 'sor', label: 'Sor', ville: 'saint-louis', prixLivraison: 8500 },
-    { value: 'guet-ndar', label: 'Guet Ndar', ville: 'saint-louis', prixLivraison: 9000 },
-
-    // Ziguinchor - Très éloigné (sud du pays)
-    { value: 'ziguinchor-centre', label: 'Ziguinchor Centre', ville: 'ziguinchor', prixLivraison: 10000 },
-    { value: 'ziguinchor-nord', label: 'Ziguinchor Nord', ville: 'ziguinchor', prixLivraison: 10500 },
-    { value: 'ziguinchor-sud', label: 'Ziguinchor Sud', ville: 'ziguinchor', prixLivraison: 11000 }
-  ];
+  // Estimation
+  estimation: EstimationLivraisonResponse | null = null;
+  estimationLoading = false;
+  estimationError: string | null = null;
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Accueil', route: '/' },
@@ -534,6 +540,20 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return this.configService.config.devise || 'XOF';
   }
 
+  get zonesQuartiersFiltres(): ZoneLivraisonPublic[] {
+    if (!this.quartierSearchTerm.trim()) return this.zonesQuartierDisponibles;
+    const term = this.quartierSearchTerm.toLowerCase();
+    return this.zonesQuartierDisponibles.filter(z =>
+      z.quartierLabel.toLowerCase().includes(term)
+    );
+  }
+
+  get canSubmit(): boolean {
+    if (this.isSubmitting || !this.checkoutForm.valid) return false;
+    if (this.isModeLivraison('RETRAIT_MAGASIN')) return true;
+    return !!this.selectedZoneId && !this.estimationLoading && !this.estimationError;
+  }
+
   constructor(
     private fb: FormBuilder,
     private cartService: CartService,
@@ -541,18 +561,22 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toastService: ToastService,
     private router: Router,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private livraisonService: LivraisonService
   ) {
     this.checkoutForm = this.createCheckoutForm();
   }
 
   ngOnInit(): void {
-    console.log('🔍 === CHECKOUT COMPONENT INIT ===');
-
-    this.initializeAddressData();
+    this.loadZones();
     this.loadCart();
     this.checkAuthentication();
     this.prefillUserData();
+
+    // Relancer l'estimation à chaque changement de mode
+    this.checkoutForm.get('modeLivraison')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.lancerEstimation());
   }
 
   ngOnDestroy(): void {
@@ -560,89 +584,133 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private initializeAddressData(): void {
-    console.log('🏠 Initialisation des données d\'adresse...');
-    this.villesDisponibles = [...this.villesData];
-    console.log('🏙️ Villes disponibles:', this.villesDisponibles.length);
+  private loadZones(): void {
+    this.zonesLoading = true;
+    this.livraisonService.getZonesActives()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (zones) => {
+          this.zones = zones;
+          this.buildVillesMap(zones);
+          this.zonesLoading = false;
+        },
+        error: () => {
+          this.zonesLoading = false;
+          this.toastService.error('Erreur', 'Impossible de charger les zones de livraison');
+        }
+      });
+  }
+
+  private buildVillesMap(zones: ZoneLivraisonPublic[]): void {
+    const villesSet = new Set<string>();
+    const map = new Map<string, ZoneLivraisonPublic[]>();
+
+    for (const zone of zones) {
+      if (!map.has(zone.villeLabel)) {
+        map.set(zone.villeLabel, []);
+        villesSet.add(zone.villeLabel);
+      }
+      map.get(zone.villeLabel)!.push(zone);
+    }
+
+    this.zonesParVille = map;
+    this.villesDisponibles = Array.from(villesSet);
   }
 
   onVilleChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const villeValue = target.value;
+    const villeLabel = (event.target as HTMLSelectElement).value;
+    this.selectedVilleLabel = villeLabel;
+    this.zonesQuartierDisponibles = villeLabel ? (this.zonesParVille.get(villeLabel) ?? []) : [];
+    this.quartierSearchTerm = '';
 
-    console.log('🏙️ Changement de ville:', villeValue);
-
-    this.selectedVille = villeValue;
-
-    if (villeValue) {
-      const villeData = this.villesData.find(v => v.value === villeValue);
-      this.selectedVilleCodePostal = villeData?.codePostal || '';
-
-      this.checkoutForm.patchValue({
-        codePostal: this.selectedVilleCodePostal
-      });
-
-      this.adressesDisponibles = this.adressesData.filter(
-        adresse => adresse.ville === villeValue
-      );
-
-      this.checkoutForm.patchValue({
-        adresseLigne1: ''
-      });
-
-      this.selectedQuartierPrixLivraison = null;
-
-      console.log('🏠 Quartiers disponibles:', this.adressesDisponibles.length);
-    } else {
-      this.selectedVilleCodePostal = '';
-      this.adressesDisponibles = [];
-      this.selectedQuartierPrixLivraison = null;
-
-      this.checkoutForm.patchValue({
-        codePostal: '',
-        adresseLigne1: ''
-      });
-    }
+    // Réinitialiser quartier et estimation
+    this.selectedZoneId = null;
+    this.selectedZone = null;
+    this.estimation = null;
+    this.estimationError = null;
+    this.checkoutForm.patchValue({ adresseLigne1: '' });
   }
 
   onQuartierChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const quartierValue = target.value;
+    const quartierLabel = (event.target as HTMLSelectElement).value;
 
-    console.log('🏠 Changement de quartier:', quartierValue);
-
-    if (quartierValue) {
-      const quartierData = this.adressesData.find(a => a.value === quartierValue);
-
-      if (quartierData) {
-        this.selectedQuartierPrixLivraison = quartierData.prixLivraison || 0;
-
-        console.log('💰 Prix livraison:', this.selectedQuartierPrixLivraison);
-
-        if (this.selectedQuartierPrixLivraison === 0) {
-          this.toastService.success('Livraison gratuite !', 'Ce quartier bénéficie de la livraison gratuite');
-        }
-      }
+    if (quartierLabel) {
+      const zone = this.zonesQuartierDisponibles.find(z => z.quartierLabel === quartierLabel);
+      this.selectedZoneId = zone?.id ?? null;
+      this.selectedZone = zone ?? null;
+      this.lancerEstimation();
     } else {
-      this.selectedQuartierPrixLivraison = null;
+      this.selectedZoneId = null;
+      this.selectedZone = null;
+      this.estimation = null;
+      this.estimationError = null;
     }
+  }
+
+  lancerEstimation(): void {
+    const modeLivraison = this.checkoutForm.get('modeLivraison')?.value;
+
+    if (modeLivraison === 'RETRAIT_MAGASIN') {
+      this.estimation = null;
+      this.estimationError = null;
+      return;
+    }
+
+    if (!this.selectedZoneId || this.cart.items.length === 0) {
+      this.estimation = null;
+      this.estimationError = null;
+      return;
+    }
+
+    this.estimationLoading = true;
+    this.estimationError = null;
+
+    this.livraisonService.estimer({
+      zoneId: this.selectedZoneId,
+      modeLivraison,
+      lignes: this.cart.items.map(item => ({
+        produitId: item.produit.idProduit,
+        quantite: item.quantite
+      }))
+    }).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp) => {
+          this.estimation = resp;
+          this.estimationLoading = false;
+          if (resp.livraisonGratuite) {
+            this.toastService.success('Livraison gratuite !', 'Votre commande bénéficie de la livraison gratuite pour cette zone.');
+          }
+        },
+        error: (err) => {
+          this.estimationLoading = false;
+          this.estimation = null;
+          let msg = 'Impossible d\'estimer les frais de livraison.';
+          if (err.error?.message) msg = err.error.message;
+          else if (typeof err.error === 'string') msg = err.error;
+          this.estimationError = msg;
+        }
+      });
+  }
+
+  isModeLivraison(mode: string): boolean {
+    return this.checkoutForm.get('modeLivraison')?.value === mode;
+  }
+
+  isExpressDisabled(): boolean {
+    if (!this.selectedZone) return true;
+    return !this.selectedZone.expressDisponible;
   }
 
   private createCheckoutForm(): FormGroup {
     return this.fb.group({
-      // Informations client
       nom: ['', [Validators.required, Validators.minLength(2)]],
       prenom: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.email]], // ← plus required
-      telephone: ['', [Validators.required, Validators.minLength(9), Validators.pattern(/^[0-9+\s]{9,15}$/)]], // ← minimum 9 chiffres
-
-      // Adresse de livraison
+      email: ['', [Validators.email]],
+      telephone: ['', [Validators.required, Validators.minLength(9), Validators.pattern(/^[0-9+\s]{9,15}$/)]],
       ville: ['', [Validators.required]],
       adresseLigne1: ['', [Validators.required]],
       adresseLigne2: [''],
       codePostal: [''],
-
-      // Options
       modeLivraison: ['LIVRAISON_DOMICILE', [Validators.required]],
       methodePaiement: ['WAVE', [Validators.required]],
       commentaire: ['']
@@ -659,37 +727,21 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   private checkAuthentication(): void {
     this.isAuthenticated = this.authService.isAuthenticated();
-    console.log('🔐 Utilisateur authentifié:', this.isAuthenticated);
-
-    if (this.isAuthenticated) {
-      const userData = this.authService.getCurrentUser();
-      console.log('👤 Données utilisateur:', userData);
-    }
   }
 
   private prefillUserData(): void {
-    console.log('🔄 Pré-remplissage des données utilisateur...');
-
     if (this.isAuthenticated) {
       const userData = this.authService.getCurrentUser();
-
       if (userData) {
-        console.log('👤 Données utilisateur trouvées:', userData);
-
         this.checkoutForm.patchValue({
           nom: userData.nom || '',
           prenom: userData.prenom || '',
           email: userData.email || '',
         });
-
         this.checkoutForm.get('email')?.disable();
-        console.log('✅ Données pré-remplies pour utilisateur connecté');
       } else {
-        console.log('⚠️ Utilisateur connecté mais pas de données dans le token');
         this.loadUserProfile();
       }
-    } else {
-      console.log('🔓 Utilisateur invité - pas de pré-remplissage');
     }
   }
 
@@ -699,29 +751,30 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (profile) => {
-            console.log('👤 Profil chargé depuis l\'API:', profile);
-
             this.checkoutForm.patchValue({
               nom: profile.nom,
               prenom: profile.prenom,
               email: profile.email,
               telephone: profile.telephone || ''
             });
-
             this.checkoutForm.get('email')?.disable();
           },
-          error: (error) => {
-            console.error('❌ Erreur lors du chargement du profil:', error);
-          }
+          error: () => {}
         });
     }
   }
 
+  getDeliveryFees(): number {
+    if (this.isModeLivraison('RETRAIT_MAGASIN')) return 0;
+    return this.estimation?.fraisLivraisonTotal ?? 0;
+  }
 
+  getTotalWithDelivery(): number {
+    if (this.isModeLivraison('RETRAIT_MAGASIN')) return this.cart.totalPrice;
+    return this.estimation?.montantTotal ?? this.cart.totalPrice;
+  }
 
   onSubmit(): void {
-    console.log('🚀 === DÉBUT SOUMISSION COMMANDE ===');
-
     this.checkAuthentication();
 
     if (this.isAuthenticated) {
@@ -731,7 +784,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     if (!this.checkoutForm.valid) {
       this.markFormGroupTouched(this.checkoutForm);
       this.toastService.error('Erreur', 'Veuillez remplir tous les champs obligatoires');
-
       if (this.isAuthenticated) {
         this.checkoutForm.get('email')?.disable();
       }
@@ -743,6 +795,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.canSubmit) {
+      this.toastService.error('Erreur', 'Veuillez sélectionner une zone de livraison valide');
+      return;
+    }
+
     this.isSubmitting = true;
     const formData = this.checkoutForm.value;
 
@@ -750,16 +807,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       adresseLivraison: {
         nom: formData.nom,
         prenom: formData.prenom,
-        ligne1: this.getFormattedAdresse(formData.ville, formData.adresseLigne1),
+        ligne1: formData.adresseLigne1,
         ligne2: formData.adresseLigne2 || '',
-        ville: this.getVilleLabel(formData.ville),
+        ville: formData.ville,
         codePostal: formData.codePostal || '',
         telephone: formData.telephone
       },
-
       modeLivraison: formData.modeLivraison as ModeLivraison,
+      zoneId: this.selectedZoneId ?? undefined,
       commentaire: formData.commentaire || '',
-
       lignesCommande: this.cart.items.map(item => ({
         produitId: item.produit.idProduit,
         quantite: item.quantite,
@@ -771,44 +827,27 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     let commandeObservable: Observable<Commande>;
 
     if (this.isAuthenticated) {
-      console.log('👤 === CRÉATION COMMANDE CLIENT AUTHENTIFIÉ ===');
       commandeObservable = this.apiService.creerCommandeClient(baseCommandeData);
     } else {
-      console.log('🔓 === CRÉATION COMMANDE INVITÉ ===');
-      const commandeInviteData = {
+      commandeObservable = this.apiService.creerCommandeInvite({
         ...baseCommandeData,
         emailInvite: formData.email,
         nomInvite: formData.nom,
         prenomInvite: formData.prenom,
         telephoneInvite: formData.telephone
-      };
-
-      commandeObservable = this.apiService.creerCommandeInvite(commandeInviteData);
+      });
     }
-
-    console.log('📤 Envoi de la commande...');
-    console.log('🛒 Nombre d\'articles:', this.cart.items.length);
-    console.log('💰 Total:', this.getTotalWithDelivery());
-    console.log('🏠 Adresse formatée:', baseCommandeData.adresseLivraison);
 
     commandeObservable
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: Commande) => {
-          console.log('✅ === COMMANDE CRÉÉE AVEC SUCCÈS ===');
-          console.log('🔢 ID:', response.idCommande);
-          console.log('📄 Numéro:', response.numeroCommande);
-
           this.isSubmitting = false;
           this.cartService.clearCart();
-
-          // 📱 Envoyer notification WhatsApp
-
           this.toastService.success(
             'Commande créée !',
             `Votre commande ${response.numeroCommande} a été créée avec succès`
           );
-
           if (response.idCommande) {
             this.router.navigate(['/commande', response.idCommande]);
           } else {
@@ -816,31 +855,20 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('❌ === ERREUR CRÉATION COMMANDE ===');
-          console.error('Error object:', error);
-
           this.isSubmitting = false;
-
           let errorMessage = 'Une erreur s\'est produite lors de la création de votre commande';
-
           if (error.error) {
-            if (typeof error.error === 'string') {
-              errorMessage = error.error;
-            } else if (error.error.message) {
-              errorMessage = error.error.message;
-            }
+            if (typeof error.error === 'string') errorMessage = error.error;
+            else if (error.error.message) errorMessage = error.error.message;
           }
-
           if (error.status === 401) {
             errorMessage = 'Vous devez être connecté pour passer une commande client';
           } else if (error.status === 403) {
             errorMessage = 'Vous n\'avez pas les permissions nécessaires';
           } else if (error.status === 400) {
-            errorMessage = 'Les données de la commande sont invalides';
+            errorMessage = error.error?.message || 'Les données de la commande sont invalides';
           }
-
           this.toastService.error('Erreur', errorMessage);
-
           if (this.isAuthenticated) {
             this.checkoutForm.get('email')?.disable();
           }
@@ -848,55 +876,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       });
   }
 
-  private getFormattedAdresse(villeValue: string, adresseValue: string): string {
-    const ville = this.villesData.find(v => v.value === villeValue);
-    const adresse = this.adressesData.find(a => a.value === adresseValue);
-
-    if (ville && adresse) {
-      return `${adresse.label}, ${ville.label}`;
-    }
-
-    return adresseValue || '';
-  }
-
-  private getVilleLabel(villeValue: string): string {
-    const ville = this.villesData.find(v => v.value === villeValue);
-    return ville?.label || villeValue;
-  }
-
   isFieldInvalid(fieldName: string): boolean {
     const field = this.checkoutForm.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
   }
 
-
-
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
+      formGroup.get(key)?.markAsTouched();
     });
-  }
-
-  getDeliveryFees(): number {
-    const modeLivraison = this.checkoutForm.get('modeLivraison')?.value;
-
-    // Si retrait en magasin, pas de frais
-    if (modeLivraison === 'RETRAIT_MAGASIN') {
-      return 0;
-    }
-
-    // Si aucun quartier sélectionné, pas de frais
-    if (this.selectedQuartierPrixLivraison === null) {
-      return 0;
-    }
-
-    // Pour la livraison à domicile
-    return this.selectedQuartierPrixLivraison || 0;
-  }
-
-  getTotalWithDelivery(): number {
-    return this.cart.totalPrice + this.getDeliveryFees();
   }
 
   goToProducts(): void {
