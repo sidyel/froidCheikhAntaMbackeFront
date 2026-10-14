@@ -5,6 +5,8 @@ import { takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../../services/api.service';
 import { ImageUrlService } from '../../../services/image-url.service'; // Nouveau service
 import { Produit, Categorie, Marque } from '../../../models/interfaces';
+import { ConfigService } from '../../../services/config.service';
+import { SiteConfig } from '../../../models/site-config.interface';
 
 @Component({
   selector: 'app-home',
@@ -46,9 +48,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
                   [class.opacity-100]="isLoaded"
                   [class.translate-y-8]="!isLoaded"
                   [class.opacity-0]="!isLoaded">
-                Froid Cheikh
-                <br>
-                <span class="text-secondary-400 animate-pulse">Anta Mbacké</span>
+                {{ config.nomSite }}
               </h1>
 
               <p class="text-xl lg:text-2xl text-primary-100 leading-relaxed transform transition-all duration-1000 delay-400"
@@ -56,7 +56,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
                  [class.opacity-100]="isLoaded"
                  [class.translate-y-8]="!isLoaded"
                  [class.opacity-0]="!isLoaded">
-                Spécialiste en climatisation, réfrigération et électroménager depuis plus de 15 ans
+                {{ config.sloganSite }}
               </p>
 
               <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 transform transition-all duration-1000 delay-600"
@@ -88,11 +88,11 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
                 <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-8 space-y-2 sm:space-y-0">
                   <div class="flex items-center space-x-2 hover:text-secondary-400 transition-colors duration-300">
                     <lucide-icon name="phone" class="w-5 h-5 text-secondary-400 animate-bounce-subtle"></lucide-icon>
-                    <span class="text-primary-100">77 335 20 00 / 76 888 04 42</span>
+                    <span class="text-primary-100">{{ telephonesDisplay }}</span>
                   </div>
                   <div class="flex items-center space-x-2 hover:text-secondary-400 transition-colors duration-300">
                     <lucide-icon name="map-pin" class="w-5 h-5 text-secondary-400 animate-bounce-subtle"></lucide-icon>
-                    <span class="text-primary-100">Ouest Foire, Cité Aelmas</span>
+                    <span class="text-primary-100">{{ config.adresseCourte }}</span>
                   </div>
                 </div>
               </div>
@@ -106,8 +106,8 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
                  [class.opacity-0]="!isLoaded">
               <div class="relative z-10 group">
                 <img
-                  src="assets/images/hero-climatiseur.jpg"
-                  alt="Climatiseurs et électroménager Froid Cheikh"
+                  [src]="config.logoUrl || 'assets/images/hero-climatiseur.jpg'"
+                  [alt]="'Climatiseurs et électroménager ' + config.nomSite"
                   class="w-full h-auto rounded-2xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
                   onerror="this.style.display='none'">
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 rounded-2xl"></div>
@@ -336,7 +336,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
                [class.translate-y-8]="!isFeaturesVisible"
                [class.opacity-0]="!isFeaturesVisible">
             <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Pourquoi Choisir Froid Cheikh ?
+              Pourquoi Choisir {{ config.nomSite }} ?
             </h2>
           </div>
 
@@ -348,7 +348,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
                 <lucide-icon name="truck" class="w-8 h-8 text-primary-600 group-hover:animate-bounce"></lucide-icon>
               </div>
               <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors duration-300">Livraison Rapide</h3>
-              <p class="text-gray-600">Livraison gratuite à Dakar et ses environs</p>
+              <p class="text-gray-600">{{ config.descriptionLivraison || 'Livraison gratuite à Dakar et ses environs' }}</p>
             </div>
 
             <div class="text-center group transform transition-all duration-500 hover:scale-105"
@@ -374,11 +374,11 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
             <div class="text-center group transform transition-all duration-500 hover:scale-105"
                  [class.animate-fade-in-up]="isFeaturesVisible"
                  style="animation-delay: 600ms">
-              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 group-hover:scale-110 transition-all duration-300">
-                <lucide-icon name="check" class="w-8 h-8 text-green-600 group-hover:animate-bounce"></lucide-icon>
+              <div class="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-200 group-hover:scale-110 transition-all duration-300">
+                <lucide-icon name="check" class="w-8 h-8 text-accent-600 group-hover:animate-bounce"></lucide-icon>
               </div>
-              <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors duration-300">15 Ans d'Expérience</h3>
-              <p class="text-gray-600">Plus de 15 ans d'expertise dans le domaine du froid</p>
+              <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-accent-600 transition-colors duration-300">{{ config.anneesExperience || 15 }} Ans d'Expérience</h3>
+              <p class="text-gray-600">Plus de {{ config.anneesExperience || 15 }} ans d'expertise dans le domaine du froid</p>
             </div>
           </div>
         </div>
@@ -402,10 +402,10 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
 
           <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fade-in-up" style="animation-delay: 400ms">
             <a
-              href="tel:+221773352000"
+              [href]="'tel:' + firstTelephone"
               class="btn-secondary text-lg px-8 py-4 transform hover:scale-105 hover:shadow-xl transition-all duration-300">
               <lucide-icon name="phone" class="w-5 h-5 animate-pulse"></lucide-icon>
-              <span>77 335 20 00</span>
+              <span>{{ firstTelephone }}</span>
             </a>
 
             <button
@@ -1201,6 +1201,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Propriétés pour le carrousel d'images
+  // TODO LOT2: remplacer par une entité ImageHero chargée depuis l'API
   heroImages = [
     {
       url: 'assets/images/p1.jpg',
@@ -1242,10 +1243,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   isLoadingProducts = true;
   isLoadingBrands = true;
 
+  get config(): SiteConfig { return this.configService.config; }
+
+  get telephonesDisplay(): string {
+    const tels = this.config.telephones;
+    if (!tels || tels.length === 0) return '';
+    return tels.map(t => t.numero).join(' / ');
+  }
+
+  get firstTelephone(): string {
+    const tels = this.config.telephones;
+    return (tels && tels.length > 0) ? tels[0].numero : '';
+  }
+
   constructor(
     private apiService: ApiService,
     private imageUrlService: ImageUrlService,
-    private router: Router
+    private router: Router,
+    private configService: ConfigService
   ) {}
 
   ngOnInit(): void {
