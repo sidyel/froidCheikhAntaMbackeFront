@@ -16,7 +16,10 @@ import {
   SearchParams,
   ProductFilters,
   LigneCommande,
-  Paiement, ResetPasswordResponse
+  Paiement, ResetPasswordResponse,
+  PromotionRequest,
+  PromotionResponse,
+  PromotionApercuPage
 } from '../models/interfaces';
 
 @Injectable({
@@ -64,6 +67,7 @@ export class ApiService {
         if (filters.prixMax !== undefined) httpParams = httpParams.set('prixMax', filters.prixMax.toString());
         if (filters.categorieId) httpParams = httpParams.set('categorieId', filters.categorieId.toString());
         if (filters.marqueId) httpParams = httpParams.set('marqueId', filters.marqueId.toString());
+        if (filters.enPromotion !== undefined) httpParams = httpParams.set('enPromotion', filters.enPromotion.toString());
       }
     }
 
@@ -406,5 +410,45 @@ export class ApiService {
   // Ajoutez cette méthode dans votre ApiService
   resetPassword(email: string): Observable<ResetPasswordResponse> {
     return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/auth/reset-password`, { email });
+  }
+
+  // ==================== PROMOTIONS (ADMIN) ====================
+  getPromotionsActives(page = 0, size = 20): Observable<PagedResponse<PromotionResponse>> {
+    return this.http.get<PagedResponse<PromotionResponse>>(
+      `${this.apiUrl}/admin/promotions/actives`, { params: new HttpParams().set('page', page).set('size', size) });
+  }
+
+  getPromotionsProgrammees(page = 0, size = 20): Observable<PagedResponse<PromotionResponse>> {
+    return this.http.get<PagedResponse<PromotionResponse>>(
+      `${this.apiUrl}/admin/promotions/programmees`, { params: new HttpParams().set('page', page).set('size', size) });
+  }
+
+  getPromotionsExpirees(page = 0, size = 20): Observable<PagedResponse<PromotionResponse>> {
+    return this.http.get<PagedResponse<PromotionResponse>>(
+      `${this.apiUrl}/admin/promotions/expirees`, { params: new HttpParams().set('page', page).set('size', size) });
+  }
+
+  getPromotionById(id: number): Observable<PromotionResponse> {
+    return this.http.get<PromotionResponse>(`${this.apiUrl}/admin/promotions/${id}`);
+  }
+
+  creerPromotion(dto: PromotionRequest): Observable<PromotionResponse> {
+    return this.http.post<PromotionResponse>(`${this.apiUrl}/admin/promotions`, dto);
+  }
+
+  modifierPromotion(id: number, dto: PromotionRequest): Observable<PromotionResponse> {
+    return this.http.put<PromotionResponse>(`${this.apiUrl}/admin/promotions/${id}`, dto);
+  }
+
+  supprimerPromotion(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/promotions/${id}`);
+  }
+
+  apercuPromotion(dto: PromotionRequest, page = 0, size = 10): Observable<PromotionApercuPage> {
+    return this.http.post<PromotionApercuPage>(
+      `${this.apiUrl}/admin/promotions/apercu`,
+      dto,
+      { params: new HttpParams().set('page', page).set('size', size) }
+    );
   }
 }
