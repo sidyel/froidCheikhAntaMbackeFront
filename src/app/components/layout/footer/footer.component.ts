@@ -5,6 +5,7 @@ import { ConfigService } from '../../../services/config.service';
 import { SiteConfig } from '../../../models/site-config.interface';
 import { NewsletterService } from '../../../services/newsletter.service';
 import { ToastService } from '../../../services/toast.service';
+import { ApiService } from '../../../services/api.service';
 
 interface SocialLink {
   name: string;
@@ -49,13 +50,7 @@ export class FooterComponent implements OnInit, OnDestroy {
     { label: 'Contact', route: '/contact', icon: 'mail' }
   ];
 
-  categoryLinks: CategoryLink[] = [
-    { label: 'Climatiseurs', route: '/produits/categorie/1', categoryId: 1 },
-    { label: 'Réfrigérateurs', route: '/produits/categorie/2', categoryId: 2 },
-    { label: 'Chambres Froides', route: '/produits/categorie/3', categoryId: 3 },
-    { label: 'Ventilateurs', route: '/produits/categorie/4', categoryId: 4 },
-    { label: 'Électroménager', route: '/produits/categorie/5', categoryId: 5 }
-  ];
+  categoryLinks: CategoryLink[] = [];
 
   get socialLinks(): SocialLink[] {
     const links: SocialLink[] = [];
@@ -85,24 +80,44 @@ export class FooterComponent implements OnInit, OnDestroy {
     { name: 'Espèces', color: 'bg-green-600', logo: 'assets/images/espece.jpg' }
   ];
 
-  // Business Hours
-  businessHours = [
-    { day: 'Lun - Ven', hours: '8h00 - 18h00' },
-    { day: 'Samedi', hours: '8h00 - 17h00' },
-    { day: 'Dimanche', hours: 'Fermé' }
-  ];
+  get businessHours(): { day: string; hours: string }[] {
+    const horaires = this.config.horairesOuverture;
+    if (horaires && horaires.length > 0) {
+      return horaires.map(h => ({
+        day: h.jour,
+        hours: h.ferme ? 'Fermé' : `${h.heureDebut} - ${h.heureFin}`
+      }));
+    }
+    return [
+      { day: 'Lun - Ven', hours: '8h00 - 18h00' },
+      { day: 'Samedi', hours: '8h00 - 17h00' },
+      { day: 'Dimanche', hours: 'Fermé' }
+    ];
+  }
 
   constructor(
     private router: Router,
     private configService: ConfigService,
     private newsletterService: NewsletterService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private apiService: ApiService
   ) {
     this.config = this.configService.config;
   }
 
   ngOnInit(): void {
-    // Initialisation si nécessaire
+    this.apiService.getCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cats) => {
+          this.categoryLinks = cats.slice(0, 5).map(c => ({
+            label: c.nomCategorie,
+            route: `/produits/categorie/${c.idCategorie}`,
+            categoryId: c.idCategorie
+          }));
+        },
+        error: () => {}
+      });
   }
 
   ngOnDestroy(): void {

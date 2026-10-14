@@ -10,8 +10,8 @@
           <div class="company-header">
             <div class="flex-shrink-0">
               <img
-                src="assets/images/logo.png"
-                alt="Froid Cheikh Logo"
+                [src]="config.logoUrl || 'assets/images/logo.png'"
+                [alt]="config.nomSite + ' Logo'"
                 class="h-16 w-auto object-contain"
               >
             </div>
@@ -22,7 +22,7 @@
           </div>
 
           <p class="company-description">
-            Spécialiste en climatisation, réfrigération et électroménager depuis plus de 15 ans au Sénégal.
+            {{ config.sloganSite }}
           </p>
 
           <div class="company-details">
@@ -200,7 +200,8 @@
           <!-- Remplacez cette section -->
           <div class="social-list">
             <!-- Facebook -->
-            <a href="https://facebook.com/froidcheikh"
+            <a *ngIf="config.facebookUrl"
+               [href]="config.facebookUrl"
                target="_blank"
                rel="noopener noreferrer"
                class="social-link social-link-facebook"
@@ -229,7 +230,8 @@
             </a>
 
             <!-- Instagram -->
-            <a href="https://instagram.com/froidcheikh"
+            <a *ngIf="config.instagramUrl"
+               [href]="config.instagramUrl"
                target="_blank"
                rel="noopener noreferrer"
                class="social-link social-link-instagram"
