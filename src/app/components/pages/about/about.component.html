@@ -6,11 +6,11 @@
     </div>
     <div class="container">
       <div class="hero-content">
-        <h1 class="hero-title">À Propos de {{ companyInfo.name }}</h1>
-        <p class="hero-subtitle">{{ companyInfo.description }}</p>
+        <h1 class="hero-title">À Propos de {{ config.nomSite }}</h1>
+        <p class="hero-subtitle">{{ config.descriptionSite || config.sloganSite }}</p>
         <div class="hero-stats">
           <div class="stat">
-            <span class="stat-number">{{ currentYear - companyInfo.foundedYear }}+</span>
+            <span class="stat-number">{{ config.anneesExperience || 15 }}+</span>
             <span class="stat-label">Années d'expérience</span>
           </div>
           <div class="stat">
@@ -34,14 +34,14 @@
           <div class="mission-card">
             <lucide-icon name="target" class="card-icon"></lucide-icon>
             <h3>Notre Mission</h3>
-            <p>{{ companyInfo.mission }}</p>
+            <p>{{ config.mission }}</p>
           </div>
         </div>
         <div class="col-md-6">
           <div class="vision-card">
             <lucide-icon name="eye" class="card-icon"></lucide-icon>
             <h3>Notre Vision</h3>
-            <p>{{ companyInfo.vision }}</p>
+            <p>{{ config.vision }}</p>
           </div>
         </div>
       </div>
