@@ -147,7 +147,7 @@ for (const file of allFiles) {
 }
 
 if (totalHits === 0) {
-  console.log('✅  Aucune valeur en dur détectée — LOT 1 conforme.');
+  console.log('✅  Aucune valeur en dur détectée — LOT 1 + LOT 2 conformes.');
   process.exit(0);
 } else {
   console.log(`\n❌  ${totalHits} occurrence(s) dans ${totalFiles} fichier(s) à corriger.`);
