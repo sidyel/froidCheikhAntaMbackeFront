@@ -90,7 +90,7 @@ import { Produit } from '../../../models/interfaces';
                     {{ produit.marque.nomMarque }}
                   </p>
                   <p class="text-sm font-semibold text-primary-600">
-                    {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
+                    {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
                   </p>
                 </div>
 

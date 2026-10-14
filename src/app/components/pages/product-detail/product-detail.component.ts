@@ -6,6 +6,7 @@ import { ApiService } from '../../../services/api.service';
 import { CartService } from '../../../services/cart.service';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
+import { ConfigService } from '../../../services/config.service';
 import { Produit, Breadcrumb } from '../../../models/interfaces';
 
 @Component({
@@ -120,7 +121,7 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
               <div class="mb-6">
                 <div class="flex items-center space-x-3">
                   <span class="text-3xl sm:text-4xl font-bold text-primary-600">
-                    {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
+                    {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
                   </span>
                 </div>
                 <p class="text-sm text-gray-600 mt-1">Prix TTC</p>
@@ -227,7 +228,7 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
                 <!-- Contact - TAILLE AUGMENTÉE -->
                 <div class="flex items-center space-x-4">
                   <a
-                    href="tel:+221773352000"
+                    [href]="'tel:+221' + firstTelephone"
                     class="flex items-center space-x-3 text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 hover:bg-primary-100 px-4 py-3 rounded-lg">
                     <lucide-icon name="phone" class="w-5 h-5"></lucide-icon>
                     <span class="text-base font-medium">Appelez-nous pour plus d'infos</span>
@@ -374,13 +375,19 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   selectedQuantity = 1;
   currentProductId: number = 0;
 
+  get firstTelephone(): string {
+    const tels = this.configService.config.telephones;
+    return (tels && tels.length > 0) ? tels[0].numero.replace(/\s/g, '') : '';
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private apiService: ApiService,
     private cartService: CartService,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private configService: ConfigService
   ) {
     this.isAuthenticated = this.authService.isAuthenticated();
   }
@@ -615,8 +622,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
     switch (method) {
       case 'whatsapp':
-        const message = `Bonjour, je suis intéressé(e) par ce produit: ${this.produit?.nomProduit}\nPrix: ${this.produit?.prix} XOF\nLien: ${url}`;
-        window.open(`https://wa.me/221773352000?text=${encodeURIComponent(message)}`, '_blank');
+        const devise = this.configService.config.devise || 'XOF';
+        const message = `Bonjour, je suis intéressé(e) par ce produit: ${this.produit?.nomProduit}\nPrix: ${this.produit?.prix} ${devise}\nLien: ${url}`;
+        const tel = this.firstTelephone || '';
+        window.open(`https://wa.me/221${tel}?text=${encodeURIComponent(message)}`, '_blank');
         break;
     }
   }

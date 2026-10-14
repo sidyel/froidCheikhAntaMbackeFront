@@ -117,7 +117,7 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
               {{ commande.dateCommande | date:'short' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ commande.montantTotal | currency:'XOF':'symbol':'1.0-0' }}
+              {{ commande.montantTotal | currency:('' | devise):'symbol':'1.0-0' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <!-- VERSION CORRIGÉE DU SELECT -->
@@ -303,8 +303,8 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
                     <p class="text-sm text-gray-500">Quantité: {{ ligne.quantite }}</p>
                   </div>
                   <div class="text-right">
-                    <p class="font-medium text-gray-900">{{ ligne.prixUnitaire | currency:'XOF':'symbol':'1.0-0' }}</p>
-                    <p class="text-sm text-gray-500">Total: {{ ligne.sousTotal | currency:'XOF':'symbol':'1.0-0' }}</p>
+                    <p class="font-medium text-gray-900">{{ ligne.prixUnitaire | currency:('' | devise):'symbol':'1.0-0' }}</p>
+                    <p class="text-sm text-gray-500">Total: {{ ligne.sousTotal | currency:('' | devise):'symbol':'1.0-0' }}</p>
                   </div>
                 </div>
               </div>
@@ -318,7 +318,7 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
               <div class="border-t border-gray-200 pt-3 mt-3">
                 <div class="flex justify-between">
                   <span class="text-base font-medium text-gray-900">Total commande:</span>
-                  <span class="text-base font-medium text-gray-900">{{ selectedCommande.montantTotal | currency:'XOF':'symbol':'1.0-0' }}</span>
+                  <span class="text-base font-medium text-gray-900">{{ selectedCommande.montantTotal | currency:('' | devise):'symbol':'1.0-0' }}</span>
                 </div>
               </div>
             </div>

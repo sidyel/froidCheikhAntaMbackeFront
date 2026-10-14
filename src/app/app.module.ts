@@ -4,6 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ConfigService } from './services/config.service';
+import { DevisePipe } from './pipes/devise.pipe';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -193,7 +194,8 @@ import { InstallWizardComponent } from './components/pages/install-wizard/instal
     LazyLoadDirective,
     AdminContactsComponent,
     SiteSettingsComponent,
-    InstallWizardComponent
+    InstallWizardComponent,
+    DevisePipe
   ],
   imports: [
     BrowserModule,

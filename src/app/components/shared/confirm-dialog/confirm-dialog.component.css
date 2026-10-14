@@ -52,7 +52,7 @@
 
 .dialog-icon.success {
   background: #dcfce7;
-  color: #10b981;
+  color: rgb(var(--color-secondary-500));
 }
 
 .dialog-icon.warning {
@@ -62,7 +62,7 @@
 
 .dialog-icon.danger {
   background: #fee2e2;
-  color: #ef4444;
+  color: rgb(var(--color-accent-600));
 }
 
 .dialog-icon lucide-icon {
@@ -172,12 +172,12 @@
 }
 
 .btn-success {
-  background: #10b981;
+  background: rgb(var(--color-secondary-500));
   color: white;
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #059669;
+  background: rgb(var(--color-secondary-700));
 }
 
 .btn-warning {
@@ -190,12 +190,12 @@
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: rgb(var(--color-accent-600));
   color: white;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: rgb(var(--color-accent-700));
 }
 
 /* Spinner */

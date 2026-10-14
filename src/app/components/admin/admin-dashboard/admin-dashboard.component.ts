@@ -97,7 +97,7 @@ import { AdminService, Contact } from '../../../services/admin.service';
                   <p class="text-sm text-gray-500">{{ commande.dateCommande | date:'short' }}</p>
                 </div>
                 <div class="text-right">
-                  <p class="text-sm font-medium text-gray-900">{{ commande.montantTotal | currency:'XOF':'symbol':'1.0-0' }}</p>
+                  <p class="text-sm font-medium text-gray-900">{{ commande.montantTotal | currency:('' | devise):'symbol':'1.0-0' }}</p>
                   <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full"
                         [ngClass]="{
                           'bg-yellow-100 text-yellow-800': commande.statutCommande === 'EN_ATTENTE',

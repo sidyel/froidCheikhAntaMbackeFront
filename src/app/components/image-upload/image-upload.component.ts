@@ -247,7 +247,7 @@ import { ToastService } from "../../services/toast.service";
       position: absolute;
       top: 0.5rem;
       right: 0.5rem;
-      background: #EF4444;
+      background: rgb(var(--color-accent-600));
       color: #FFFFFF;
       border-radius: 9999px;
       padding: 0.25rem;
@@ -258,14 +258,14 @@ import { ToastService } from "../../services/toast.service";
       justify-content: center;
       transition: background .15s ease;
     }
-    .remove-button:hover { background: #DC2626; }
+    .remove-button:hover { background: rgb(var(--color-accent-700)); }
     .icon-x { width: 1rem; height: 1rem; }
 
     .success-indicator {
       position: absolute;
       top: 0.5rem;
       left: 0.5rem;
-      background: #10B981;
+      background: rgb(var(--color-secondary-500));
       color: #FFFFFF;
       border-radius: 9999px;
       padding: 0.25rem;
@@ -303,7 +303,7 @@ import { ToastService } from "../../services/toast.service";
       border-radius: 0.5rem;
     }
     .error-item { display:flex; align-items:center; gap: 0.5rem; }
-    .icon-alert { width: 1rem; height: 1rem; color: #EF4444; }
+    .icon-alert { width: 1rem; height: 1rem; color: rgb(var(--color-accent-600)); }
     .error-text { color: #B91C1C; font-size: 0.875rem; }
 
     /* Actions */

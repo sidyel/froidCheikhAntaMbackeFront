@@ -273,7 +273,7 @@
 }
 
 .hour-item.closed .hour-time {
-  color: #ef4444;
+  color: rgb(var(--color-accent-600));
   font-weight: 500;
 }
 
@@ -409,7 +409,7 @@
 }
 
 .form-button.success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, rgb(var(--color-secondary-500)) 0%, rgb(var(--color-secondary-700)) 100%);
 }
 
 .button-icon {

@@ -98,10 +98,10 @@ import { ToastService } from '../../../services/toast.service';
         <div class="flex items-center justify-between mb-3 sm:mb-4">
           <div class="flex items-center space-x-1 sm:space-x-2">
             <span class="text-lg sm:text-xl md:text-2xl font-bold text-primary-600">
-              {{ produit.prix | currency:'XOF':'symbol':'1.0-0' }}
+              {{ produit.prix | currency:('' | devise):'symbol':'1.0-0' }}
             </span>
             <span *ngIf="hasDiscount()" class="text-sm sm:text-base md:text-lg text-gray-500 line-through">
-              {{ getOriginalPrice() | currency:'XOF':'symbol':'1.0-0' }}
+              {{ getOriginalPrice() | currency:('' | devise):'symbol':'1.0-0' }}
             </span>
           </div>
         </div>
