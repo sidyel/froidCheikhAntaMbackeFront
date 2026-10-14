@@ -151,6 +151,7 @@ import { AdminEquipeComponent } from './components/admin/admin-equipe/admin-equi
 import { AdminRealisationsComponent } from './components/admin/admin-realisations/admin-realisations.component';
 import { AdminZonesLivraisonComponent } from './components/admin/admin-zones-livraison/admin-zones-livraison.component';
 import { AdminPromotionsComponent } from './components/admin/admin-promotions/admin-promotions.component';
+import { AdminModelesAttributsComponent } from './components/admin/admin-modeles-attributs/admin-modeles-attributs.component';
 
 @NgModule({
   declarations: [
@@ -212,6 +213,7 @@ import { AdminPromotionsComponent } from './components/admin/admin-promotions/ad
     AdminRealisationsComponent,
     AdminZonesLivraisonComponent,
     AdminPromotionsComponent,
+    AdminModelesAttributsComponent,
     DevisePipe
   ],
   imports: [
