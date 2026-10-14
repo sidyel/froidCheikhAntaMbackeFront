@@ -140,34 +140,23 @@ import { Produit, Breadcrumb } from '../../../models/interfaces';
                 <p class="text-sm text-gray-600 mt-1">Prix TTC</p>
               </div>
 
-              <!-- Technical Specifications -->
-              <div class="mb-6" *ngIf="hasTechnicalSpecs()">
+              <!-- Caractéristiques techniques — tableau unifié -->
+              <div class="mb-6" *ngIf="allSpecs().length > 0">
                 <h3 class="text-lg font-semibold text-gray-900 mb-3">Caractéristiques techniques</h3>
-                <div class="grid grid-cols-2 gap-4">
-                  <div *ngIf="produit.puissanceBTU" class="flex items-center space-x-2">
-                    <lucide-icon name="zap" class="w-4 h-4 text-blue-500"></lucide-icon>
-                    <span class="text-sm">{{ produit.puissanceBTU }} BTU</span>
-                  </div>
-                  <div *ngIf="produit.labelEnergie" class="flex items-center space-x-2">
-                    <lucide-icon name="shield" class="w-4 h-4 text-green-500"></lucide-icon>
-                    <span class="text-sm">Classe {{ produit.labelEnergie.replace('_PLUS', '+') }}</span>
-                  </div>
-                  <div *ngIf="produit.consommationWatt" class="flex items-center space-x-2">
-                    <lucide-icon name="zap" class="w-4 h-4 text-yellow-500"></lucide-icon>
-                    <span class="text-sm">{{ produit.consommationWatt }}W</span>
-                  </div>
-                  <div *ngIf="produit.dimensions" class="flex items-center space-x-2">
-                    <lucide-icon name="package" class="w-4 h-4 text-gray-500"></lucide-icon>
-                    <span class="text-sm">{{ produit.dimensions }}</span>
-                  </div>
-                  <div *ngIf="produit.poids" class="flex items-center space-x-2">
-                    <lucide-icon name="package" class="w-4 h-4 text-gray-500"></lucide-icon>
-                    <span class="text-sm">{{ produit.poids }} kg</span>
-                  </div>
-                  <div *ngIf="produit.garantie" class="flex items-center space-x-2">
-                    <lucide-icon name="shield" class="w-4 h-4 text-purple-500"></lucide-icon>
-                    <span class="text-sm">{{ produit.garantie }}</span>
-                  </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm border-collapse">
+                    <tbody>
+                      <tr *ngFor="let spec of allSpecs(); odd as isOdd"
+                        [class]="isOdd ? 'bg-gray-50' : 'bg-white'">
+                        <td class="py-2 px-3 font-medium text-gray-600 w-2/5 border-b border-gray-100">
+                          {{ spec.label }}
+                        </td>
+                        <td class="py-2 px-3 text-gray-900 border-b border-gray-100">
+                          {{ spec.value }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -681,12 +670,40 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   // UI helper methods
   hasTechnicalSpecs(): boolean {
-    return !!(this.produit?.puissanceBTU ||
-      this.produit?.labelEnergie ||
-      this.produit?.consommationWatt ||
-      this.produit?.dimensions ||
-      this.produit?.poids ||
-      this.produit?.garantie);
+    return this.allSpecs().length > 0;
+  }
+
+  allSpecs(): {label: string; value: string}[] {
+    const specs: {label: string; value: string}[] = [];
+    if (!this.produit) return specs;
+
+    // 1. Attributs dynamiques (prioritaires)
+    (this.produit.attributs || []).forEach(a => {
+      if (a.valeurAttribut) specs.push({label: a.nomAttribut, value: a.valeurAttribut});
+    });
+
+    // 2. Colonnes fixes non nulles (éviter les doublons avec les attributs)
+    const dynamicNames = new Set(specs.map(s => s.label.toLowerCase()));
+    if (this.produit.puissanceBTU && !dynamicNames.has('puissance'))
+      specs.push({label: 'Puissance', value: `${this.produit.puissanceBTU} BTU`});
+    if (this.produit.consommationWatt && !dynamicNames.has('consommation'))
+      specs.push({label: 'Consommation', value: `${this.produit.consommationWatt} W`});
+    if (this.produit.labelEnergie && !dynamicNames.has('classe énergétique'))
+      specs.push({label: 'Classe énergétique', value: this.produit.labelEnergie.replace(/_PLUS/g, '+')});
+    if (this.produit.dimensions && !dynamicNames.has('dimensions'))
+      specs.push({label: 'Dimensions', value: this.produit.dimensions});
+    if (this.produit.poids && !dynamicNames.has('poids'))
+      specs.push({label: 'Poids', value: `${this.produit.poids} kg`});
+    if (this.produit.garantie && !dynamicNames.has('garantie'))
+      specs.push({label: 'Garantie', value: this.produit.garantie});
+
+    // 3. Modèle fabricant et EAN
+    if (this.produit.modeleFabricant)
+      specs.push({label: 'Modèle', value: this.produit.modeleFabricant});
+    if (this.produit.ean)
+      specs.push({label: 'EAN', value: this.produit.ean});
+
+    return specs;
   }
 
   getStockIndicatorClass(): string {
