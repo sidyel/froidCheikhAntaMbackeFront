@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -142,18 +142,33 @@ import { Commande, PagedResponse, StatutCommande, Breadcrumb } from '../../../mo
                 </div>
               </div>
 
-              <!-- Order Progress -->
-              <div class="mb-4" *ngIf="shouldShowProgress(order.statutCommande)">
-                <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
-                  <span>Progression de la commande</span>
-                  <span>{{ getProgressPercentage(order.statutCommande) }}%</span>
+              <!-- Frise 3 étapes (masquée si ANNULEE) -->
+              <div class="mb-4" *ngIf="order.statutCommande !== 'ANNULEE'">
+                <div class="flex items-center gap-0">
+                  <ng-container *ngFor="let step of getSteps(order.statutCommande); let last = last">
+                    <div class="flex flex-col items-center min-w-0">
+                      <div [class.bg-primary-600]="step.done || step.active"
+                           [class.bg-gray-200]="!step.done && !step.active"
+                           class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                           [class.text-white]="step.done || step.active"
+                           [class.text-gray-400]="!step.done && !step.active">
+                        {{ step.done ? '✓' : step.num }}
+                      </div>
+                      <span class="text-xs mt-1 text-center whitespace-nowrap px-1"
+                            [class.text-primary-700]="step.active"
+                            [class.text-gray-400]="!step.active && !step.done"
+                            [class.text-gray-600]="step.done">{{ step.label }}</span>
+                    </div>
+                    <div *ngIf="!last" class="flex-1 h-0.5 mb-3"
+                         [class.bg-primary-400]="step.done"
+                         [class.bg-gray-200]="!step.done"></div>
+                  </ng-container>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    class="bg-primary-600 h-2 rounded-full transition-all duration-500"
-                    [style.width.%]="getProgressPercentage(order.statutCommande)">
-                  </div>
-                </div>
+              </div>
+              <!-- Affichage spécifique ANNULEE -->
+              <div *ngIf="order.statutCommande === 'ANNULEE'"
+                   class="mb-4 flex items-center gap-2 text-red-600 text-sm">
+                <span>✕</span><span>Commande annulée</span>
               </div>
 
               <!-- Delivery Info -->
@@ -191,28 +206,14 @@ import { Commande, PagedResponse, StatutCommande, Breadcrumb } from '../../../mo
                   <span>Recommander</span>
                 </button>
 
-                <button
-                  *ngIf="canDownloadInvoice(order)"
-                  (click)="downloadInvoice(order)"
-                  class="btn-outline text-sm py-2 px-4">
-                  <lucide-icon name="download" class="w-4 h-4"></lucide-icon>
-                  <span>Facture</span>
-                </button>
-
-                <button
-                  *ngIf="canTrackOrder(order)"
-                  (click)="trackOrder(order)"
-                  class="btn-outline text-sm py-2 px-4">
-                  <lucide-icon name="truck" class="w-4 h-4"></lucide-icon>
-                  <span>Suivre</span>
-                </button>
-
+                <!-- Annulation uniquement si EN_ATTENTE -->
                 <button
                   *ngIf="canCancelOrder(order)"
                   (click)="cancelOrder(order)"
+                  [disabled]="cancellingOrderId === order.idCommande"
                   class="btn-danger text-sm py-2 px-4">
                   <lucide-icon name="x" class="w-4 h-4"></lucide-icon>
-                  <span>Annuler</span>
+                  <span>{{ cancellingOrderId === order.idCommande ? 'Annulation...' : 'Annuler' }}</span>
                 </button>
               </div>
             </div>
@@ -291,6 +292,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   // UI State
   isLoading = true;
+  cancellingOrderId: number | null = null;
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Accueil', route: '/' },
@@ -396,10 +398,38 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   cancelOrder(order: Commande): void {
-    if (!confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) return;
+    if (!confirm(`Annuler la commande ${order.numeroCommande} ? Cette action est irréversible.`)) return;
 
-    // Implémenter l'annulation de commande
-    this.toastService.info('Fonctionnalité bientôt disponible', 'L\'annulation de commande sera bientôt disponible');
+    this.cancellingOrderId = order.idCommande;
+    this.apiService.annulerCommandeClient(order.idCommande)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updated) => {
+          const idx = this.orders.findIndex(o => o.idCommande === order.idCommande);
+          if (idx >= 0) this.orders[idx] = { ...this.orders[idx], ...updated };
+          this.cancellingOrderId = null;
+          this.toastService.success('Commande annulée', `La commande ${order.numeroCommande} a été annulée.`);
+        },
+        error: (err) => {
+          this.cancellingOrderId = null;
+          this.toastService.error('Erreur', err?.error?.message || 'Impossible d\'annuler cette commande.');
+        }
+      });
+  }
+
+  /** Construit les 3 étapes de la frise en fonction du statut actuel. */
+  getSteps(statut: StatutCommande): { num: number; label: string; done: boolean; active: boolean }[] {
+    const steps = [
+      { num: 1, label: 'En attente', key: StatutCommande.EN_ATTENTE },
+      { num: 2, label: 'Confirmée', key: StatutCommande.CONFIRMEE },
+      { num: 3, label: 'Livrée', key: StatutCommande.LIVREE }
+    ];
+    const currentIdx = steps.findIndex(s => s.key === statut);
+    return steps.map((s, i) => ({
+      num: s.num, label: s.label,
+      done: i < currentIdx,
+      active: i === currentIdx
+    }));
   }
 
   // Helper methods
