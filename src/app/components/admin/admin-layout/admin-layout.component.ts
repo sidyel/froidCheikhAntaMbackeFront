@@ -1,9 +1,11 @@
 // src/app/components/admin/layout/admin-layout.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { AdminService } from '../../../services/admin.service';
 import { UserInfo } from '../../../models/interfaces';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-layout',
@@ -73,6 +75,10 @@ import { Observable } from 'rxjs';
                  class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
                 <lucide-icon name="truck" class="mr-3 h-5 w-5"></lucide-icon>
                 Commandes
+                <span *ngIf="commandesEnAttente > 0"
+                      class="ml-auto bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 font-semibold">
+                  {{ commandesEnAttente }}
+                </span>
               </a>
 
               <a routerLink="/admin/clients"
@@ -123,17 +129,33 @@ import { Observable } from 'rxjs';
     </div>
   `
 })
-export class AdminLayoutComponent implements OnInit {
+export class AdminLayoutComponent implements OnInit, OnDestroy {
   currentUser$: Observable<UserInfo | null>;
+  commandesEnAttente = 0;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private adminService: AdminService
   ) {
     this.currentUser$ = this.authService.currentUser$;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.refreshBadge();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  refreshBadge(): void {
+    this.adminService.getStatistiquesCommandes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (s) => { this.commandesEnAttente = s?.EN_ATTENTE ?? 0; }, error: () => {} });
+  }
 
   retourSite(): void {
     this.router.navigate(['/']);
