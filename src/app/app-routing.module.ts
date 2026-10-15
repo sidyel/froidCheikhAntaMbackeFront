@@ -48,6 +48,7 @@ import { AdminModelesAttributsComponent } from './components/admin/admin-modeles
 import { AdminFacturationComponent } from './components/admin/admin-facturation/admin-facturation.component';
 import { AdminFacturationFormComponent } from './components/admin/admin-facturation-form/admin-facturation-form.component';
 import { AdminFacturationDetailComponent } from './components/admin/admin-facturation-detail/admin-facturation-detail.component';
+import { TelechargerDocumentComponent } from './components/pages/telecharger-document/telecharger-document.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -231,6 +232,13 @@ const routes: Routes = [
       { path: 'facturation/:id/edit', component: AdminFacturationFormComponent, data: { title: 'Modifier le document' } },
       { path: 'facturation/:id', component: AdminFacturationDetailComponent, data: { title: 'Fiche document' } }
     ]
+  },
+
+  // Page publique téléchargement document (lien WhatsApp)
+  {
+    path: 'telecharger/:jeton',
+    component: TelechargerDocumentComponent,
+    data: { title: 'Télécharger le document' }
   },
 
   // Redirections et erreurs - TOUJOURS À LA FIN

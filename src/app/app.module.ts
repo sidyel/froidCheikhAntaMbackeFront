@@ -156,6 +156,7 @@ import { AdminModelesAttributsComponent } from './components/admin/admin-modeles
 import { AdminFacturationComponent } from './components/admin/admin-facturation/admin-facturation.component';
 import { AdminFacturationFormComponent } from './components/admin/admin-facturation-form/admin-facturation-form.component';
 import { AdminFacturationDetailComponent } from './components/admin/admin-facturation-detail/admin-facturation-detail.component';
+import { TelechargerDocumentComponent } from './components/pages/telecharger-document/telecharger-document.component';
 
 @NgModule({
   declarations: [
@@ -222,6 +223,7 @@ import { AdminFacturationDetailComponent } from './components/admin/admin-factur
     AdminFacturationComponent,
     AdminFacturationFormComponent,
     AdminFacturationDetailComponent,
+    TelechargerDocumentComponent,
     DevisePipe
   ],
   imports: [
