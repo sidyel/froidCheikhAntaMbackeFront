@@ -47,6 +47,7 @@ import { AdminPromotionsComponent } from './components/admin/admin-promotions/ad
 import { AdminModelesAttributsComponent } from './components/admin/admin-modeles-attributs/admin-modeles-attributs.component';
 import { AdminFacturationComponent } from './components/admin/admin-facturation/admin-facturation.component';
 import { AdminFacturationFormComponent } from './components/admin/admin-facturation-form/admin-facturation-form.component';
+import { AdminFacturationDetailComponent } from './components/admin/admin-facturation-detail/admin-facturation-detail.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -227,7 +228,8 @@ const routes: Routes = [
       { path: 'modeles-attributs', component: AdminModelesAttributsComponent, data: { title: 'Modèles d\'attributs' } },
       { path: 'facturation', component: AdminFacturationComponent, data: { title: 'Facturation' } },
       { path: 'facturation/nouveau', component: AdminFacturationFormComponent, data: { title: 'Nouveau document' } },
-      { path: 'facturation/:id/edit', component: AdminFacturationFormComponent, data: { title: 'Modifier le document' } }
+      { path: 'facturation/:id/edit', component: AdminFacturationFormComponent, data: { title: 'Modifier le document' } },
+      { path: 'facturation/:id', component: AdminFacturationDetailComponent, data: { title: 'Fiche document' } }
     ]
   },
 
