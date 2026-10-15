@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { ApiService } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
+import { ConfigService } from '../../../services/config.service';
 import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces';
 
 @Component({
@@ -198,6 +199,16 @@ import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces
               <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
 
               <div class="space-y-3">
+                <!-- Bouton WhatsApp — visible uniquement en EN_ATTENTE (juste après la commande) -->
+                <a *ngIf="commande.statutCommande === 'EN_ATTENTE' && getWhatsAppUrl()"
+                   [href]="getWhatsAppUrl()"
+                   target="_blank"
+                   rel="noopener"
+                   class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                  <lucide-icon name="message-circle" class="w-4 h-4"></lucide-icon>
+                  <span>Envoyer ma commande sur WhatsApp</span>
+                </a>
+
                 <!-- Annulation réelle — uniquement si EN_ATTENTE -->
                 <button
                   *ngIf="canCancelOrder()"
@@ -258,7 +269,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private apiService: ApiService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private configService: ConfigService
   ) {}
 
   ngOnInit(): void {
@@ -434,6 +446,32 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   goBackToOrders(): void {
     this.router.navigate(['/commandes']);
+  }
+
+  /** Construit le lien wa.me avec le template `whatsappMsgNouvelleCommande` interpolé. */
+  getWhatsAppUrl(): string | null {
+    const config = this.configService.config;
+    const tel = config?.telephoneWhatsappBoutique;
+    if (!tel || !this.commande) return null;
+
+    const template = config.whatsappMsgNouvelleCommande
+      || 'Nouvelle commande {numeroCommande} — Total : {total} {devise}';
+
+    const articles = this.commande.lignesCommande
+      .map(l => `${l.nomProduitCommande} x${l.quantite}`)
+      .join(', ');
+
+    const message = template
+      .replace(/{numeroCommande}/g, this.commande.numeroCommande)
+      .replace(/{articles}/g, articles)
+      .replace(/{total}/g, String(this.commande.montantTotal))
+      .replace(/{devise}/g, config.devise || 'XOF')
+      .replace(/{zoneNom}/g, this.commande.zoneNom || '')
+      .replace(/{modeLivraison}/g, this.commande.modeLivraison || '')
+      .replace(/{nomClient}/g, this.commande.nomInvite || '');
+
+    const phoneDigits = tel.replace(/\D/g, '');
+    return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
   }
 
   // Calculations
