@@ -47,7 +47,8 @@ export class FooterComponent implements OnInit, OnDestroy {
     { label: 'Accueil', route: '/', icon: 'home' },
     { label: 'Nos Produits', route: '/produits', icon: 'package' },
     { label: 'À Propos', route: '/a-propos', icon: 'info' },
-    { label: 'Contact', route: '/contact', icon: 'mail' }
+    { label: 'Contact', route: '/contact', icon: 'mail' },
+    { label: 'Suivre ma commande', route: '/suivi-commande', icon: 'search' }
   ];
 
   categoryLinks: CategoryLink[] = [];
