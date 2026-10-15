@@ -134,6 +134,7 @@ export interface AttributProduit {
   nomAttribut: string;
   valeurAttribut: string;
   modeleAttributId?: number;
+  unite?: string;
 }
 
 export interface Categorie {

@@ -679,7 +679,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
     // 1. Attributs dynamiques (prioritaires)
     (this.produit.attributs || []).forEach(a => {
-      if (a.valeurAttribut) specs.push({label: a.nomAttribut, value: a.valeurAttribut});
+      if (a.valeurAttribut) {
+        const affichage = a.unite ? `${a.valeurAttribut} ${a.unite}` : a.valeurAttribut;
+        specs.push({label: a.nomAttribut, value: affichage});
+      }
     });
 
     // 2. Colonnes fixes non nulles (éviter les doublons avec les attributs)
