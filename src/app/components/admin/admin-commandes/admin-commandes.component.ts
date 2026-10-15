@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminService } from '../../../services/admin.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfigService } from '../../../services/config.service';
+import { FacturationService } from '../../../services/facturation.service';
+import { AuthService } from '../../../services/auth.service';
 import { Commande, PagedResponse, StatutCommande, StatutPaiementCommande } from '../../../models/interfaces';
 
 @Component({
@@ -295,6 +298,20 @@ import { Commande, PagedResponse, StatutCommande, StatutPaiementCommande } from 
                class="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
               💬 Prévenir sur WhatsApp
             </a>
+            <!-- Boutons facturation -->
+            <button *ngIf="peutGenererFacture"
+                    (click)="genererFacture(selectedCommande)"
+                    [disabled]="generationFacture"
+                    class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors disabled:opacity-50">
+              <lucide-icon name="file-text" class="w-4 h-4"></lucide-icon>
+              {{ generationFacture ? '…' : 'Générer la facture' }}
+            </button>
+            <button (click)="genererBonLivraison(selectedCommande)"
+                    [disabled]="generationBonLivraison"
+                    class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors disabled:opacity-50">
+              <lucide-icon name="truck" class="w-4 h-4"></lucide-icon>
+              {{ generationBonLivraison ? '…' : 'Générer le bon de livraison' }}
+            </button>
           </div>
 
           <!-- ── Statut de paiement ── -->
@@ -555,6 +572,8 @@ export class AdminCommandesComponent implements OnInit, OnDestroy {
   processingDeletion = false;
 
   statutPaiementEdite: StatutPaiementCommande = StatutPaiementCommande.NON_PAYEE;
+  generationFacture = false;
+  generationBonLivraison = false;
 
   stats: { [key: string]: number } = {};
   onglets = [
@@ -568,8 +587,51 @@ export class AdminCommandesComponent implements OnInit, OnDestroy {
   constructor(
     private adminService: AdminService,
     private toastService: ToastService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private facturationService: FacturationService,
+    private authService: AuthService,
+    private router: Router
   ) {}
+
+  get peutGenererFacture(): boolean {
+    return this.authService.hasRole('ADMIN') || this.authService.hasRole('SUPER_ADMIN');
+  }
+
+  genererFacture(commande: Commande | null): void {
+    if (!commande || this.generationFacture) return;
+    this.generationFacture = true;
+    this.facturationService.genererDepuisCommande(commande.idCommande, 'FACTURE')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (doc) => {
+          this.generationFacture = false;
+          this.toastService.success('Facture brouillon créée');
+          this.router.navigate(['/admin/facturation', doc.id]);
+        },
+        error: () => {
+          this.generationFacture = false;
+          this.toastService.error('Erreur lors de la création de la facture');
+        }
+      });
+  }
+
+  genererBonLivraison(commande: Commande | null): void {
+    if (!commande || this.generationBonLivraison) return;
+    this.generationBonLivraison = true;
+    this.facturationService.genererDepuisCommande(commande.idCommande, 'BON_LIVRAISON')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (doc) => {
+          this.generationBonLivraison = false;
+          this.toastService.success('Bon de livraison créé');
+          this.router.navigate(['/admin/facturation', doc.id]);
+        },
+        error: () => {
+          this.generationBonLivraison = false;
+          this.toastService.error('Erreur lors de la création du bon de livraison');
+        }
+      });
+  }
 
   ngOnInit(): void {
     this.loadCommandes();
