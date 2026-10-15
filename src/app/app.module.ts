@@ -31,6 +31,7 @@ import { WishlistComponent } from './components/pages/wishlist/wishlist.componen
 import { ContactComponent } from './components/pages/contact/contact.component';
 import { AboutComponent } from './components/pages/about/about.component';
 import { NotFoundComponent } from './components/pages/not-found/not-found.component';
+import { SuiviCommandeComponent } from './components/pages/suivi-commande/suivi-commande.component';
 
 // Shared Components
 import { LoadingSpinnerComponent } from './components/shared/loading-spinner/loading-spinner.component';
@@ -172,6 +173,7 @@ import { AdminModelesAttributsComponent } from './components/admin/admin-modeles
     ProfileComponent,
     OrdersComponent,
     OrderDetailComponent,
+    SuiviCommandeComponent,
     WishlistComponent,
     ContactComponent,
     AboutComponent,

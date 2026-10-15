@@ -262,17 +262,22 @@ export class ApiService {
     return this.http.post<Commande>(`${this.apiUrl}/commandes/invite`, commande);
   }
 
-  getCommandeInvite(numeroCommande: string): Observable<Commande> {
-    return this.http.get<Commande>(`${this.apiUrl}/commandes/invite/${numeroCommande}`);
-  }
-
   // ==================== COMMANDES - GÉNÉRAL ====================
   getCommande(commandeId: number): Observable<Commande> {
     return this.http.get<Commande>(`${this.apiUrl}/commandes/${commandeId}`);
   }
 
-  getCommandeByNumero(numeroCommande: string): Observable<Commande> {
-    return this.http.get<Commande>(`${this.apiUrl}/commandes/numero/${numeroCommande}`);
+  /** Annulation d'une commande par le client (EN_ATTENTE uniquement). */
+  annulerCommandeClient(commandeId: number, motif?: string): Observable<Commande> {
+    return this.http.post<Commande>(`${this.apiUrl}/commandes/client/${commandeId}/annuler`,
+      motif ? { motif } : {});
+  }
+
+  /** Suivi de commande invité — numéro + téléphone normalisé. */
+  getSuiviCommande(numero: string, telephone: string): Observable<Commande> {
+    return this.http.get<Commande>(`${this.apiUrl}/commandes/suivi`, {
+      params: { numero, telephone }
+    });
   }
 
   // ==================== PAIEMENT ====================

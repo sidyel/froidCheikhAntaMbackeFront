@@ -102,7 +102,8 @@ import { AdminService, Contact } from '../../../services/admin.service';
                         [ngClass]="{
                           'bg-yellow-100 text-yellow-800': commande.statutCommande === 'EN_ATTENTE',
                           'bg-blue-100 text-blue-800': commande.statutCommande === 'CONFIRMEE',
-                          'bg-green-100 text-green-800': commande.statutCommande === 'PAYEE'
+                          'bg-emerald-100 text-emerald-800': commande.statutCommande === 'LIVREE',
+                          'bg-red-100 text-red-800': commande.statutCommande === 'ANNULEE'
                         }">
                     {{ getStatutLabel(commande.statutCommande) }}
                   </span>
@@ -324,9 +325,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     const labels: { [key: string]: string } = {
       'EN_ATTENTE': 'En attente',
       'CONFIRMEE': 'Confirmée',
-      'PAYEE': 'Payée',
-      'EN_PREPARATION': 'En préparation',
-      'EXPEDIE': 'Expédiée',
       'LIVREE': 'Livrée',
       'ANNULEE': 'Annulée'
     };

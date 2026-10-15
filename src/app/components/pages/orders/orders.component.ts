@@ -40,9 +40,6 @@ import { Commande, PagedResponse, StatutCommande, Breadcrumb } from '../../../mo
                 <option value="">Tous les statuts</option>
                 <option value="EN_ATTENTE">En attente</option>
                 <option value="CONFIRMEE">Confirmée</option>
-                <option value="PAYEE">Payée</option>
-                <option value="EN_PREPARATION">En préparation</option>
-                <option value="EXPEDIE">Expédiée</option>
                 <option value="LIVREE">Livrée</option>
                 <option value="ANNULEE">Annulée</option>
               </select>
@@ -410,12 +407,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const statusLabels = {
       [StatutCommande.EN_ATTENTE]: 'En attente',
       [StatutCommande.CONFIRMEE]: 'Confirmée',
-      [StatutCommande.PAYEE]: 'Payée',
-      [StatutCommande.EN_PREPARATION]: 'En préparation',
-      [StatutCommande.EXPEDIE]: 'Expédiée',
       [StatutCommande.LIVREE]: 'Livrée',
-      [StatutCommande.ANNULEE]: 'Annulée',
-      [StatutCommande.REMBOURSEE]: 'Remboursée'
+      [StatutCommande.ANNULEE]: 'Annulée'
     };
     return statusLabels[status] || status;
   }
@@ -425,16 +418,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
     switch (status) {
       case StatutCommande.EN_ATTENTE:
-      case StatutCommande.CONFIRMEE:
         return `${baseClasses} badge-warning`;
-      case StatutCommande.PAYEE:
-      case StatutCommande.EN_PREPARATION:
-      case StatutCommande.EXPEDIE:
+      case StatutCommande.CONFIRMEE:
         return `${baseClasses} badge-info`;
       case StatutCommande.LIVREE:
         return `${baseClasses} badge-success`;
       case StatutCommande.ANNULEE:
-      case StatutCommande.REMBOURSEE:
         return `${baseClasses} badge-danger`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
@@ -462,19 +451,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   shouldShowProgress(status: StatutCommande): boolean {
-    return ![StatutCommande.ANNULEE, StatutCommande.REMBOURSEE].includes(status);
+    return status !== StatutCommande.ANNULEE;
   }
 
   getProgressPercentage(status: StatutCommande): number {
     const progressMap = {
       [StatutCommande.EN_ATTENTE]: 10,
-      [StatutCommande.CONFIRMEE]: 25,
-      [StatutCommande.PAYEE]: 40,
-      [StatutCommande.EN_PREPARATION]: 60,
-      [StatutCommande.EXPEDIE]: 80,
+      [StatutCommande.CONFIRMEE]: 50,
       [StatutCommande.LIVREE]: 100,
-      [StatutCommande.ANNULEE]: 0,
-      [StatutCommande.REMBOURSEE]: 0
+      [StatutCommande.ANNULEE]: 0
     };
     return progressMap[status] || 0;
   }
@@ -485,15 +470,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   canDownloadInvoice(order: Commande): boolean {
-    return [StatutCommande.PAYEE, StatutCommande.EN_PREPARATION, StatutCommande.EXPEDIE, StatutCommande.LIVREE].includes(order.statutCommande);
+    return order.statutCommande === StatutCommande.LIVREE;
   }
 
-  canTrackOrder(order: Commande): boolean {
-    return !!(order.numeroSuivi && [StatutCommande.EXPEDIE].includes(order.statutCommande));
+  canTrackOrder(_order: Commande): boolean {
+    return false;
   }
 
   canCancelOrder(order: Commande): boolean {
-    return [StatutCommande.EN_ATTENTE, StatutCommande.CONFIRMEE].includes(order.statutCommande);
+    return order.statutCommande === StatutCommande.EN_ATTENTE;
   }
 
   trackByOrder(index: number, order: Commande): number {

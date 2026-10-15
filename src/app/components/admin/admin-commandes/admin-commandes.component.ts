@@ -37,9 +37,6 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
               <option value="">Tous les statuts</option>
               <option value="EN_ATTENTE">En attente</option>
               <option value="CONFIRMEE">Confirmée</option>
-              <option value="PAYEE">Payée</option>
-              <option value="EN_PREPARATION">En préparation</option>
-              <option value="EXPEDIE">Expédiée</option>
               <option value="LIVREE">Livrée</option>
               <option value="ANNULEE">Annulée</option>
             </select>
@@ -130,18 +127,12 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
                   [ngClass]="{
                       'bg-yellow-100 text-yellow-800 border-yellow-300': commande.statutCommande === 'EN_ATTENTE',
                       'bg-blue-100 text-blue-800 border-blue-300': commande.statutCommande === 'CONFIRMEE',
-                      'bg-green-100 text-green-800 border-green-300': commande.statutCommande === 'PAYEE',
-                      'bg-purple-100 text-purple-800 border-purple-300': commande.statutCommande === 'EN_PREPARATION',
-                      'bg-indigo-100 text-indigo-800 border-indigo-300': commande.statutCommande === 'EXPEDIE',
                       'bg-emerald-100 text-emerald-800 border-emerald-300': commande.statutCommande === 'LIVREE',
                       'bg-red-100 text-red-800 border-red-300': commande.statutCommande === 'ANNULEE',
                       'opacity-50 cursor-not-allowed': updatingStatus[commande.idCommande]
                     }">
                   <option value="EN_ATTENTE">En attente</option>
                   <option value="CONFIRMEE">Confirmée</option>
-                  <option value="PAYEE">Payée</option>
-                  <option value="EN_PREPARATION">En préparation</option>
-                  <option value="EXPEDIE">Expédiée</option>
                   <option value="LIVREE">Livrée</option>
                   <option value="ANNULEE">Annulée</option>
                 </select>
@@ -748,9 +739,6 @@ export class AdminCommandesComponent implements OnInit, OnDestroy {
     const labels: { [key: string]: string } = {
       'EN_ATTENTE': 'En attente',
       'CONFIRMEE': 'Confirmée',
-      'PAYEE': 'Payée',
-      'EN_PREPARATION': 'En préparation',
-      'EXPEDIE': 'Expédiée',
       'LIVREE': 'Livrée',
       'ANNULEE': 'Annulée'
     };

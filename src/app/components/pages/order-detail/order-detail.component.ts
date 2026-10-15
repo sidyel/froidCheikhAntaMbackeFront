@@ -198,28 +198,14 @@ import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces
               <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
 
               <div class="space-y-3">
-                <button
-                  *ngIf="canDownloadInvoice()"
-                  (click)="downloadInvoice()"
-                  class="w-full btn-outline text-sm py-2">
-                  <lucide-icon name="download" class="w-4 h-4"></lucide-icon>
-                  <span>Télécharger la facture</span>
-                </button>
-
-                <button
-                  *ngIf="canTrackOrder()"
-                  (click)="trackOrder()"
-                  class="w-full btn-outline text-sm py-2">
-                  <lucide-icon name="truck" class="w-4 h-4"></lucide-icon>
-                  <span>Suivre la livraison</span>
-                </button>
-
+                <!-- Annulation réelle — uniquement si EN_ATTENTE -->
                 <button
                   *ngIf="canCancelOrder()"
                   (click)="cancelOrder()"
+                  [disabled]="isCancelling"
                   class="w-full btn-danger text-sm py-2">
                   <lucide-icon name="x" class="w-4 h-4"></lucide-icon>
-                  <span>Annuler la commande</span>
+                  <span>{{ isCancelling ? 'Annulation...' : 'Annuler la commande' }}</span>
                 </button>
 
                 <button
@@ -265,6 +251,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   isLoading = true;
   hasError = false;
+  isCancelling = false;
   currentOrderId: number = 0;
 
   constructor(
@@ -341,12 +328,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     const statusLabels = {
       [StatutCommande.EN_ATTENTE]: 'En attente',
       [StatutCommande.CONFIRMEE]: 'Confirmée',
-      [StatutCommande.PAYEE]: 'Payée',
-      [StatutCommande.EN_PREPARATION]: 'En préparation',
-      [StatutCommande.EXPEDIE]: 'Expédiée',
       [StatutCommande.LIVREE]: 'Livrée',
-      [StatutCommande.ANNULEE]: 'Annulée',
-      [StatutCommande.REMBOURSEE]: 'Remboursée'
+      [StatutCommande.ANNULEE]: 'Annulée'
     };
     return statusLabels[status] || status;
   }
@@ -356,16 +339,12 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
     switch (status) {
       case StatutCommande.EN_ATTENTE:
-      case StatutCommande.CONFIRMEE:
         return `${baseClasses} badge-warning`;
-      case StatutCommande.PAYEE:
-      case StatutCommande.EN_PREPARATION:
-      case StatutCommande.EXPEDIE:
+      case StatutCommande.CONFIRMEE:
         return `${baseClasses} badge-info`;
       case StatutCommande.LIVREE:
         return `${baseClasses} badge-success`;
       case StatutCommande.ANNULEE:
-      case StatutCommande.REMBOURSEE:
         return `${baseClasses} badge-danger`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
@@ -405,7 +384,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   // Progress tracking
   shouldShowProgress(): boolean {
-    return this.commande ? ![StatutCommande.ANNULEE, StatutCommande.REMBOURSEE].includes(this.commande.statutCommande) : false;
+    return this.commande ? this.commande.statutCommande !== StatutCommande.ANNULEE : false;
   }
 
   getOrderSteps(): any[] {
@@ -414,10 +393,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     const steps = [
       { number: 1, label: 'Commande passée', status: StatutCommande.EN_ATTENTE },
       { number: 2, label: 'Commande confirmée', status: StatutCommande.CONFIRMEE },
-      { number: 3, label: 'Paiement effectué', status: StatutCommande.PAYEE },
-      { number: 4, label: 'En préparation', status: StatutCommande.EN_PREPARATION },
-      { number: 5, label: 'Expédiée', status: StatutCommande.EXPEDIE },
-      { number: 6, label: 'Livrée', status: StatutCommande.LIVREE }
+      { number: 3, label: 'Livrée', status: StatutCommande.LIVREE }
     ];
 
     const currentStatusIndex = steps.findIndex(step => step.status === this.commande!.statutCommande);
@@ -431,31 +407,29 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   // Actions
-  canDownloadInvoice(): boolean {
-    return this.commande ? [StatutCommande.PAYEE, StatutCommande.EN_PREPARATION, StatutCommande.EXPEDIE, StatutCommande.LIVREE].includes(this.commande.statutCommande) : false;
-  }
-
-  canTrackOrder(): boolean {
-    return this.commande ? !!(this.commande.numeroSuivi && [StatutCommande.EXPEDIE].includes(this.commande.statutCommande)) : false;
-  }
-
   canCancelOrder(): boolean {
-    return this.commande ? [StatutCommande.EN_ATTENTE, StatutCommande.CONFIRMEE].includes(this.commande.statutCommande) : false;
-  }
-
-  downloadInvoice(): void {
-    this.toastService.info('Fonctionnalité bientôt disponible', 'Le téléchargement de facture sera bientôt disponible');
-  }
-
-  trackOrder(): void {
-    if (this.commande?.numeroSuivi) {
-      this.toastService.info('Suivi de commande', `Numéro de suivi: ${this.commande.numeroSuivi}`);
-    }
+    return this.commande?.statutCommande === StatutCommande.EN_ATTENTE;
   }
 
   cancelOrder(): void {
+    if (!this.commande || this.isCancelling) return;
     if (!confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) return;
-    this.toastService.info('Fonctionnalité bientôt disponible', 'L\'annulation de commande sera bientôt disponible');
+
+    this.isCancelling = true;
+    this.apiService.annulerCommandeClient(this.commande.idCommande)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (commande) => {
+          this.commande = commande;
+          this.isCancelling = false;
+          this.toastService.success('Commande annulée', 'Votre commande a bien été annulée.');
+        },
+        error: (err) => {
+          this.isCancelling = false;
+          const msg = err.error?.message || 'Impossible d\'annuler cette commande.';
+          this.toastService.error('Erreur', msg);
+        }
+      });
   }
 
   goBackToOrders(): void {

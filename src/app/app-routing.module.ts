@@ -22,6 +22,7 @@ import { WishlistComponent } from './components/pages/wishlist/wishlist.componen
 import { ContactComponent } from './components/pages/contact/contact.component';
 import { AboutComponent } from './components/pages/about/about.component';
 import { NotFoundComponent } from './components/pages/not-found/not-found.component';
+import { SuiviCommandeComponent } from './components/pages/suivi-commande/suivi-commande.component';
 
 // Admin Components
 import { AdminLayoutComponent } from "./components/admin/admin-layout/admin-layout.component";
@@ -130,6 +131,11 @@ const routes: Routes = [
     path: 'commande/:id',
     component: OrderDetailComponent,
     data: { title: 'Détail de la commande' }
+  },
+  {
+    path: 'suivi-commande',
+    component: SuiviCommandeComponent,
+    data: { title: 'Suivi de commande' }
   },
   {
     path: 'wishlist',
