@@ -27,12 +27,8 @@ export enum TypeAdresse {
 export enum StatutCommande {
   EN_ATTENTE = 'EN_ATTENTE',
   CONFIRMEE = 'CONFIRMEE',
-  PAYEE = 'PAYEE',
-  EN_PREPARATION = 'EN_PREPARATION',
-  EXPEDIE = 'EXPEDIE',
   LIVREE = 'LIVREE',
-  ANNULEE = 'ANNULEE',
-  REMBOURSEE = 'REMBOURSEE'
+  ANNULEE = 'ANNULEE'
 }
 
 export enum ModeLivraison {
@@ -49,6 +45,14 @@ export enum MethodePaiement {
   CARTE_BANCAIRE = 'CARTE_BANCAIRE'
 }
 
+/** Statut de paiement de la commande (indépendant du cycle de livraison). */
+export enum StatutPaiementCommande {
+  NON_PAYEE = 'NON_PAYEE',
+  PAYEE = 'PAYEE',
+  REMBOURSEE = 'REMBOURSEE'
+}
+
+/** @deprecated Utilisé uniquement pour la ligne Paiement (entité séparée). */
 export enum StatutPaiement {
   EN_ATTENTE = 'EN_ATTENTE',
   CONFIRME = 'CONFIRME',
@@ -213,11 +217,21 @@ export interface UserInfo {
 }
 
 // Commandes
+export interface HistoriqueStatutCommande {
+  id: number;
+  ancienStatut?: StatutCommande;
+  nouveauStatut: StatutCommande;
+  dateChangement: string;
+  auteur?: string;
+  commentaire?: string;
+}
+
 export interface Commande {
   idCommande: number;
   numeroCommande: string;
   dateCommande: string;
   statutCommande: StatutCommande;
+  statutPaiement?: StatutPaiementCommande;
   montantTotal: number;
   fraisLivraison: number;
   numeroSuivi?: string;
@@ -239,6 +253,7 @@ export interface Commande {
   adresseLivraison?: AdresseLivraison;
   lignesCommande: LigneCommande[];
   paiement?: Paiement;
+  historiqueStatuts?: HistoriqueStatutCommande[];
 }
 
 export interface LigneCommande {

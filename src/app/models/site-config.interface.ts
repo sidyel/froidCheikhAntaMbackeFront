@@ -61,6 +61,14 @@ export interface SiteConfig {
   afficherPrestations?: boolean;
   afficherEquipe?: boolean;
   afficherRealisations?: boolean;
+
+  // WHATSAPP — numéro boutique (premier téléphone whatsapp=true) + templates
+  telephoneWhatsappBoutique?: string;
+  indicatifPaysDefaut?: string;
+  whatsappMsgNouvelleCommande?: string;
+  whatsappMsgConfirmee?: string;
+  whatsappMsgLivree?: string;
+  whatsappMsgAnnulee?: string;
 }
 
 export const DEFAULT_CONFIG: SiteConfig = {
