@@ -101,6 +101,12 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/commandes/${commandeId}`);
   }
 
+  /** Mise à jour du statut de paiement d'une commande. */
+  updateStatutPaiement(commandeId: number, statutPaiement: string): Observable<Commande> {
+    return this.http.patch<Commande>(`${this.apiUrl}/commandes/${commandeId}/statut`,
+      { statutPaiement });
+  }
+
   /**
    * Rechercher des commandes par différents critères
    */

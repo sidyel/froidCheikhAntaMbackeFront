@@ -3,7 +3,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminService } from '../../../services/admin.service';
 import { ToastService } from '../../../services/toast.service';
-import { Commande, PagedResponse, StatutCommande } from '../../../models/interfaces';
+import { ConfigService } from '../../../services/config.service';
+import { Commande, PagedResponse, StatutCommande, StatutPaiementCommande } from '../../../models/interfaces';
 
 @Component({
   selector: 'app-admin-commandes',
@@ -13,6 +14,27 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Gestion des Commandes</h1>
         <p class="text-gray-600">Suivez et gérez toutes les commandes</p>
+      </div>
+
+      <!-- Onglets par statut -->
+      <div class="border-b border-gray-200">
+        <nav class="flex space-x-1 overflow-x-auto">
+          <button *ngFor="let ong of onglets"
+                  (click)="selectionnerOnglet(ong.statut)"
+                  [class.border-b-2]="selectedStatut === ong.statut"
+                  [class.border-primary-600]="selectedStatut === ong.statut"
+                  [class.text-primary-700]="selectedStatut === ong.statut"
+                  class="px-4 py-2 text-sm font-medium whitespace-nowrap text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1.5">
+            {{ ong.label }}
+            <span *ngIf="stats[ong.statut] != null"
+                  [class.bg-red-500]="ong.statut === 'EN_ATTENTE'"
+                  [class.bg-blue-500]="ong.statut === 'CONFIRMEE'"
+                  [class.bg-gray-400]="ong.statut === ''"
+                  class="text-white text-xs rounded-full px-1.5 py-0.5 font-semibold">
+              {{ stats[ong.statut] || 0 }}
+            </span>
+          </button>
+        </nav>
       </div>
 
       <!-- Filtres -->
@@ -245,6 +267,48 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
         size="lg">
 
         <div *ngIf="selectedCommande" class="space-y-6">
+
+          <!-- ── Boutons d'action statut ── -->
+          <div class="flex flex-wrap gap-2 pb-4 border-b border-gray-200">
+            <button *ngIf="selectedCommande.statutCommande === 'EN_ATTENTE'"
+                    (click)="changerStatutDepuisModal(selectedCommande, StatutCommande.CONFIRMEE)"
+                    [disabled]="updatingStatus[selectedCommande.idCommande]"
+                    class="btn-primary text-sm py-1.5 px-3">
+              ✓ Confirmer
+            </button>
+            <button *ngIf="selectedCommande.statutCommande === 'CONFIRMEE'"
+                    (click)="changerStatutDepuisModal(selectedCommande, StatutCommande.LIVREE)"
+                    [disabled]="updatingStatus[selectedCommande.idCommande]"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
+              📦 Marquer comme {{ selectedCommande.modeLivraison === 'RETRAIT_MAGASIN' ? 'retiré' : 'livré' }}
+            </button>
+            <button *ngIf="selectedCommande.statutCommande === 'EN_ATTENTE' || selectedCommande.statutCommande === 'CONFIRMEE'"
+                    (click)="ouvrirModalAnnulationDepuisDetail()"
+                    [disabled]="updatingStatus[selectedCommande.idCommande]"
+                    class="btn-danger text-sm py-1.5 px-3">
+              ✕ Annuler
+            </button>
+            <!-- Bouton WhatsApp -->
+            <a *ngIf="getWhatsAppUrlAdmin(selectedCommande)"
+               [href]="getWhatsAppUrlAdmin(selectedCommande)"
+               target="_blank" rel="noopener"
+               class="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
+              💬 Prévenir sur WhatsApp
+            </a>
+          </div>
+
+          <!-- ── Statut de paiement ── -->
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-500">Statut de paiement :</span>
+            <select [(ngModel)]="statutPaiementEdite"
+                    (change)="sauvegarderStatutPaiement(selectedCommande)"
+                    class="text-sm border border-gray-300 rounded-md px-2 py-1">
+              <option value="NON_PAYEE">Non payée</option>
+              <option value="PAYEE">Payée</option>
+              <option value="REMBOURSEE">Remboursée</option>
+            </select>
+          </div>
+
           <!-- Informations générales -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -357,6 +421,27 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
               </div>
             </div>
           </div>
+
+          <!-- Historique des statuts -->
+          <div *ngIf="selectedCommande.historiqueStatuts?.length">
+            <h3 class="text-lg font-medium text-gray-900 mb-3">Historique des changements</h3>
+            <ul class="space-y-2">
+              <li *ngFor="let h of selectedCommande.historiqueStatuts"
+                  class="flex items-start gap-3 text-sm bg-gray-50 rounded-lg p-3">
+                <span class="w-2 h-2 rounded-full bg-primary-500 mt-1.5 flex-shrink-0"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap gap-x-2 items-center">
+                    <span class="font-medium text-gray-900">
+                      {{ h.ancienStatut ? (getStatutLabel(h.ancienStatut) + ' → ') : '' }}{{ getStatutLabel(h.nouveauStatut) }}
+                    </span>
+                    <span class="text-gray-400 text-xs">{{ h.dateChangement | date:'dd/MM/yyyy HH:mm' }}</span>
+                    <span *ngIf="h.auteur" class="text-gray-500 text-xs">par {{ h.auteur }}</span>
+                  </div>
+                  <p *ngIf="h.commentaire" class="text-gray-600 mt-0.5 italic">{{ h.commentaire }}</p>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div *ngIf="loadingDetails" class="flex justify-center py-8">
@@ -438,6 +523,8 @@ import { Commande, PagedResponse, StatutCommande } from '../../../models/interfa
 export class AdminCommandesComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
+  readonly StatutCommande = StatutCommande;
+
   commandes: Commande[] = [];
   loading = false;
   loadingDetails = false;
@@ -467,18 +554,43 @@ export class AdminCommandesComponent implements OnInit, OnDestroy {
   commandeToDelete: Commande | null = null;
   processingDeletion = false;
 
+  statutPaiementEdite: StatutPaiementCommande = StatutPaiementCommande.NON_PAYEE;
+
+  stats: { [key: string]: number } = {};
+  onglets = [
+    { statut: '', label: 'Tous' },
+    { statut: 'EN_ATTENTE', label: 'En attente' },
+    { statut: 'CONFIRMEE', label: 'Confirmées' },
+    { statut: 'LIVREE', label: 'Livrées' },
+    { statut: 'ANNULEE', label: 'Annulées' }
+  ];
+
   constructor(
     private adminService: AdminService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private configService: ConfigService
   ) {}
 
   ngOnInit(): void {
     this.loadCommandes();
+    this.loadStats();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  loadStats(): void {
+    this.adminService.getStatistiquesCommandes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (s) => { this.stats = s || {}; }, error: () => {} });
+  }
+
+  selectionnerOnglet(statut: string): void {
+    this.selectedStatut = statut;
+    this.currentPage = 0;
+    this.loadCommandes();
   }
 
   private loadCommandes(): void {
@@ -581,6 +693,7 @@ export class AdminCommandesComponent implements OnInit, OnDestroy {
 
           this.toastService.success('Succès', `Statut mis à jour vers "${this.getStatutLabel(nouveauStatut)}"`);
           this.updatingStatus[commande.idCommande] = false;
+          this.loadStats();
         },
         error: (error) => {
           console.error('❌ Erreur lors de la mise à jour du statut:', error);
@@ -614,6 +727,8 @@ export class AdminCommandesComponent implements OnInit, OnDestroy {
         next: (commandeComplete) => {
           console.log('✅ Détails chargés:', commandeComplete);
           this.selectedCommande = commandeComplete;
+          this.statutPaiementEdite = (commandeComplete.statutPaiement as StatutPaiementCommande)
+            ?? StatutPaiementCommande.NON_PAYEE;
           this.showDetailsModal = true;
           this.loadingDetails = false;
         },
@@ -733,6 +848,83 @@ export class AdminCommandesComponent implements OnInit, OnDestroy {
           }
         });
     }
+  }
+
+  // ── Méthodes modale détail ──────────────────────────────────────────────
+
+  changerStatutDepuisModal(commande: Commande, statut: StatutCommande): void {
+    this.updatingStatus[commande.idCommande] = true;
+    this.adminService.updateStatutCommande(commande.idCommande, statut)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.selectedCommande = updated;
+          const idx = this.commandes.findIndex(c => c.idCommande === commande.idCommande);
+          if (idx >= 0) this.commandes[idx] = { ...this.commandes[idx], statutCommande: updated.statutCommande };
+          this.updatingStatus[commande.idCommande] = false;
+          this.toastService.success('Statut mis à jour', this.getStatutLabel(statut));
+        },
+        error: (err) => {
+          this.updatingStatus[commande.idCommande] = false;
+          this.toastService.error('Erreur', err?.error?.message || 'Impossible de changer le statut');
+        }
+      });
+  }
+
+  ouvrirModalAnnulationDepuisDetail(): void {
+    if (this.selectedCommande) {
+      this.commandeToCancel = this.selectedCommande;
+      this.motifAnnulation = '';
+      this.showValidationError = false;
+      this.showAnnulationModal = true;
+    }
+  }
+
+  sauvegarderStatutPaiement(commande: Commande): void {
+    this.adminService.updateStatutPaiement(commande.idCommande, this.statutPaiementEdite)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updated) => {
+          this.selectedCommande = updated;
+          this.toastService.success('Paiement mis à jour', '');
+        },
+        error: (err) => {
+          this.toastService.error('Erreur', err?.error?.message || 'Impossible de mettre à jour le paiement');
+        }
+      });
+  }
+
+  /** Construit le lien wa.me selon le statut de la commande et les templates du site. */
+  getWhatsAppUrlAdmin(commande: Commande): string | null {
+    const config = this.configService.config;
+    const tel = config?.telephoneWhatsappBoutique;
+    if (!tel) return null;
+
+    const templates: Record<string, string | undefined> = {
+      EN_ATTENTE: config.whatsappMsgNouvelleCommande,
+      CONFIRMEE: config.whatsappMsgConfirmee,
+      LIVREE: config.whatsappMsgLivree,
+      ANNULEE: config.whatsappMsgAnnulee
+    };
+    const template = templates[commande.statutCommande]
+      || 'Commande {numeroCommande} — {statutLabel}';
+
+    const articles = (commande.lignesCommande || [])
+      .map(l => `${l.nomProduitCommande} x${l.quantite}`).join(', ');
+    const nomClient = commande.nomInvite || commande.prenomInvite || `Client ${commande.clientId || ''}`;
+
+    const message = template
+      .replace(/{numeroCommande}/g, commande.numeroCommande)
+      .replace(/{articles}/g, articles)
+      .replace(/{total}/g, String(commande.montantTotal))
+      .replace(/{devise}/g, config.devise || 'XOF')
+      .replace(/{zoneNom}/g, commande.zoneNom || '')
+      .replace(/{modeLivraison}/g, commande.modeLivraison || '')
+      .replace(/{nomClient}/g, nomClient)
+      .replace(/{motif}/g, '');
+
+    const phoneDigits = tel.replace(/\D/g, '');
+    return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
   }
 
   getStatutLabel(statut: string): string {
