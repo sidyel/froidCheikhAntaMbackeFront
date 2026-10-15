@@ -5,7 +5,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ConfigService } from '../../../services/config.service';
 import { environment } from '../../../../environments/environment';
 
-type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'facturation' | 'livraison' | 'seo';
+type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'facturation' | 'livraison' | 'seo' | 'whatsapp';
 
 @Component({
   selector: 'app-site-settings',
@@ -289,6 +289,46 @@ type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'factur
           </div>
         </div>
 
+        <!-- WHATSAPP -->
+        <div *ngIf="activeTab === 'whatsapp'" class="space-y-6">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+            <p class="font-medium mb-1">Variables disponibles dans les messages :</p>
+            <code class="text-xs">&#123;numeroCommande&#125;</code>,
+            <code class="text-xs">&#123;articles&#125;</code>,
+            <code class="text-xs">&#123;total&#125;</code>,
+            <code class="text-xs">&#123;devise&#125;</code>,
+            <code class="text-xs">&#123;zoneNom&#125;</code>,
+            <code class="text-xs">&#123;modeLivraison&#125;</code>,
+            <code class="text-xs">&#123;nomClient&#125;</code>,
+            <code class="text-xs">&#123;motif&#125;</code>
+          </div>
+          <div>
+            <label class="form-label">Téléphone WhatsApp boutique (indicatif inclus)</label>
+            <input formControlName="telephoneWhatsappBoutique" class="form-input" placeholder="221771234567">
+            <p class="text-xs text-gray-400 mt-1">Calculé automatiquement depuis le 1er téléphone WhatsApp=true en Contact.</p>
+          </div>
+          <div>
+            <label class="form-label">Indicatif pays par défaut</label>
+            <input formControlName="indicatifPaysDefaut" class="form-input" placeholder="221">
+          </div>
+          <div>
+            <label class="form-label">Message — Nouvelle commande</label>
+            <textarea formControlName="whatsappMsgNouvelleCommande" class="form-input font-mono text-sm" rows="4"></textarea>
+          </div>
+          <div>
+            <label class="form-label">Message — Commande confirmée</label>
+            <textarea formControlName="whatsappMsgConfirmee" class="form-input font-mono text-sm" rows="4"></textarea>
+          </div>
+          <div>
+            <label class="form-label">Message — Commande livrée</label>
+            <textarea formControlName="whatsappMsgLivree" class="form-input font-mono text-sm" rows="4"></textarea>
+          </div>
+          <div>
+            <label class="form-label">Message — Commande annulée</label>
+            <textarea formControlName="whatsappMsgAnnulee" class="form-input font-mono text-sm" rows="4"></textarea>
+          </div>
+        </div>
+
         <!-- Actions -->
         <div class="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100">
           <button type="button" (click)="load()" class="btn-outline" [disabled]="saving">
@@ -322,6 +362,7 @@ export class SiteSettingsComponent implements OnInit {
     { id: 'facturation', label: 'Facturation' },
     { id: 'livraison',   label: 'Livraison' },
     { id: 'seo',         label: 'SEO' },
+    { id: 'whatsapp',    label: '💬 WhatsApp' },
   ];
 
   constructor(
@@ -441,6 +482,13 @@ export class SiteSettingsComponent implements OnInit {
       // METADATA (lecture seule)
       dateModification: [{ value: null, disabled: true }],
       modifiePar: [{ value: '', disabled: true }],
+      // WHATSAPP
+      telephoneWhatsappBoutique: [''],
+      indicatifPaysDefaut: ['221'],
+      whatsappMsgNouvelleCommande: [''],
+      whatsappMsgConfirmee: [''],
+      whatsappMsgLivree: [''],
+      whatsappMsgAnnulee: [''],
     });
   }
 
