@@ -45,6 +45,7 @@ import { AdminRealisationsComponent } from './components/admin/admin-realisation
 import { AdminZonesLivraisonComponent } from './components/admin/admin-zones-livraison/admin-zones-livraison.component';
 import { AdminPromotionsComponent } from './components/admin/admin-promotions/admin-promotions.component';
 import { AdminModelesAttributsComponent } from './components/admin/admin-modeles-attributs/admin-modeles-attributs.component';
+import { AdminFacturationComponent } from './components/admin/admin-facturation/admin-facturation.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -222,7 +223,8 @@ const routes: Routes = [
       { path: 'contenu/realisations', component: AdminRealisationsComponent, data: { title: 'Réalisations' } },
       { path: 'livraison/zones', component: AdminZonesLivraisonComponent, data: { title: 'Zones de livraison' } },
       { path: 'promotions', component: AdminPromotionsComponent, data: { title: 'Promotions' } },
-      { path: 'modeles-attributs', component: AdminModelesAttributsComponent, data: { title: 'Modèles d\'attributs' } }
+      { path: 'modeles-attributs', component: AdminModelesAttributsComponent, data: { title: 'Modèles d\'attributs' } },
+      { path: 'facturation', component: AdminFacturationComponent, data: { title: 'Facturation' } }
     ]
   },
 
