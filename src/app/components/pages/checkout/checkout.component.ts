@@ -492,8 +492,51 @@ import {
           </div>
         </form>
 
+        <!-- Confirmation commande -->
+        <div *ngIf="commandeConfirmee" class="max-w-2xl mx-auto py-12">
+          <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <lucide-icon name="check-circle" class="w-12 h-12 text-green-600"></lucide-icon>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Commande confirmée !</h2>
+            <p class="text-gray-600 mb-2">
+              Votre commande
+              <span class="font-semibold text-primary-600">{{ commandeConfirmee.numeroCommande }}</span>
+              a été créée avec succès.
+            </p>
+            <p class="text-sm text-gray-500 mb-8">
+              Nous vous contacterons pour confirmer la livraison.
+            </p>
+
+            <!-- Bouton WhatsApp -->
+            <a *ngIf="getWhatsAppUrlConfirmation()"
+               [href]="getWhatsAppUrlConfirmation()"
+               target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors mb-4 w-full justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.11 1.528 5.836L.057 23.75a.5.5 0 0 0 .614.614l5.914-1.471A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.881 0-3.641-.5-5.163-1.367l-.37-.21-3.51.872.888-3.422-.228-.373A9.965 9.965 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+              </svg>
+              Envoyer ma commande sur WhatsApp
+            </a>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center mt-2">
+              <button (click)="allerVersCommande()"
+                      class="btn-primary px-6 py-2.5">
+                <lucide-icon name="eye" class="w-4 h-4"></lucide-icon>
+                <span>{{ isAuthenticated ? 'Voir ma commande' : 'Suivre ma commande' }}</span>
+              </button>
+              <button (click)="goToProducts()"
+                      class="btn-outline px-6 py-2.5">
+                <lucide-icon name="shopping-cart" class="w-4 h-4"></lucide-icon>
+                <span>Continuer mes achats</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Empty Cart -->
-        <div *ngIf="cart.items.length === 0" class="text-center py-16">
+        <div *ngIf="cart.items.length === 0 && !commandeConfirmee" class="text-center py-16">
           <lucide-icon name="shopping-cart" class="w-24 h-24 text-gray-300 mx-auto mb-6"></lucide-icon>
           <h2 class="text-2xl font-semibold text-gray-900 mb-4">Votre panier est vide</h2>
           <p class="text-gray-600 mb-8">Ajoutez des produits à votre panier pour passer une commande.</p>
@@ -513,6 +556,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   cart: Cart = { items: [], totalItems: 0, totalPrice: 0 };
   isSubmitting = false;
   isAuthenticated = false;
+  commandeConfirmee: Commande | null = null;
 
   // Zones livraison
   zonesLoading = false;
@@ -844,15 +888,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         next: (response: Commande) => {
           this.isSubmitting = false;
           this.cartService.clearCart();
-          this.toastService.success(
-            'Commande créée !',
-            `Votre commande ${response.numeroCommande} a été créée avec succès`
-          );
-          if (response.idCommande) {
-            this.router.navigate(['/commande', response.idCommande]);
-          } else {
-            this.router.navigate(['/commandes']);
-          }
+          this.commandeConfirmee = response;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         error: (error) => {
           this.isSubmitting = false;
@@ -889,5 +926,38 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   goToProducts(): void {
     this.router.navigate(['/produits']);
+  }
+
+  allerVersCommande(): void {
+    if (!this.commandeConfirmee) return;
+    if (this.isAuthenticated && this.commandeConfirmee.idCommande) {
+      this.router.navigate(['/commande', this.commandeConfirmee.idCommande]);
+    } else {
+      this.router.navigate(['/suivi-commande']);
+    }
+  }
+
+  getWhatsAppUrlConfirmation(): string | null {
+    if (!this.commandeConfirmee) return null;
+    const cfg = this.configService.config;
+    const tel = cfg.telephoneWhatsappBoutique
+      ?? cfg.telephones?.find((t: any) => t.whatsapp)?.numero;
+    if (!tel) return null;
+    const template = cfg.whatsappMsgNouvelleCommande || '';
+    const cmd = this.commandeConfirmee;
+    const articles = (cmd.lignesCommande || [])
+      .map((l: any) => `${l.nomProduitCommande} x${l.quantite}`)
+      .join(', ');
+    const msg = template
+      .replace(/\{numeroCommande\}/g, cmd.numeroCommande || '')
+      .replace(/\{articles\}/g, articles)
+      .replace(/\{total\}/g, String(cmd.montantTotal || ''))
+      .replace(/\{devise\}/g, cfg.devise || 'XOF')
+      .replace(/\{zoneNom\}/g, (cmd as any).zoneNom || '')
+      .replace(/\{modeLivraison\}/g, (cmd as any).modeLivraison || '')
+      .replace(/\{nomClient\}/g, [cmd.prenomInvite || (cmd as any).client?.prenom,
+                                   cmd.nomInvite || (cmd as any).client?.nom].filter(Boolean).join(' '));
+    if (!msg.trim()) return null;
+    return `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
   }
 }
