@@ -300,9 +300,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadCategories();
-    this.checkActivePromos();
-    if (isPlatformBrowser(this.platformId)) this.setupClickOutside();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadCategories();
+      this.checkActivePromos();
+      this.setupClickOutside();
+    }
   }
 
   // Dans header.component.ts - Ajoutez cette méthode
