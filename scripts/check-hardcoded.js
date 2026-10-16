@@ -40,6 +40,13 @@ const FILE_PATTERN_EXCLUSIONS = [
   { file: 'site-settings.component.ts', patterns: ['Couleur hex en dur (#16a34a)'] },
   // URLs de domaine commentées, non affichées
   { file: 'environment.ts',             patterns: ['Nom boutique en dur'] },
+  // Couleurs sémantiques d'état de paiement dans le module facturation :
+  //   vert (#16a34a) = "Payée" / "Déjà réglé"   (vert universel = ok financier)
+  //   rouge et orange sont aussi des états métier fixes.
+  // Ces couleurs ne sont PAS des couleurs de charte — elles ne doivent pas venir
+  // de ParametresSite.couleurPrimaire dont le changement n'a pas de sens ici.
+  { file: 'PdfFacturationService.java', patterns: ['Couleur hex en dur (#16a34a)'] },
+  { file: 'facturation.html',           patterns: ['Couleur hex en dur (#16a34a)'] },
 ];
 
 // Extensions à analyser
