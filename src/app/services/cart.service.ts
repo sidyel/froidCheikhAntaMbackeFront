@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Produit, CartItem, Cart } from '../models/interfaces';
 import { ToastService } from './toast.service';
@@ -8,12 +9,21 @@ import { ToastService } from './toast.service';
 })
 export class CartService {
   private readonly CART_STORAGE_KEY = 'froid_cheikh_cart';
-  private cartSubject = new BehaviorSubject<Cart>(this.getInitialCart());
-  public cart$ = this.cartSubject.asObservable();
+  private cartSubject: BehaviorSubject<Cart>;
+  public cart$: Observable<Cart>;
 
-  constructor(private toastService: ToastService) {}
+  constructor(
+    private toastService: ToastService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.cartSubject = new BehaviorSubject<Cart>(this.getInitialCart());
+    this.cart$ = this.cartSubject.asObservable();
+  }
 
   private getInitialCart(): Cart {
+    if (!isPlatformBrowser(this.platformId)) {
+      return { items: [], totalItems: 0, totalPrice: 0 };
+    }
     const savedCart = localStorage.getItem(this.CART_STORAGE_KEY);
     if (savedCart) {
       try {
@@ -59,6 +69,7 @@ export class CartService {
   }
 
   private saveCart(cart: Cart): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       localStorage.setItem(this.CART_STORAGE_KEY, JSON.stringify(cart));
     } catch (error) {

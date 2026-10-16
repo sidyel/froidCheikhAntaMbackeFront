@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -147,12 +148,13 @@ export class SearchBarComponent implements OnInit, OnDestroy {
 
   constructor(
     private apiService: ApiService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
     this.setupSearchSubscription();
-    this.setupKeyboardNavigation();
+    if (isPlatformBrowser(this.platformId)) this.setupKeyboardNavigation();
   }
 
   ngOnDestroy(): void {

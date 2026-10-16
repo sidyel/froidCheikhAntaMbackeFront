@@ -54,6 +54,7 @@ export interface SiteConfig {
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string;
+  siteUrl?: string;
 
   // SECTIONS VISIBILITE
   afficherHeroSlider?: boolean;

@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, Optional, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
@@ -7,7 +8,10 @@ import { CartService } from '../../../services/cart.service';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfigService } from '../../../services/config.service';
+import { SeoService } from '../../../services/seo.service';
 import { Produit, Breadcrumb } from '../../../models/interfaces';
+import { SSR_RESPONSE } from '../../../utils/ssr.tokens';
+import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
 
 @Component({
   selector: 'app-product-detail',
@@ -391,7 +395,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private authService: AuthService,
     private toastService: ToastService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private seoService: SeoService,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Optional() @Inject(SSR_RESPONSE) private ssrResponse: any
   ) {
     this.isAuthenticated = this.authService.isAuthenticated();
   }
@@ -400,14 +407,14 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
-        const productId = +params['id'];
+        // Le param peut être "3-climatiseur-astech" ou "3" (ancienne URL)
+        const slug = params['slug'] ?? params['id'] ?? '';
+        const productId = extractId(String(slug));
         this.currentProductId = productId;
 
         if (productId && !isNaN(productId)) {
-          console.log('Loading product with ID:', productId);
-          this.loadProduct(productId);
+          this.loadProduct(productId, slug);
         } else {
-          console.error('Invalid product ID:', params['id']);
           this.hasError = true;
           this.isLoading = false;
         }
@@ -420,18 +427,19 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 
-  private loadProduct(productId: number): void {
-    console.log('🔄 Starting product load for ID:', productId);
+  private loadProduct(productId: number, slug?: string): void {
     this.isLoading = true;
     this.hasError = false;
     this.produit = null;
 
-    // Charger SEULEMENT le produit, sans dépendances qui peuvent échouer
     this.apiService.getProduitById(productId)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
-          console.error('❌ Erreur lors du chargement du produit:', error);
+          // Vrai 404 HTTP côté serveur SSR
+          if (isPlatformServer(this.platformId) && this.ssrResponse) {
+            this.ssrResponse.status(404);
+          }
           this.hasError = true;
           this.isLoading = false;
           throw error;
@@ -439,17 +447,24 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (product) => {
-          console.log('✅ Produit chargé avec succès:', product);
           this.produit = product;
+
+          // Redirection 301 vers l'URL canonique si le slug est absent ou obsolète
+          const canonicalSlug = buildProduitUrl(product.idProduit, product.nomProduit);
+          const currentParam = String(slug || productId);
+          const expectedParam = `${product.idProduit}-${canonicalSlug.split('/').pop()?.split('-').slice(1).join('-')}`;
+          if (isPlatformServer(this.platformId) && this.ssrResponse && currentParam !== expectedParam && !currentParam.includes('-')) {
+            this.ssrResponse.redirect(301, canonicalSlug);
+            return;
+          }
+
+          this.seoService.setProduit(product);
           this.updateBreadcrumbs();
           this.isLoading = false;
-          this.startCountdown();
-
-          // Charger les données supplémentaires en arrière-plan
+          if (isPlatformBrowser(this.platformId)) this.startCountdown();
           this.loadAdditionalData(productId);
         },
-        error: (error) => {
-          console.error('❌ Erreur dans subscribe:', error);
+        error: () => {
           this.hasError = true;
           this.isLoading = false;
         }
@@ -656,6 +671,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   shareProduct(method: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const url = window.location.href;
 
     switch (method) {

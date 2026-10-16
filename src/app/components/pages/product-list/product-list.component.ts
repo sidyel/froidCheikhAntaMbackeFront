@@ -1,10 +1,13 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, combineLatest } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ApiService } from '../../../services/api.service';
 import { ImageUrlService } from '../../../services/image-url.service';
+import { SeoService } from '../../../services/seo.service';
+import { buildCategorieUrl, extractId } from '../../../utils/slug.utils';
 import { Produit, Categorie, Marque, PagedResponse, ProductFilters, SearchParams } from '../../../models/interfaces';
 import { environment } from '../../../../environments/environment';
 
@@ -721,7 +724,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
     private imageUrlService: ImageUrlService,
     private route: ActivatedRoute,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private seoService: SeoService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.filtersForm = this.createFiltersForm();
   }
@@ -796,15 +801,16 @@ export class ProductListComponent implements OnInit, OnDestroy {
       marqueId: null
     }, { emitEvent: false });
 
-    if (params['id'] && this.router.url.includes('/categorie/')) {
-      this.currentCategoryId = +params['id'];
+    const slug = params['slug'] ?? params['id'];
+    if (slug && this.router.url.includes('/categorie/')) {
+      this.currentCategoryId = extractId(String(slug));
       this.filtersForm.patchValue({
         categorieId: this.currentCategoryId
       }, { emitEvent: false });
     }
 
-    if (params['id'] && this.router.url.includes('/marque/')) {
-      this.currentMarqueId = +params['id'];
+    if (slug && this.router.url.includes('/marque/')) {
+      this.currentMarqueId = extractId(String(slug));
       this.filtersForm.patchValue({
         marqueId: this.currentMarqueId
       }, { emitEvent: false });
@@ -839,7 +845,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
           label: categorie.nomCategorie,
           route: null
         });
+        this.seoService.setCategorie(categorie);
+      } else {
+        this.seoService.setDefault('Nos produits');
       }
+    } else {
+      this.seoService.setDefault('Nos produits');
     }
   }
 
@@ -904,13 +915,16 @@ export class ProductListComponent implements OnInit, OnDestroy {
     });
 
     if (categoryId) {
-      this.router.navigate(['/produits/categorie', categoryId]);
+      const cat = this.categories.find(c => c.idCategorie === categoryId);
+      const slugPath = cat ? buildCategorieUrl(cat.idCategorie, cat.nomCategorie) : `/produits/categorie/${categoryId}`;
+      this.router.navigateByUrl(slugPath);
     } else {
       this.router.navigate(['/produits']);
     }
   }
 
   scrollCategories(direction: 'left' | 'right'): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const container = document.querySelector('.categories-scroll-container') as HTMLElement;
     if (container) {
       const scrollAmount = 300;
@@ -930,6 +944,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private checkScrollButtons(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     setTimeout(() => {
       const container = document.querySelector('.categories-scroll-container') as HTMLElement;
       if (container) {
@@ -1045,6 +1060,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private scrollToTop(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
