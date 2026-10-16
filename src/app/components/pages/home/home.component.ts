@@ -1366,9 +1366,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadHomeData(): void {
+    // Catégories : chargées côté serveur (liens de navigation présents pour Google)
     this.loadCategories();
-    this.loadFeaturedProducts();
-    this.loadBrands();
+    if (isPlatformBrowser(this.platformId)) {
+      // Produits vedettes et marques : UI uniquement, pas utiles pour le SEO de l'accueil
+      this.loadFeaturedProducts();
+      this.loadBrands();
+    }
   }
 
   /**
@@ -1381,7 +1385,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (categories) => {
           this.categories = categories;
-          this.preloadCategoryImages();
+          if (isPlatformBrowser(this.platformId)) this.preloadCategoryImages();
           this.isLoadingCategories = false;
           this.isCategoriesVisible = true;
         },
@@ -1421,7 +1425,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (brands) => {
           this.brands = brands;
-          this.preloadBrandLogos();
+          if (isPlatformBrowser(this.platformId)) this.preloadBrandLogos();
           this.isLoadingBrands = false;
           this.isBrandsVisible = true;
         },

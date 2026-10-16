@@ -110,7 +110,7 @@ export class FooterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
+    // Chargé côté serveur et côté client (cache backend + TransferState évite la double requête)
     this.apiService.getCategories()
       .pipe(takeUntil(this.destroy$))
       .subscribe({

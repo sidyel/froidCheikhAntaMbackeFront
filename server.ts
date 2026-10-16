@@ -85,7 +85,7 @@ export function app(): express.Express {
     });
 
     const timeoutPromise = new Promise<null>((resolve) =>
-      setTimeout(() => resolve(null), 8000)
+      setTimeout(() => resolve(null), 4000)
     );
 
     Promise.race([renderPromise, timeoutPromise])

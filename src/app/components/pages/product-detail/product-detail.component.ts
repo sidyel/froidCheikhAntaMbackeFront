@@ -504,12 +504,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   private loadAdditionalData(productId: number): void {
-    // Charger la wishlist séparément (ne pas bloquer l'affichage si ça échoue)
-    if (this.isAuthenticated) {
-      this.checkWishlistStatus(productId);
-    }
-
-    // Charger les produits similaires séparément
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.isAuthenticated) this.checkWishlistStatus(productId);
+    // Produits similaires : UI uniquement, pas utile pour le SSR / SEO du produit courant
     this.loadRelatedProducts();
   }
 

@@ -300,8 +300,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Catégories chargées côté serveur (liens nav présents pour Google) + TransferState évite la double requête
+    this.loadCategories();
     if (isPlatformBrowser(this.platformId)) {
-      this.loadCategories();
+      // Badge promotions : UI uniquement, pas utile pour le SEO
       this.checkActivePromos();
       this.setupClickOutside();
     }

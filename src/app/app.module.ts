@@ -360,7 +360,7 @@ import { TelechargerDocumentComponent } from './components/pages/telecharger-doc
       useClass: ErrorInterceptor,
       multi: true
     },
-    provideClientHydration()
+    provideClientHydration()  // active hydratation + HTTP Transfer Cache (par défaut en Angular 17)
   ],
   bootstrap: [AppComponent]
 })
