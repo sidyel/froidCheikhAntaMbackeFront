@@ -5,6 +5,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ConfigService } from './services/config.service';
+import { ApiService } from './services/api.service';
 import { DevisePipe } from './pipes/devise.pipe';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -348,6 +349,17 @@ import { TelechargerDocumentComponent } from './components/pages/telecharger-doc
       provide: APP_INITIALIZER,
       useFactory: (configService: ConfigService) => () => configService.loadConfig(),
       deps: [ConfigService],
+      multi: true
+    },
+    {
+      // Pré-charge les catégories avant le premier rendu SSR (Angular attend la
+      // fin de tous les APP_INITIALIZER avant de naviguer et de rendre les composants).
+      // Le résultat est mis en cache par Angular HTTP Transfer Cache → les composants
+      // Header, Footer et Home le lisent instantanément sans appel réseau supplémentaire.
+      provide: APP_INITIALIZER,
+      useFactory: (apiService: ApiService) => () =>
+        apiService.getCategories().toPromise().catch(() => []),
+      deps: [ApiService],
       multi: true
     },
     {

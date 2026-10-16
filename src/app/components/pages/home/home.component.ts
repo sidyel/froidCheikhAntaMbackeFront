@@ -1257,18 +1257,21 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.seoService.setHome();
-    this.contenuService.getHeroImages().subscribe({
-      next: (images) => {
-        if (images && images.length > 0) {
-          this.heroImages = images
-            .filter(img => img.actif !== false)
-            .sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0))
-            .map(img => ({ url: img.urlImage || '', alt: img.altText || '' }));
-          if (isPlatformBrowser(this.platformId)) this.preloadHeroImages();
-        }
-      },
-      error: () => {}
-    });
+    // Hero images : carrousel UI uniquement, pas utile pour le SSR/SEO
+    if (isPlatformBrowser(this.platformId)) {
+      this.contenuService.getHeroImages().subscribe({
+        next: (images) => {
+          if (images && images.length > 0) {
+            this.heroImages = images
+              .filter(img => img.actif !== false)
+              .sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0))
+              .map(img => ({ url: img.urlImage || '', alt: img.altText || '' }));
+            this.preloadHeroImages();
+          }
+        },
+        error: () => {}
+      });
+    }
     this.loadHomeData();
     if (isPlatformBrowser(this.platformId)) {
       this.initializeAnimations();
