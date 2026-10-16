@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, Optional, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, combineLatest } from 'rxjs';
@@ -8,6 +8,7 @@ import { ApiService } from '../../../services/api.service';
 import { ImageUrlService } from '../../../services/image-url.service';
 import { SeoService } from '../../../services/seo.service';
 import { buildCategorieUrl, extractId } from '../../../utils/slug.utils';
+import { SSR_RESPONSE } from '../../../utils/ssr.tokens';
 import { Produit, Categorie, Marque, PagedResponse, ProductFilters, SearchParams } from '../../../models/interfaces';
 import { environment } from '../../../../environments/environment';
 
@@ -726,7 +727,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
     private router: Router,
     private fb: FormBuilder,
     private seoService: SeoService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Optional() @Inject(SSR_RESPONSE) private ssrResponse: any
   ) {
     this.filtersForm = this.createFiltersForm();
   }
@@ -807,6 +809,20 @@ export class ProductListComponent implements OnInit, OnDestroy {
       this.filtersForm.patchValue({
         categorieId: this.currentCategoryId
       }, { emitEvent: false });
+
+      // Redirect 301 → URL canonique si le slug ne contient pas encore le nom de catégorie
+      const slugStr = String(slug);
+      if (!slugStr.includes('-') && this.currentCategoryId) {
+        this.apiService.getCategorieById(this.currentCategoryId).subscribe(cat => {
+          if (!cat) return;
+          const canonical = buildCategorieUrl(cat.idCategorie, cat.nomCategorie);
+          if (this.ssrResponse && !this.ssrResponse.headersSent) {
+            this.ssrResponse.redirect(301, canonical);
+          } else if (isPlatformBrowser(this.platformId)) {
+            this.router.navigateByUrl(canonical, { replaceUrl: true });
+          }
+        });
+      }
     }
 
     if (slug && this.router.url.includes('/marque/')) {
