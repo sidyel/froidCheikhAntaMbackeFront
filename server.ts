@@ -55,9 +55,11 @@ export function app(): express.Express {
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
 
-  // ── Proxy sitemap.xml + robots.txt vers le backend Spring Boot ──────────────
+  // ── Proxy sitemap.xml + robots.txt + flux catalogue vers le backend Spring Boot ──
   server.get('/sitemap.xml', (req, res) => proxyToBackend(req, res, '/sitemap.xml'));
   server.get('/robots.txt', (req, res) => proxyToBackend(req, res, '/robots.txt'));
+  server.get('/feeds/meta.xml', (req, res) => proxyToBackend(req, res, '/feeds/meta.xml'));
+  server.get('/feeds/google.xml', (req, res) => proxyToBackend(req, res, '/feeds/google.xml'));
 
   // ── Fichiers statiques du bundle browser ───────────────────────────────────
   server.get('*.*', express.static(browserDistFolder, { maxAge: '1y' }));

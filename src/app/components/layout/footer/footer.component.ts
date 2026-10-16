@@ -8,6 +8,7 @@ import { SiteConfig } from '../../../models/site-config.interface';
 import { NewsletterService } from '../../../services/newsletter.service';
 import { ToastService } from '../../../services/toast.service';
 import { ApiService } from '../../../services/api.service';
+import { ConsentService } from '../../../services/consent.service';
 
 interface SocialLink {
   name: string;
@@ -104,9 +105,14 @@ export class FooterComponent implements OnInit, OnDestroy {
     private newsletterService: NewsletterService,
     private toastService: ToastService,
     private apiService: ApiService,
+    private consentService: ConsentService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.config = this.configService.config;
+  }
+
+  gererCookies(): void {
+    this.consentService.reset();
   }
 
   ngOnInit(): void {

@@ -47,6 +47,12 @@ const FILE_PATTERN_EXCLUSIONS = [
   // de ParametresSite.couleurPrimaire dont le changement n'a pas de sens ici.
   { file: 'PdfFacturationService.java', patterns: ['Couleur hex en dur (#16a34a)'] },
   { file: 'facturation.html',           patterns: ['Couleur hex en dur (#16a34a)'] },
+  // pixel.service.ts : currency:'XOF' est un code ISO fixe dans les payloads API Meta/GA
+  // (pas une devise de charte — provient de ParametresSite mais non disponible côté service navigateur)
+  { file: 'pixel.service.ts',           patterns: ["Devise 'XOF' en dur (currency pipe)"] },
+  // CatalogueFeedService.java : le titre du flux RSS est un libellé descriptif technique,
+  // non une donnée de charte ; la vrai config siteUrl/devise vient de ParametresSite.
+  { file: 'CatalogueFeedService.java',  patterns: ['Nom boutique en dur'] },
 ];
 
 // Extensions à analyser

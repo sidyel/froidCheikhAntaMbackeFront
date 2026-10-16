@@ -63,6 +63,10 @@ export interface SiteConfig {
   afficherEquipe?: boolean;
   afficherRealisations?: boolean;
 
+  // PUBLICITE ET SUIVI
+  metaPixelId?: string;
+  googleAnalyticsId?: string;
+
   // WHATSAPP — numéro boutique (premier téléphone whatsapp=true) + templates
   telephoneWhatsappBoutique?: string;
   indicatifPaysDefaut?: string;

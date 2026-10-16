@@ -1,9 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter, map, mergeMap } from 'rxjs/operators';
 import { Title, Meta } from '@angular/platform-browser';
 import { ConfigService } from './services/config.service';
+import { PixelService } from './services/pixel.service';
+import { ConsentService } from './services/consent.service';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +25,9 @@ import { ConfigService } from './services/config.service';
 
       <!-- Toast Notifications -->
       <app-toast></app-toast>
+
+      <!-- Bannière consentement cookies -->
+      <app-cookie-banner></app-cookie-banner>
     </div>
   `
 })
@@ -33,17 +39,33 @@ export class AppComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private titleService: Title,
     private metaService: Meta,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private pixelService: PixelService,
+    private consentService: ConsentService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
     this.setPageTitle();
     this.setupMetaTags();
+    if (isPlatformBrowser(this.platformId)) {
+      this.pixelService.init();
+      this.consentService.state$.subscribe(state => {
+        if (state === 'accepted') this.pixelService.init();
+      });
+    }
+    this.setupPageViewTracking();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private setupPageViewTracking(): void {
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntil(this.destroy$))
+      .subscribe(() => this.pixelService.trackPageView());
   }
 
   private setPageTitle(): void {

@@ -1,0 +1,13 @@
+<div *ngIf="visible" class="cookie-banner" role="dialog" aria-label="Cookies">
+  <div class="cookie-banner__content">
+    <p class="cookie-banner__text">
+      Ce site utilise des cookies publicitaires pour mesurer les performances de nos campagnes.
+      Vous pouvez accepter ou refuser leur utilisation.
+      <a routerLink="/politique-confidentialite" class="cookie-banner__link">En savoir plus</a>
+    </p>
+    <div class="cookie-banner__actions">
+      <button class="cookie-banner__btn cookie-banner__btn--refuse" (click)="refuse()">Refuser</button>
+      <button class="cookie-banner__btn cookie-banner__btn--accept" (click)="accept()">Accepter</button>
+    </div>
+  </div>
+</div>

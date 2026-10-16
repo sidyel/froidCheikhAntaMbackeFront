@@ -122,6 +122,7 @@ export interface Produit {
   images?: ImageProduit[];        // admin — vide avant migration
   videosOptionnelles?: string[];
   disponibilite: boolean;
+  excluCatalogue?: boolean;
   dateAjout: string;
   categorie?: Categorie;
   marque?: Marque;
@@ -254,6 +255,9 @@ export interface Commande {
   lignesCommande: LigneCommande[];
   paiement?: Paiement;
   historiqueStatuts?: HistoriqueStatutCommande[];
+  consentementCookies?: boolean;
+  fbp?: string;
+  fbc?: string;
 }
 
 export interface LigneCommande {

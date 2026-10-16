@@ -427,6 +427,13 @@ interface EditableAttribut {
                 Produit disponible à la vente
               </label>
             </div>
+            <div class="flex items-center mt-3">
+              <input type="checkbox" formControlName="excluCatalogue" id="excluCatalogue"
+                class="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded">
+              <label for="excluCatalogue" class="ml-2 block text-sm text-gray-900">
+                Exclure du catalogue publicitaire (Meta, Google)
+              </label>
+            </div>
           </div>
 
           <!-- Actions -->
@@ -526,7 +533,8 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
       garantie: [''],
       modeleFabricant: [''],
       ean: ['', [Validators.pattern('^(\\d{8}|\\d{12}|\\d{13}|\\d{14})$')]],
-      disponibilite: [true]
+      disponibilite: [true],
+      excluCatalogue: [false]
     });
   }
 
@@ -586,7 +594,8 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
       garantie: produit.garantie,
       modeleFabricant: produit.modeleFabricant || '',
       ean: produit.ean || '',
-      disponibilite: produit.disponibilite
+      disponibilite: produit.disponibilite,
+      excluCatalogue: produit.excluCatalogue ?? false
     });
 
     // Images : d'abord images[] (après migration), sinon listeImages (avant migration)
@@ -939,6 +948,7 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
       modeleFabricant: formValue.modeleFabricant || undefined,
       ean: formValue.ean || undefined,
       disponibilite: formValue.disponibilite,
+      excluCatalogue: formValue.excluCatalogue,
       categorie: formValue.categorieId ? {idCategorie: parseInt(formValue.categorieId)} as Categorie : undefined,
       marque: formValue.marqueId ? {idMarque: parseInt(formValue.marqueId)} as Marque : undefined,
       ficheTechniquePDF: this.currentFicheTechnique || undefined

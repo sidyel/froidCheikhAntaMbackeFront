@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Produit, CartItem, Cart } from '../models/interfaces';
 import { ToastService } from './toast.service';
+import { PixelService } from './pixel.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,8 @@ export class CartService {
 
   constructor(
     private toastService: ToastService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private pixelService: PixelService
   ) {
     this.cartSubject = new BehaviorSubject<Cart>(this.getInitialCart());
     this.cart$ = this.cartSubject.asObservable();
@@ -134,6 +136,8 @@ export class CartService {
 
     this.updateCart(currentCart);
     this.toastService.success('Produit ajouté', `${produit.nomProduit} a été ajouté au panier`);
+    const prixTrk = produit.prixPromo ?? produit.prix;
+    this.pixelService.trackAddToCart({ contentId: String(produit.idProduit), contentName: produit.nomProduit, value: prixTrk * quantite, quantity: quantite });
   }
 
   removeFromCart(produitId: number): void {

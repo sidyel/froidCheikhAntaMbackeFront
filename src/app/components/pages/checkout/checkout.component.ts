@@ -9,6 +9,8 @@ import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfigService } from '../../../services/config.service';
 import { LivraisonService } from '../../../services/livraison.service';
+import { PixelService } from '../../../services/pixel.service';
+import { ConsentService } from '../../../services/consent.service';
 import {
   Cart,
   Breadcrumb,
@@ -606,7 +608,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private router: Router,
     private configService: ConfigService,
-    private livraisonService: LivraisonService
+    private livraisonService: LivraisonService,
+    private pixelService: PixelService,
+    private consentService: ConsentService
   ) {
     this.checkoutForm = this.createCheckoutForm();
   }
@@ -616,6 +620,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.loadCart();
     this.checkAuthentication();
     this.prefillUserData();
+    this.pixelService.trackInitiateCheckout({ value: this.cart.totalPrice, numItems: this.cart.totalItems });
 
     // Relancer l'estimation à chaque changement de mode
     this.checkoutForm.get('modeLivraison')!.valueChanges
@@ -865,7 +870,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         quantite: item.quantite,
         prixUnitaire: item.produit.prix,
         sousTotal: item.sousTotal
-      }))
+      })),
+      consentementCookies: this.consentService.state === 'accepted',
+      fbp: this.getCookie('_fbp') ?? undefined,
+      fbc: this.getCookie('_fbc') ?? undefined
     };
 
     let commandeObservable: Observable<Commande>;
@@ -890,6 +898,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           this.cartService.clearCart();
           this.commandeConfirmee = response;
           window.scrollTo({ top: 0, behavior: 'smooth' });
+          this.pixelService.trackPurchase({ commandeId: response.idCommande!, value: response.montantTotal! });
         },
         error: (error) => {
           this.isSubmitting = false;
@@ -926,6 +935,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   goToProducts(): void {
     this.router.navigate(['/produits']);
+  }
+
+  private getCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
   }
 
   allerVersCommande(): void {
