@@ -8,6 +8,19 @@ import { environment } from '../../../../environments/environment';
 
 type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'facturation' | 'livraison' | 'seo' | 'whatsapp' | 'publicite';
 
+interface ExclusionProduit {
+  idProduit: number;
+  nomProduit: string;
+  raison: string;
+  lienAdmin: string;
+}
+
+interface RapportFeed {
+  totalProduits: number;
+  totalFlux: number;
+  exclusions: ExclusionProduit[];
+}
+
 @Component({
   selector: 'app-site-settings',
   template: `
@@ -557,6 +570,88 @@ type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'factur
               </a>
             </div>
           </div>
+
+          <!-- Rapport d'exclusions catalogue -->
+          <div class="pt-4 border-t border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-sm font-medium text-gray-700">État du catalogue publicitaire</p>
+              <button type="button" (click)="loadRapport()" class="btn-outline text-xs" [disabled]="rapportLoading">
+                {{ rapportLoading ? 'Chargement…' : '↻ Actualiser' }}
+              </button>
+            </div>
+
+            <div *ngIf="rapport" class="space-y-3">
+              <!-- Compteur -->
+              <div class="flex gap-4 text-sm">
+                <span class="px-3 py-1 bg-green-50 text-green-800 rounded-full font-medium">
+                  ✅ {{ rapport.totalFlux }} produits dans le flux
+                </span>
+                <span class="px-3 py-1 rounded-full font-medium"
+                  [class.bg-red-50]="rapport.exclusions.length > 0"
+                  [class.text-red-800]="rapport.exclusions.length > 0"
+                  [class.bg-gray-50]="rapport.exclusions.length === 0"
+                  [class.text-gray-600]="rapport.exclusions.length === 0">
+                  ⚠️ {{ rapport.exclusions.length }} exclus ({{ rapport.totalProduits }} total)
+                </span>
+              </div>
+
+              <!-- Filtre par raison -->
+              <div *ngIf="rapport.exclusions.length > 0" class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs text-gray-500">Filtrer par raison :</span>
+                <button type="button" (click)="rapportFilter = ''"
+                  class="text-xs px-2 py-0.5 rounded border"
+                  [class.bg-gray-800]="rapportFilter === ''"
+                  [class.text-white]="rapportFilter === ''"
+                  [class.border-gray-800]="rapportFilter === ''"
+                  [class.border-gray-300]="rapportFilter !== ''">
+                  Toutes
+                </button>
+                <button *ngFor="let r of raisonsUniques" type="button" (click)="rapportFilter = r"
+                  class="text-xs px-2 py-0.5 rounded border"
+                  [class.bg-gray-800]="rapportFilter === r"
+                  [class.text-white]="rapportFilter === r"
+                  [class.border-gray-800]="rapportFilter === r"
+                  [class.border-gray-300]="rapportFilter !== r">
+                  {{ r }} ({{ countByRaison(r) }})
+                </button>
+              </div>
+
+              <!-- Tableau exclusions -->
+              <div *ngIf="rapport.exclusions.length > 0" class="overflow-x-auto rounded border border-gray-200">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="text-left px-3 py-2 font-medium text-gray-600">ID</th>
+                      <th class="text-left px-3 py-2 font-medium text-gray-600">Produit</th>
+                      <th class="text-left px-3 py-2 font-medium text-gray-600">Raison</th>
+                      <th class="text-left px-3 py-2 font-medium text-gray-600">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let e of exclusionsFiltrees" class="border-t border-gray-100 hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-400 tabular-nums">{{ e.idProduit }}</td>
+                      <td class="px-3 py-2 text-gray-900 font-medium max-w-xs truncate" [title]="e.nomProduit">{{ e.nomProduit }}</td>
+                      <td class="px-3 py-2">
+                        <span class="inline-block px-2 py-0.5 rounded text-xs bg-orange-50 text-orange-800">{{ e.raison }}</span>
+                      </td>
+                      <td class="px-3 py-2">
+                        <a [href]="e.lienAdmin" target="_blank" class="text-blue-600 hover:underline text-xs">Modifier →</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p *ngIf="exclusionsFiltrees.length === 0" class="px-3 py-3 text-gray-400 text-xs text-center">Aucun produit pour ce filtre.</p>
+              </div>
+
+              <p *ngIf="rapport.exclusions.length === 0" class="text-green-700 text-sm">
+                ✅ Tous les produits actifs sont dans le flux publicitaire.
+              </p>
+            </div>
+
+            <p *ngIf="!rapport && !rapportLoading" class="text-gray-400 text-xs">
+              Cliquez sur "Actualiser" pour charger le rapport.
+            </p>
+          </div>
         </div>
 
         <!-- Actions -->
@@ -578,12 +673,21 @@ type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'factur
 })
 export class SiteSettingsComponent implements OnInit {
   form!: FormGroup;
-  activeTab: Tab = 'identite';
+  private _activeTab: Tab = 'identite';
+  get activeTab(): Tab { return this._activeTab; }
+  set activeTab(t: Tab) {
+    this._activeTab = t;
+    if (t === 'publicite') this.loadRapport();
+  }
   saving = false;
   successMessage = '';
   errorMessage = '';
   generationApercu = false;
   uploading: Record<'entete' | 'pied' | 'cachet', boolean> = { entete: false, pied: false, cachet: false };
+
+  rapport: RapportFeed | null = null;
+  rapportLoading = false;
+  rapportFilter = '';
 
   tabs: { id: Tab; label: string }[] = [
     { id: 'identite',    label: 'Identité' },
@@ -649,6 +753,31 @@ export class SiteSettingsComponent implements OnInit {
         this.generationApercu = false;
       }
     });
+  }
+
+  loadRapport(): void {
+    if (this.rapportLoading) return;
+    this.rapportLoading = true;
+    this.http.get<RapportFeed>(`${environment.apiUrl}/admin/catalogue/rapport`, { headers: this.authHeaders() })
+      .subscribe({
+        next: data => { this.rapport = data; this.rapportLoading = false; },
+        error: ()  => { this.rapportLoading = false; }
+      });
+  }
+
+  get exclusionsFiltrees(): ExclusionProduit[] {
+    if (!this.rapport) return [];
+    const f = this.rapportFilter;
+    return f ? this.rapport.exclusions.filter(e => e.raison === f) : this.rapport.exclusions;
+  }
+
+  get raisonsUniques(): string[] {
+    if (!this.rapport) return [];
+    return [...new Set(this.rapport.exclusions.map(e => e.raison))].sort();
+  }
+
+  countByRaison(raison: string): number {
+    return this.rapport?.exclusions.filter(e => e.raison === raison).length ?? 0;
   }
 
   ngOnInit(): void {
