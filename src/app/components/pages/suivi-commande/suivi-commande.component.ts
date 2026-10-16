@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../services/api.service';
+import { SeoService } from '../../../services/seo.service';
 import { Commande, StatutCommande } from '../../../models/interfaces';
 
 @Component({
@@ -96,7 +97,14 @@ export class SuiviCommandeComponent {
   isLoading = false;
   erreur = '';
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private seoService: SeoService
+  ) {}
+
+  ngOnInit(): void {
+    this.seoService.setDefault('Suivi de commande');
+  }
 
   rechercher(): void {
     if (!this.numeroCommande.trim() || !this.telephone.trim()) return;
