@@ -368,17 +368,59 @@ type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'factur
                   <option value="IMAGE">Image personnalisée</option>
                 </select>
               </div>
-              <div>
-                <label class="form-label">URL image en-tête (mode IMAGE)</label>
-                <input formControlName="urlImageEnTete" class="form-input" placeholder="https://...">
+              <!-- Upload image en-tête -->
+              <div class="md:col-span-2">
+                <label class="form-label">Image en-tête (mode IMAGE)</label>
+                <div class="flex items-center gap-3">
+                  <img *ngIf="form.get('urlImageEnTete')?.value"
+                    [src]="form.get('urlImageEnTete')?.value"
+                    alt="Aperçu en-tête" class="h-12 rounded border border-gray-200 object-contain bg-gray-50">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                    [class.opacity-50]="uploading.entete">
+                    <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                    {{ uploading.entete ? 'Envoi…' : 'Choisir un fichier' }}
+                    <input type="file" accept="image/*" class="hidden"
+                      (change)="uploadImage($event, 'entete')" [disabled]="uploading.entete">
+                  </label>
+                  <span *ngIf="form.get('urlImageEnTete')?.value"
+                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlImageEnTete')?.value }}</span>
+                </div>
               </div>
-              <div>
-                <label class="form-label">URL image pied de page (mode IMAGE)</label>
-                <input formControlName="urlImagePied" class="form-input" placeholder="https://...">
+              <!-- Upload image pied -->
+              <div class="md:col-span-2">
+                <label class="form-label">Image pied de page (mode IMAGE)</label>
+                <div class="flex items-center gap-3">
+                  <img *ngIf="form.get('urlImagePied')?.value"
+                    [src]="form.get('urlImagePied')?.value"
+                    alt="Aperçu pied" class="h-12 rounded border border-gray-200 object-contain bg-gray-50">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                    [class.opacity-50]="uploading.pied">
+                    <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                    {{ uploading.pied ? 'Envoi…' : 'Choisir un fichier' }}
+                    <input type="file" accept="image/*" class="hidden"
+                      (change)="uploadImage($event, 'pied')" [disabled]="uploading.pied">
+                  </label>
+                  <span *ngIf="form.get('urlImagePied')?.value"
+                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlImagePied')?.value }}</span>
+                </div>
               </div>
-              <div>
-                <label class="form-label">URL cachet / signature</label>
-                <input formControlName="urlCachetSignature" class="form-input" placeholder="https://...">
+              <!-- Upload cachet/signature -->
+              <div class="md:col-span-2">
+                <label class="form-label">Cachet / signature</label>
+                <div class="flex items-center gap-3">
+                  <img *ngIf="form.get('urlCachetSignature')?.value"
+                    [src]="form.get('urlCachetSignature')?.value"
+                    alt="Aperçu cachet" class="h-16 rounded border border-gray-200 object-contain bg-gray-50">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                    [class.opacity-50]="uploading.cachet">
+                    <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                    {{ uploading.cachet ? 'Envoi…' : 'Choisir un fichier' }}
+                    <input type="file" accept="image/*" class="hidden"
+                      (change)="uploadImage($event, 'cachet')" [disabled]="uploading.cachet">
+                  </label>
+                  <span *ngIf="form.get('urlCachetSignature')?.value"
+                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlCachetSignature')?.value }}</span>
+                </div>
               </div>
               <div>
                 <label class="form-label">Durée validité jeton WhatsApp (heures)</label>
@@ -503,6 +545,7 @@ export class SiteSettingsComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   generationApercu = false;
+  uploading: Record<'entete' | 'pied' | 'cachet', boolean> = { entete: false, pied: false, cachet: false };
 
   tabs: { id: Tab; label: string }[] = [
     { id: 'identite',    label: 'Identité' },
@@ -523,6 +566,36 @@ export class SiteSettingsComponent implements OnInit {
     private configService: ConfigService,
     private facturationService: FacturationService
   ) {}
+
+  uploadImage(event: Event, cible: 'entete' | 'pied' | 'cachet'): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const endpoint = cible === 'entete' ? 'entete-image' : cible === 'pied' ? 'pied-image' : 'cachet';
+    const formField = cible === 'entete' ? 'urlImageEnTete' : cible === 'pied' ? 'urlImagePied' : 'urlCachetSignature';
+
+    this.uploading[cible] = true;
+    const fd = new FormData();
+    fd.append('file', file);
+
+    this.http.post<{ url: string }>(
+      `${environment.apiUrl}/admin/config/${endpoint}`,
+      fd,
+      { headers: new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken() || ''}` }) }
+    ).subscribe({
+      next: (res) => {
+        this.form.get(formField)?.setValue(res.url);
+        this.uploading[cible] = false;
+        input.value = '';
+      },
+      error: () => {
+        this.errorMessage = 'Erreur lors de l\'upload de l\'image.';
+        this.uploading[cible] = false;
+        input.value = '';
+      }
+    });
+  }
 
   apercuPdf(): void {
     if (this.generationApercu) return;
