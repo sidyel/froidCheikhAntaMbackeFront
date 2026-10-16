@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -29,9 +30,16 @@ import {
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = environment.apiUrl;
+  private apiUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.apiUrl = isPlatformServer(platformId)
+      ? (environment.apiUrlServeur || environment.apiUrl)
+      : environment.apiUrl;
+  }
 
   // ==================== AUTHENTIFICATION ====================
   login(credentials: LoginRequest): Observable<AuthResponse> {
