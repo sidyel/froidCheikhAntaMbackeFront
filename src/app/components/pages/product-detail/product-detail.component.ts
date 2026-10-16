@@ -452,9 +452,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           // Redirection 301 vers l'URL canonique si le slug est absent ou obsolète
           const canonicalSlug = buildProduitUrl(product.idProduit, product.nomProduit);
           const currentParam = String(slug || productId);
-          const expectedParam = `${product.idProduit}-${canonicalSlug.split('/').pop()?.split('-').slice(1).join('-')}`;
-          if (isPlatformServer(this.platformId) && this.ssrResponse && currentParam !== expectedParam && !currentParam.includes('-')) {
-            this.ssrResponse.redirect(301, canonicalSlug);
+          const canonicalParam = canonicalSlug.split('/').pop() || '';
+          if (isPlatformServer(this.platformId) && this.ssrResponse && currentParam !== canonicalParam) {
+            if (!this.ssrResponse.headersSent) this.ssrResponse.redirect(301, canonicalSlug);
             return;
           }
 
