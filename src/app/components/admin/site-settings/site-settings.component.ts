@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { ConfigService } from '../../../services/config.service';
+import { FacturationService } from '../../../services/facturation.service';
 import { environment } from '../../../../environments/environment';
 
 type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'facturation' | 'livraison' | 'seo' | 'whatsapp';
@@ -222,33 +223,224 @@ type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'factur
         </div>
 
         <!-- FACTURATION -->
-        <div *ngIf="activeTab === 'facturation'" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="form-label">Raison sociale</label>
-              <input formControlName="raisonSociale" class="form-input">
-            </div>
-            <div>
-              <label class="form-label">Forme juridique</label>
-              <input formControlName="formeJuridique" class="form-input" placeholder="SARL, SA, EI...">
-            </div>
-            <div>
-              <label class="form-label">NINEA</label>
-              <input formControlName="ninea" class="form-input">
-            </div>
-            <div>
-              <label class="form-label">RCCM</label>
-              <input formControlName="rccm" class="form-input">
-            </div>
-            <div>
-              <label class="form-label">N° CFE</label>
-              <input formControlName="numeroCfe" class="form-input">
-            </div>
-            <div>
-              <label class="form-label">Capital social</label>
-              <input formControlName="capitalSocial" class="form-input" placeholder="1 000 000 FCFA">
+        <div *ngIf="activeTab === 'facturation'" class="space-y-6">
+
+          <!-- Identité entreprise -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Identité entreprise</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="form-label">Raison sociale</label>
+                <input formControlName="raisonSociale" class="form-input">
+              </div>
+              <div>
+                <label class="form-label">Forme juridique</label>
+                <input formControlName="formeJuridique" class="form-input" placeholder="SARL, SA, EI...">
+              </div>
+              <div>
+                <label class="form-label">N° CFE</label>
+                <input formControlName="numeroCfe" class="form-input">
+              </div>
+              <div>
+                <label class="form-label">NINEA</label>
+                <input formControlName="ninea" class="form-input">
+              </div>
+              <div>
+                <label class="form-label">RCCM</label>
+                <input formControlName="rccm" class="form-input">
+              </div>
+              <div>
+                <label class="form-label">Capital social</label>
+                <input formControlName="capitalSocial" class="form-input" placeholder="1 000 000 FCFA">
+              </div>
             </div>
           </div>
+
+          <!-- Coordonnées en-tête -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Coordonnées (en-tête PDF)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="form-label">Adresse du siège</label>
+                <textarea formControlName="adresseSiege" class="form-input" rows="2"></textarea>
+              </div>
+              <div>
+                <label class="form-label">Boîte postale</label>
+                <input formControlName="boitePostale" class="form-input" placeholder="B.P. 7605 Dakar">
+              </div>
+              <div>
+                <label class="form-label">Nom de la banque</label>
+                <input formControlName="banqueNom" class="form-input" placeholder="CBAO">
+              </div>
+              <div>
+                <label class="form-label">N° de compte bancaire</label>
+                <input formControlName="numeroCompteBancaire" class="form-input">
+              </div>
+              <div class="md:col-span-2">
+                <label class="form-label">Texte descriptif des activités</label>
+                <textarea formControlName="texteDescriptifActivites" class="form-input" rows="2"
+                  placeholder="Vente, installation et maintenance d'équipements..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- TVA et devise -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">TVA et devise</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Taux TVA par défaut (%)</label>
+                <input formControlName="tauxTvaDefaut" type="number" min="0" max="100" step="0.5" class="form-input" placeholder="18">
+              </div>
+              <div class="flex items-center gap-3 pt-6">
+                <input formControlName="prixAfficheTTC" type="checkbox" id="prixTTC" class="rounded">
+                <label for="prixTTC" class="text-sm text-gray-700 cursor-pointer">Prix affiché TTC (sinon HT)</label>
+              </div>
+              <div>
+                <label class="form-label">Libellé devise (PDF)</label>
+                <input formControlName="libelleDevise" class="form-input" placeholder="FCFA">
+                <p class="text-xs text-gray-400 mt-1">Affiché dans les documents PDF (ex: FCFA). Le code ISO reste "XOF".</p>
+              </div>
+              <div>
+                <label class="form-label">Mention d'exonération TVA</label>
+                <input formControlName="mentionExonerationTva" class="form-input" placeholder="TVA non applicable — art. 293B du CGI">
+              </div>
+            </div>
+          </div>
+
+          <!-- Numérotation -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Numérotation des documents</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label class="form-label">Préfixe Facture</label>
+                <input formControlName="prefixeFacture" class="form-input font-mono" placeholder="FAC">
+              </div>
+              <div>
+                <label class="form-label">Préfixe Avoir</label>
+                <input formControlName="prefixeAvoir" class="form-input font-mono" placeholder="AVO">
+              </div>
+              <div>
+                <label class="form-label">Préfixe Devis</label>
+                <input formControlName="prefixeDevis" class="form-input font-mono" placeholder="DEV">
+              </div>
+              <div>
+                <label class="form-label">Préfixe Bon livraison</label>
+                <input formControlName="prefixeBonLivraison" class="form-input font-mono" placeholder="BL">
+              </div>
+            </div>
+          </div>
+
+          <!-- Mentions -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Mentions et conditions</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="form-label">Conditions de paiement par défaut</label>
+                <textarea formControlName="conditionsPaiementDefaut" class="form-input" rows="2"
+                  placeholder="Paiement à réception de la facture..."></textarea>
+              </div>
+              <div>
+                <label class="form-label">Mentions pied de document</label>
+                <textarea formControlName="mentionsPiedDocument" class="form-input" rows="2"
+                  placeholder="Merci de votre confiance..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apparence PDF -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Apparence des documents PDF</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Couleur des documents</label>
+                <div class="flex gap-2 items-center">
+                  <input type="color" formControlName="couleurDocuments"
+                    class="w-10 h-10 rounded cursor-pointer border border-gray-300">
+                  <input formControlName="couleurDocuments" class="form-input font-mono"
+                    placeholder="#2563eb" maxlength="7">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Mode d'en-tête</label>
+                <select formControlName="modeEnTeteDocuments" class="form-input">
+                  <option value="COMPOSE">Composé (texte — coordonnées)</option>
+                  <option value="IMAGE">Image personnalisée</option>
+                </select>
+              </div>
+              <!-- Upload image en-tête -->
+              <div class="md:col-span-2">
+                <label class="form-label">Image en-tête (mode IMAGE)</label>
+                <div class="flex items-center gap-3">
+                  <img *ngIf="form.get('urlImageEnTete')?.value"
+                    [src]="form.get('urlImageEnTete')?.value"
+                    alt="Aperçu en-tête" class="h-12 rounded border border-gray-200 object-contain bg-gray-50">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                    [class.opacity-50]="uploading.entete">
+                    <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                    {{ uploading.entete ? 'Envoi…' : 'Choisir un fichier' }}
+                    <input type="file" accept="image/*" class="hidden"
+                      (change)="uploadImage($event, 'entete')" [disabled]="uploading.entete">
+                  </label>
+                  <span *ngIf="form.get('urlImageEnTete')?.value"
+                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlImageEnTete')?.value }}</span>
+                </div>
+              </div>
+              <!-- Upload image pied -->
+              <div class="md:col-span-2">
+                <label class="form-label">Image pied de page (mode IMAGE)</label>
+                <div class="flex items-center gap-3">
+                  <img *ngIf="form.get('urlImagePied')?.value"
+                    [src]="form.get('urlImagePied')?.value"
+                    alt="Aperçu pied" class="h-12 rounded border border-gray-200 object-contain bg-gray-50">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                    [class.opacity-50]="uploading.pied">
+                    <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                    {{ uploading.pied ? 'Envoi…' : 'Choisir un fichier' }}
+                    <input type="file" accept="image/*" class="hidden"
+                      (change)="uploadImage($event, 'pied')" [disabled]="uploading.pied">
+                  </label>
+                  <span *ngIf="form.get('urlImagePied')?.value"
+                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlImagePied')?.value }}</span>
+                </div>
+              </div>
+              <!-- Upload cachet/signature -->
+              <div class="md:col-span-2">
+                <label class="form-label">Cachet / signature</label>
+                <div class="flex items-center gap-3">
+                  <img *ngIf="form.get('urlCachetSignature')?.value"
+                    [src]="form.get('urlCachetSignature')?.value"
+                    alt="Aperçu cachet" class="h-16 rounded border border-gray-200 object-contain bg-gray-50">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                    [class.opacity-50]="uploading.cachet">
+                    <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                    {{ uploading.cachet ? 'Envoi…' : 'Choisir un fichier' }}
+                    <input type="file" accept="image/*" class="hidden"
+                      (change)="uploadImage($event, 'cachet')" [disabled]="uploading.cachet">
+                  </label>
+                  <span *ngIf="form.get('urlCachetSignature')?.value"
+                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlCachetSignature')?.value }}</span>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Durée validité jeton WhatsApp (heures)</label>
+                <input formControlName="dureeValiditeJetonHeures" type="number" min="1" max="168" class="form-input" placeholder="72">
+              </div>
+            </div>
+          </div>
+
+          <!-- Aperçu PDF -->
+          <div class="pt-2">
+            <button type="button" (click)="apercuPdf()" [disabled]="generationApercu"
+              class="flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
+              <lucide-icon name="eye" class="w-4 h-4"></lucide-icon>
+              {{ generationApercu ? 'Génération…' : 'Aperçu PDF (en-tête actuel)' }}
+            </button>
+            <p class="text-xs text-gray-400 mt-1">
+              Génère un PDF de prévisualisation avec les données actuellement en base (pas les modifications non sauvegardées).
+            </p>
+          </div>
+
         </div>
 
         <!-- LIVRAISON -->
@@ -352,6 +544,8 @@ export class SiteSettingsComponent implements OnInit {
   saving = false;
   successMessage = '';
   errorMessage = '';
+  generationApercu = false;
+  uploading: Record<'entete' | 'pied' | 'cachet', boolean> = { entete: false, pied: false, cachet: false };
 
   tabs: { id: Tab; label: string }[] = [
     { id: 'identite',    label: 'Identité' },
@@ -369,8 +563,54 @@ export class SiteSettingsComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private authService: AuthService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private facturationService: FacturationService
   ) {}
+
+  uploadImage(event: Event, cible: 'entete' | 'pied' | 'cachet'): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const endpoint = cible === 'entete' ? 'entete-image' : cible === 'pied' ? 'pied-image' : 'cachet';
+    const formField = cible === 'entete' ? 'urlImageEnTete' : cible === 'pied' ? 'urlImagePied' : 'urlCachetSignature';
+
+    this.uploading[cible] = true;
+    const fd = new FormData();
+    fd.append('file', file);
+
+    this.http.post<{ url: string }>(
+      `${environment.apiUrl}/admin/config/${endpoint}`,
+      fd,
+      { headers: new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken() || ''}` }) }
+    ).subscribe({
+      next: (res) => {
+        this.form.get(formField)?.setValue(res.url);
+        this.uploading[cible] = false;
+        input.value = '';
+      },
+      error: () => {
+        this.errorMessage = 'Erreur lors de l\'upload de l\'image.';
+        this.uploading[cible] = false;
+        input.value = '';
+      }
+    });
+  }
+
+  apercuPdf(): void {
+    if (this.generationApercu) return;
+    this.generationApercu = true;
+    this.facturationService.apercuEnTete().subscribe({
+      next: (blob) => {
+        this.facturationService.ouvrirBlob(blob, 'apercu-entete.pdf');
+        this.generationApercu = false;
+      },
+      error: () => {
+        this.errorMessage = 'Erreur lors de la génération de l\'aperçu PDF.';
+        this.generationApercu = false;
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.buildForm();
@@ -472,6 +712,27 @@ export class SiteSettingsComponent implements OnInit {
       rccm: [''],
       numeroCfe: [''],
       capitalSocial: [''],
+      adresseSiege: [''],
+      boitePostale: [''],
+      banqueNom: [''],
+      numeroCompteBancaire: [''],
+      texteDescriptifActivites: [''],
+      tauxTvaDefaut: [18],
+      prixAfficheTTC: [false],
+      libelleDevise: ['FCFA'],
+      mentionExonerationTva: [''],
+      prefixeFacture: ['FAC'],
+      prefixeAvoir: ['AVO'],
+      prefixeDevis: ['DEV'],
+      prefixeBonLivraison: ['BL'],
+      conditionsPaiementDefaut: [''],
+      mentionsPiedDocument: [''],
+      urlCachetSignature: [''],
+      couleurDocuments: ['#2563eb'],
+      modeEnTeteDocuments: ['COMPOSE'],
+      urlImageEnTete: [''],
+      urlImagePied: [''],
+      dureeValiditeJetonHeures: [72],
       // LIVRAISON
       devise: ['XOF'],
       seuilLivraisonGratuite: [null],

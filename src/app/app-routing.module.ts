@@ -45,6 +45,10 @@ import { AdminRealisationsComponent } from './components/admin/admin-realisation
 import { AdminZonesLivraisonComponent } from './components/admin/admin-zones-livraison/admin-zones-livraison.component';
 import { AdminPromotionsComponent } from './components/admin/admin-promotions/admin-promotions.component';
 import { AdminModelesAttributsComponent } from './components/admin/admin-modeles-attributs/admin-modeles-attributs.component';
+import { AdminFacturationComponent } from './components/admin/admin-facturation/admin-facturation.component';
+import { AdminFacturationFormComponent } from './components/admin/admin-facturation-form/admin-facturation-form.component';
+import { AdminFacturationDetailComponent } from './components/admin/admin-facturation-detail/admin-facturation-detail.component';
+import { TelechargerDocumentComponent } from './components/pages/telecharger-document/telecharger-document.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -222,8 +226,19 @@ const routes: Routes = [
       { path: 'contenu/realisations', component: AdminRealisationsComponent, data: { title: 'Réalisations' } },
       { path: 'livraison/zones', component: AdminZonesLivraisonComponent, data: { title: 'Zones de livraison' } },
       { path: 'promotions', component: AdminPromotionsComponent, data: { title: 'Promotions' } },
-      { path: 'modeles-attributs', component: AdminModelesAttributsComponent, data: { title: 'Modèles d\'attributs' } }
+      { path: 'modeles-attributs', component: AdminModelesAttributsComponent, data: { title: 'Modèles d\'attributs' } },
+      { path: 'facturation', component: AdminFacturationComponent, data: { title: 'Facturation' } },
+      { path: 'facturation/nouveau', component: AdminFacturationFormComponent, data: { title: 'Nouveau document' } },
+      { path: 'facturation/:id/edit', component: AdminFacturationFormComponent, data: { title: 'Modifier le document' } },
+      { path: 'facturation/:id', component: AdminFacturationDetailComponent, data: { title: 'Fiche document' } }
     ]
+  },
+
+  // Page publique téléchargement document (lien WhatsApp)
+  {
+    path: 'telecharger/:jeton',
+    component: TelechargerDocumentComponent,
+    data: { title: 'Télécharger le document' }
   },
 
   // Redirections et erreurs - TOUJOURS À LA FIN

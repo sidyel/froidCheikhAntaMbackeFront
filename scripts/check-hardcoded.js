@@ -20,6 +20,10 @@ const SCAN_DIRS = [
 
 const EXCLUDED_FILES = [
   'DataInitializer.java',
+  // Méthodes de migration/seed dans ParametresSiteService ont le même rôle que
+  // DataInitializer : initInfosFacturationSiAbsentes, initTelephonesSiAbsents,
+  // migrerTelephones contiennent les coordonnées réelles intentionnelles.
+  'ParametresSiteService.java',
   'check-hardcoded.js',
 ];
 

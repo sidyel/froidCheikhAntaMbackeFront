@@ -5,6 +5,7 @@ import { takeUntil, catchError } from 'rxjs/operators';
 import { ApiService } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfigService } from '../../../services/config.service';
+import { FacturationService } from '../../../services/facturation.service';
 import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces';
 
 @Component({
@@ -209,6 +210,16 @@ import { Commande, StatutCommande, Breadcrumb } from '../../../models/interfaces
                   <span>Envoyer ma commande sur WhatsApp</span>
                 </a>
 
+                <!-- Télécharger la facture -->
+                <button
+                  *ngIf="commande.statutCommande === 'LIVREE'"
+                  (click)="telechargerFacture()"
+                  [disabled]="telechargementFacture"
+                  class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50">
+                  <lucide-icon name="download" class="w-4 h-4"></lucide-icon>
+                  <span>{{ telechargementFacture ? 'Génération…' : 'Télécharger la facture' }}</span>
+                </button>
+
                 <!-- Annulation réelle — uniquement si EN_ATTENTE -->
                 <button
                   *ngIf="canCancelOrder()"
@@ -263,6 +274,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   isLoading = true;
   hasError = false;
   isCancelling = false;
+  telechargementFacture = false;
   currentOrderId: number = 0;
 
   constructor(
@@ -270,8 +282,26 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private apiService: ApiService,
     private toastService: ToastService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private facturationService: FacturationService
   ) {}
+
+  telechargerFacture(): void {
+    if (!this.commande || this.telechargementFacture) return;
+    this.telechargementFacture = true;
+    this.facturationService.telechargerPdfClient(this.commande.idCommande)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob) => {
+          this.facturationService.ouvrirBlob(blob, `facture-${this.commande!.numeroCommande}.pdf`);
+          this.telechargementFacture = false;
+        },
+        error: () => {
+          this.telechargementFacture = false;
+          this.toastService.error('Facture non disponible pour cette commande');
+        }
+      });
+  }
 
   ngOnInit(): void {
     this.route.params
