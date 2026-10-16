@@ -711,3 +711,74 @@ app-product-card .btn-wishlist.active {
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* ── Bannière cookies ──────────────────────────────────────────────── */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.25);
+}
+
+.cookie-banner__content {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.cookie-banner__text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+.cookie-banner__link {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+.cookie-banner__actions {
+  display: flex;
+  gap: .75rem;
+  flex-shrink: 0;
+}
+
+.cookie-banner__btn {
+  padding: .5rem 1.25rem;
+  border-radius: 6px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid #94a3b8;
+  min-width: 90px;
+}
+
+.cookie-banner__btn--refuse {
+  background: transparent;
+  color: #f1f5f9;
+}
+
+.cookie-banner__btn--refuse:hover {
+  background: rgba(255,255,255,.1);
+}
+
+.cookie-banner__btn--accept {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.cookie-banner__btn--accept:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}

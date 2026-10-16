@@ -158,10 +158,12 @@ import { AdminFacturationComponent } from './components/admin/admin-facturation/
 import { AdminFacturationFormComponent } from './components/admin/admin-facturation-form/admin-facturation-form.component';
 import { AdminFacturationDetailComponent } from './components/admin/admin-facturation-detail/admin-facturation-detail.component';
 import { TelechargerDocumentComponent } from './components/pages/telecharger-document/telecharger-document.component';
+import { CookieBannerComponent } from './components/shared/cookie-banner/cookie-banner.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    CookieBannerComponent,
 
     // Layout Components
     HeaderComponent,

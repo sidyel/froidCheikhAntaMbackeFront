@@ -9,6 +9,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfigService } from '../../../services/config.service';
 import { SeoService } from '../../../services/seo.service';
+import { PixelService } from '../../../services/pixel.service';
 import { Produit, Breadcrumb } from '../../../models/interfaces';
 import { SSR_RESPONSE } from '../../../utils/ssr.tokens';
 import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
@@ -397,6 +398,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private configService: ConfigService,
     private seoService: SeoService,
+    private pixelService: PixelService,
     @Inject(PLATFORM_ID) private platformId: Object,
     @Optional() @Inject(SSR_RESPONSE) private ssrResponse: any
   ) {
@@ -461,7 +463,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.seoService.setProduit(product);
           this.updateBreadcrumbs();
           this.isLoading = false;
-          if (isPlatformBrowser(this.platformId)) this.startCountdown();
+          if (isPlatformBrowser(this.platformId)) {
+            this.startCountdown();
+            this.pixelService.trackViewContent({ contentId: String(product.idProduit), contentName: product.nomProduit, value: product.prixPromo ?? product.prix });
+          }
           this.loadAdditionalData(productId);
         },
         error: () => {

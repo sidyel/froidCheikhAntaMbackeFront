@@ -6,7 +6,7 @@ import { ConfigService } from '../../../services/config.service';
 import { FacturationService } from '../../../services/facturation.service';
 import { environment } from '../../../../environments/environment';
 
-type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'facturation' | 'livraison' | 'seo' | 'whatsapp';
+type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'facturation' | 'livraison' | 'seo' | 'whatsapp' | 'publicite';
 
 @Component({
   selector: 'app-site-settings',
@@ -521,6 +521,44 @@ type Tab = 'identite' | 'contact' | 'reseaux' | 'apparence' | 'legaux' | 'factur
           </div>
         </div>
 
+        <!-- Onglet Publicité -->
+        <div *ngIf="activeTab === 'publicite'" class="space-y-6">
+          <div class="p-4 bg-blue-50 rounded-lg text-sm text-blue-800">
+            Les scripts publicitaires ne sont chargés qu'après acceptation des cookies par le visiteur.
+            Laissez les champs vides pour désactiver un suivi.
+          </div>
+
+          <div>
+            <label class="form-label">Meta Pixel ID</label>
+            <input type="text" formControlName="metaPixelId" class="form-input" placeholder="Ex : 1234567890123456">
+            <p class="text-xs text-gray-500 mt-1">Identifiant de votre Pixel Meta (Facebook). Vide = Pixel désactivé.</p>
+          </div>
+
+          <div>
+            <label class="form-label">Google Analytics / Ads ID</label>
+            <input type="text" formControlName="googleAnalyticsId" class="form-input" placeholder="Ex : G-XXXXXXXXXX ou AW-XXXXXXXXXX">
+            <p class="text-xs text-gray-500 mt-1">Identifiant GA4 ou Google Ads. Vide = désactivé.</p>
+          </div>
+
+          <div>
+            <label class="form-label">Code test API Conversions Meta</label>
+            <input type="text" formControlName="metaConversionsTestCode" class="form-input" placeholder="Ex : TEST12345">
+            <p class="text-xs text-gray-500 mt-1">Uniquement en développement / test. Vide en production.</p>
+          </div>
+
+          <div *ngIf="configService.config.siteUrl" class="pt-2 border-t border-gray-100 space-y-2">
+            <p class="text-sm font-medium text-gray-700">Flux produits pour les catalogues publicitaires</p>
+            <div class="flex gap-3 flex-wrap">
+              <a [href]="configService.config.siteUrl + '/feeds/meta.xml'" target="_blank" class="btn-outline text-sm">
+                📋 Flux Meta
+              </a>
+              <a [href]="configService.config.siteUrl + '/feeds/google.xml'" target="_blank" class="btn-outline text-sm">
+                📋 Flux Google
+              </a>
+            </div>
+          </div>
+        </div>
+
         <!-- Actions -->
         <div class="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100">
           <button type="button" (click)="load()" class="btn-outline" [disabled]="saving">
@@ -557,13 +595,14 @@ export class SiteSettingsComponent implements OnInit {
     { id: 'livraison',   label: 'Livraison' },
     { id: 'seo',         label: 'SEO' },
     { id: 'whatsapp',    label: '💬 WhatsApp' },
+    { id: 'publicite',   label: '📢 Publicité' },
   ];
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private authService: AuthService,
-    private configService: ConfigService,
+    public configService: ConfigService,
     private facturationService: FacturationService
   ) {}
 
@@ -750,6 +789,9 @@ export class SiteSettingsComponent implements OnInit {
       whatsappMsgConfirmee: [''],
       whatsappMsgLivree: [''],
       whatsappMsgAnnulee: [''],
+      metaPixelId: [''],
+      googleAnalyticsId: [''],
+      metaConversionsTestCode: [''],
     });
   }
 
