@@ -37,6 +37,11 @@ import {
             <lucide-icon name="save" class="w-4 h-4"></lucide-icon>
             {{ sauvegarde ? 'Sauvegarde…' : 'Sauvegarder' }}
           </button>
+          <button *ngIf="idDocument" type="button" (click)="apercuBrouillon()" [disabled]="generationApercu"
+            class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50">
+            <lucide-icon name="eye" class="w-4 h-4"></lucide-icon>
+            {{ generationApercu ? 'Génération…' : 'Aperçu PDF' }}
+          </button>
           <button *ngIf="peutEmettre" (click)="confirmerEmission()" [disabled]="sauvegarde"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 disabled:opacity-50">
             <lucide-icon name="send" class="w-4 h-4"></lucide-icon>
@@ -268,6 +273,7 @@ export class AdminFacturationFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   idDocument?: number;
   sauvegarde = false;
+  generationApercu = false;
   showModalEmission = false;
   suggestionsClients: ClientFacturation[] = [];
   rechercheClient = '';
@@ -516,6 +522,21 @@ export class AdminFacturationFormComponent implements OnInit, OnDestroy {
       error: () => {
         this.sauvegarde = false;
         this.toastService.error('Erreur lors de la sauvegarde');
+      }
+    });
+  }
+
+  apercuBrouillon(): void {
+    if (!this.idDocument || this.generationApercu) return;
+    this.generationApercu = true;
+    this.facturationService.previsualiserBrouillon(this.idDocument).subscribe({
+      next: (blob) => {
+        this.facturationService.ouvrirBlob(blob, `brouillon-${this.idDocument}.pdf`);
+        this.generationApercu = false;
+      },
+      error: () => {
+        this.toastService.error('Erreur lors de la génération de l\'aperçu PDF');
+        this.generationApercu = false;
       }
     });
   }

@@ -63,6 +63,10 @@ export class FacturationService {
     return this.http.delete<void>(`${this.adminUrl}/${id}`);
   }
 
+  previsualiserBrouillon(id: number): Observable<Blob> {
+    return this.http.get(`${this.adminUrl}/${id}/pdf/brouillon`, { responseType: 'blob' });
+  }
+
   // ── Émission ───────────────────────────────────────────────────────────────
 
   emettreDocument(id: number): Observable<DocumentFacturationDTO> {
