@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 import { BehaviorSubject, of } from 'rxjs';
@@ -14,13 +15,14 @@ export class ConfigService {
 
   constructor(
     private http: HttpClient,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   /** Appelé par APP_INITIALIZER — bloque le démarrage jusqu'à résolution. */
   loadConfig(): Promise<void> {
     return lastValueFrom(
-      this.http.get<SiteConfig>(`${environment.apiUrl}/config`).pipe(
+      this.http.get<SiteConfig>(`${isPlatformServer(this.platformId) ? (environment.apiUrlServeur || environment.apiUrl) : environment.apiUrl}/config`).pipe(
         timeout(5000),
         catchError(() => of(DEFAULT_CONFIG)),
         tap(config => {
@@ -42,6 +44,7 @@ export class ConfigService {
   // ---- CSS vars ----
 
   private applyCssVars(config: SiteConfig): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const root = this.document.documentElement;
     if (config.couleurPrimaire) {
       this.applyShades(root, 'primary', config.couleurPrimaire);

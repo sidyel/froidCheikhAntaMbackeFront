@@ -3,6 +3,8 @@ export const environment = {
   // apiUrl: 'https://api.froidcheikhantambacke.com/api',
   // uploadUrl: 'https://api.froidcheikhantambacke.com/uploads',
   apiUrl: 'http://localhost:8080/api',
+  // En SSR côté serveur Node.js, utiliser une URL absolue (lue depuis API_URL env ou défaut local)
+  apiUrlServeur: process?.env?.['API_URL'] ? `${process.env['API_URL']}/api` : 'http://localhost:8080/api',
   uploadUrl: 'http://localhost:8080/uploads',
   pagination: {
     defaultPageSize: 12,

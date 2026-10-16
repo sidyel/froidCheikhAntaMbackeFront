@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { SeoService } from '../../../services/seo.service';
 
 @Component({
   selector: 'app-not-found',
   templateUrl: './not-found.component.html',
   styleUrls: ['./not-found.component.css']
 })
-export class NotFoundComponent implements OnInit {
+export class NotFoundComponent implements OnInit, OnDestroy {
   countdown = 10;
   public countdownInterval: any;
 
@@ -17,10 +19,15 @@ export class NotFoundComponent implements OnInit {
     { label: 'Contact', route: '/contact', icon: 'phone' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private seoService: SeoService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
-    this.startCountdown();
+    this.seoService.setDefault('Page introuvable');
+    if (isPlatformBrowser(this.platformId)) this.startCountdown();
   }
 
   ngOnDestroy(): void {
@@ -43,7 +50,7 @@ export class NotFoundComponent implements OnInit {
   }
 
   goBack(): void {
-    window.history.back();
+    if (isPlatformBrowser(this.platformId)) window.history.back();
   }
 
   stopCountdown(): void {
@@ -53,7 +60,5 @@ export class NotFoundComponent implements OnInit {
     }
   }
 
-  onSearch(value: string) {
-
-  }
+  onSearch(_value: string) {}
 }

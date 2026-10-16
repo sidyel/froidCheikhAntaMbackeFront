@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
@@ -21,7 +22,8 @@ export class AuthService {
 
   constructor(
     private apiService: ApiService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.initializeAuth();
   }
@@ -92,32 +94,37 @@ export class AuthService {
   }
 
   private setAuthData(authResponse: AuthResponse): void {
-    localStorage.setItem(this.TOKEN_KEY, authResponse.accessToken);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, authResponse.refreshToken);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(authResponse.userInfo));
-
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.TOKEN_KEY, authResponse.accessToken);
+      localStorage.setItem(this.REFRESH_TOKEN_KEY, authResponse.refreshToken);
+      localStorage.setItem(this.USER_KEY, JSON.stringify(authResponse.userInfo));
+    }
     this.currentUserSubject.next(authResponse.userInfo);
     this.isAuthenticatedSubject.next(true);
   }
 
   private clearAuthData(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+    }
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
   }
 
   getToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
   getRefreshToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   getUserInfo(): UserInfo | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
     const userInfo = localStorage.getItem(this.USER_KEY);
     return userInfo ? JSON.parse(userInfo) : null;
   }

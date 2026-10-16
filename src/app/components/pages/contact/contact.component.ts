@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContactService } from "../../../services/contact.service";
 import { ConfigService } from '../../../services/config.service';
+import { SeoService } from '../../../services/seo.service';
 import { SiteConfig } from '../../../models/site-config.interface';
 
 @Component({
@@ -38,7 +39,8 @@ export class ContactComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private contactService: ContactService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private seoService: SeoService
   ) {
     this.config = this.configService.config;
     this.contactForm = this.fb.group({
@@ -51,7 +53,9 @@ export class ContactComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.seoService.setDefault('Contact');
+  }
 
   get formControls() {
     return this.contactForm.controls;

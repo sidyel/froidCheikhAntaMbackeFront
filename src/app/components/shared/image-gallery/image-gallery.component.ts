@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { Component, Inject, Input, OnInit, OnDestroy, HostListener, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-image-gallery',
@@ -38,17 +39,17 @@ export class ImageGalleryComponent implements OnInit, OnDestroy {
   private touchStartY = 0;
   private isSwiping = false;
 
-  constructor() {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngOnInit(): void {
-    if (this.autoPlay && this.images.length > 1) {
+    if (isPlatformBrowser(this.platformId) && this.autoPlay && this.images.length > 1) {
       this.startAutoPlay();
     }
   }
 
   ngOnDestroy(): void {
     this.stopAutoPlay();
-    if (this.isFullscreen) {
+    if (isPlatformBrowser(this.platformId) && this.isFullscreen) {
       this.exitFullscreen();
     }
   }
@@ -290,20 +291,20 @@ export class ImageGalleryComponent implements OnInit, OnDestroy {
   openFullscreen(): void {
     this.isFullscreen = true;
     this.showImageViewer = true;
-    document.body.style.overflow = 'hidden';
+    if (isPlatformBrowser(this.platformId)) document.body.style.overflow = 'hidden';
   }
 
   exitFullscreen(): void {
     this.isFullscreen = false;
     this.showImageViewer = false;
-    document.body.style.overflow = 'auto';
+    if (isPlatformBrowser(this.platformId)) document.body.style.overflow = 'auto';
     this.resetZoom();
   }
 
   closeImageViewer(): void {
     this.showImageViewer = false;
     this.isFullscreen = false;
-    document.body.style.overflow = 'auto';
+    if (isPlatformBrowser(this.platformId)) document.body.style.overflow = 'auto';
     this.resetZoom();
   }
 

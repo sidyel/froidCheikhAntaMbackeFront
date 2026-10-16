@@ -1,5 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { buildCategorieUrl } from '../../../utils/slug.utils';
 import { Subject, takeUntil } from 'rxjs';
 import { ConfigService } from '../../../services/config.service';
 import { SiteConfig } from '../../../models/site-config.interface';
@@ -101,19 +103,21 @@ export class FooterComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private newsletterService: NewsletterService,
     private toastService: ToastService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.config = this.configService.config;
   }
 
   ngOnInit(): void {
+    // Chargé côté serveur et côté client (cache backend + TransferState évite la double requête)
     this.apiService.getCategories()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (cats) => {
           this.categoryLinks = cats.slice(0, 5).map(c => ({
             label: c.nomCategorie,
-            route: `/produits/categorie/${c.idCategorie}`,
+            route: buildCategorieUrl(c.idCategorie, c.nomCategorie),
             categoryId: c.idCategorie
           }));
         },
@@ -206,10 +210,9 @@ export class FooterComponent implements OnInit, OnDestroy {
    * Scroll vers le haut de la page
    */
   scrollToTop(): void {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   onPaymentLogoError(event: any, method: any): void {

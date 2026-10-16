@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ConfigService } from '../../../services/config.service';
 import { ContenuService } from '../../../services/contenu.service';
+import { SeoService } from '../../../services/seo.service';
 import { SiteConfig } from '../../../models/site-config.interface';
 import { Partenaire, Prestation, MembreEquipe, Realisation } from '../../../models/contenu.interface';
 
@@ -23,12 +25,15 @@ export class AboutComponent implements OnInit {
 
   constructor(
     private configService: ConfigService,
-    private contenuService: ContenuService
+    private contenuService: ContenuService,
+    private seoService: SeoService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.config = this.configService.config;
   }
 
   ngOnInit(): void {
+    this.seoService.setDefault('À propos');
     this.contenuService.getPartenaires().subscribe({
       next: (data) => this.partenaires = data,
       error: () => {}
@@ -49,7 +54,7 @@ export class AboutComponent implements OnInit {
         this.realisations = data;
         data.forEach((_, index) => {
           this.currentSlides[index] = 0;
-          this.startSlideShow(index);
+          if (isPlatformBrowser(this.platformId)) this.startSlideShow(index);
         });
         this.preloadCriticalImages();
       },

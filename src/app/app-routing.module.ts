@@ -72,12 +72,12 @@ const routes: Routes = [
     data: { title: 'Nos Produits' }
   },
   {
-    path: 'produits/categorie/:id',
+    path: 'produits/categorie/:slug',
     component: ProductListComponent,
     data: { title: 'Produits par Catégorie' }
   },
   {
-    path: 'produits/marque/:id',
+    path: 'produits/marque/:slug',
     component: ProductListComponent,
     data: { title: 'Produits par Marque' }
   },
@@ -87,7 +87,7 @@ const routes: Routes = [
     data: { title: 'Résultats de recherche' }
   },
   {
-    path: 'produit/:id',
+    path: 'produit/:slug',
     component: ProductDetailComponent,
     data: { title: 'Détail du produit' }
   },

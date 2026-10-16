@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -8,6 +9,7 @@ import { Produit, Categorie, Marque } from '../../../models/interfaces';
 import { ConfigService } from '../../../services/config.service';
 import { ContenuService } from '../../../services/contenu.service';
 import { SiteConfig } from '../../../models/site-config.interface';
+import { SeoService } from '../../../services/seo.service';
 
 @Component({
   selector: 'app-home',
@@ -1248,26 +1250,34 @@ export class HomeComponent implements OnInit, OnDestroy {
     private imageUrlService: ImageUrlService,
     private router: Router,
     private configService: ConfigService,
-    private contenuService: ContenuService
+    private contenuService: ContenuService,
+    private seoService: SeoService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
-    this.contenuService.getHeroImages().subscribe({
-      next: (images) => {
-        if (images && images.length > 0) {
-          this.heroImages = images
-            .filter(img => img.actif !== false)
-            .sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0))
-            .map(img => ({ url: img.urlImage || '', alt: img.altText || '' }));
-          this.preloadHeroImages();
-        }
-      },
-      error: () => {}
-    });
+    this.seoService.setHome();
+    // Hero images : carrousel UI uniquement, pas utile pour le SSR/SEO
+    if (isPlatformBrowser(this.platformId)) {
+      this.contenuService.getHeroImages().subscribe({
+        next: (images) => {
+          if (images && images.length > 0) {
+            this.heroImages = images
+              .filter(img => img.actif !== false)
+              .sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0))
+              .map(img => ({ url: img.urlImage || '', alt: img.altText || '' }));
+            this.preloadHeroImages();
+          }
+        },
+        error: () => {}
+      });
+    }
     this.loadHomeData();
-    this.initializeAnimations();
-    this.startCarousel();
-    this.setupScrollAnimations();
+    if (isPlatformBrowser(this.platformId)) {
+      this.initializeAnimations();
+      this.startCarousel();
+      this.setupScrollAnimations();
+    }
   }
 
   ngOnDestroy(): void {
@@ -1276,8 +1286,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.carouselInterval) {
       clearInterval(this.carouselInterval);
     }
-    // Sécurité : rétablir le scroll du body si le composant est détruit modale ouverte
-    document.body.style.overflow = 'auto';
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'auto';
+    }
   }
 
   private initializeAnimations(): void {
@@ -1358,9 +1369,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadHomeData(): void {
+    // Catégories : chargées côté serveur (liens de navigation présents pour Google)
     this.loadCategories();
-    this.loadFeaturedProducts();
-    this.loadBrands();
+    if (isPlatformBrowser(this.platformId)) {
+      // Produits vedettes et marques : UI uniquement, pas utiles pour le SEO de l'accueil
+      this.loadFeaturedProducts();
+      this.loadBrands();
+    }
   }
 
   /**
@@ -1373,7 +1388,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (categories) => {
           this.categories = categories;
-          this.preloadCategoryImages();
+          if (isPlatformBrowser(this.platformId)) this.preloadCategoryImages();
           this.isLoadingCategories = false;
           this.isCategoriesVisible = true;
         },
@@ -1413,7 +1428,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (brands) => {
           this.brands = brands;
-          this.preloadBrandLogos();
+          if (isPlatformBrowser(this.platformId)) this.preloadBrandLogos();
           this.isLoadingBrands = false;
           this.isBrandsVisible = true;
         },
@@ -1580,6 +1595,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   scrollToSection(sectionId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -1625,7 +1641,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    */
   openCategoriesModal(): void {
     this.showCategoriesModal = true;
-    document.body.style.overflow = 'hidden';
+    if (isPlatformBrowser(this.platformId)) document.body.style.overflow = 'hidden';
   }
 
   /**
@@ -1633,7 +1649,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    */
   closeCategoriesModal(): void {
     this.showCategoriesModal = false;
-    document.body.style.overflow = 'auto';
+    if (isPlatformBrowser(this.platformId)) document.body.style.overflow = 'auto';
   }
 
   /**

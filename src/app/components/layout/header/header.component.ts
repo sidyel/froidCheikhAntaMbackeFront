@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Component, Inject, OnInit, OnDestroy, HostListener, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -290,7 +290,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private configService: ConfigService,
     private router: Router,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.currentUser$ = this.authService.currentUser$;
     this.isAuthenticated$ = this.authService.isAuthenticated$;
@@ -299,9 +300,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Catégories chargées côté serveur (liens nav présents pour Google) + TransferState évite la double requête
     this.loadCategories();
-    this.checkActivePromos();
-    this.setupClickOutside();
+    if (isPlatformBrowser(this.platformId)) {
+      // Badge promotions : UI uniquement, pas utile pour le SEO
+      this.checkActivePromos();
+      this.setupClickOutside();
+    }
   }
 
   // Dans header.component.ts - Ajoutez cette méthode

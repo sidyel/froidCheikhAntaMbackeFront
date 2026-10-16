@@ -1,4 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, Inject, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ModalConfig } from '../../../models/interfaces';
 
 @Component({
@@ -112,28 +113,33 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   private previousActiveElement: HTMLElement | null = null;
 
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   ngOnInit(): void {
-    if (this.closeOnEscape) {
+    if (isPlatformBrowser(this.platformId) && this.closeOnEscape) {
       document.addEventListener('keydown', this.handleEscapeKey.bind(this));
     }
   }
 
   ngOnDestroy(): void {
-    document.removeEventListener('keydown', this.handleEscapeKey.bind(this));
-    this.restoreFocus();
+    if (isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('keydown', this.handleEscapeKey.bind(this));
+      this.restoreFocus();
+    }
   }
 
   open(): void {
     if (!this.isOpen) {
-      this.previousActiveElement = document.activeElement as HTMLElement;
+      if (isPlatformBrowser(this.platformId)) {
+        this.previousActiveElement = document.activeElement as HTMLElement;
+      }
       this.isOpen = true;
       this.opened.emit();
 
-      setTimeout(() => {
-        this.focusFirstElement();
-      }, 100);
-
-      document.body.style.overflow = 'hidden';
+      if (isPlatformBrowser(this.platformId)) {
+        setTimeout(() => { this.focusFirstElement(); }, 100);
+        document.body.style.overflow = 'hidden';
+      }
     }
   }
 
@@ -141,8 +147,10 @@ export class ModalComponent implements OnInit, OnDestroy {
     if (this.isOpen) {
       this.isOpen = false;
       this.closed.emit();
-      this.restoreFocus();
-      document.body.style.overflow = '';
+      if (isPlatformBrowser(this.platformId)) {
+        this.restoreFocus();
+        document.body.style.overflow = '';
+      }
     }
   }
 
@@ -204,7 +212,7 @@ export class ModalComponent implements OnInit, OnDestroy {
   }
 
   static create(config: ModalConfig): ModalComponent {
-    const modal = new ModalComponent();
+    const modal = new ModalComponent('browser');
     modal.config = config;
     return modal;
   }
