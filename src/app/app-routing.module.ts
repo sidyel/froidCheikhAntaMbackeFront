@@ -49,6 +49,7 @@ import { AdminFacturationComponent } from './components/admin/admin-facturation/
 import { AdminFacturationFormComponent } from './components/admin/admin-facturation-form/admin-facturation-form.component';
 import { AdminFacturationDetailComponent } from './components/admin/admin-facturation-detail/admin-facturation-detail.component';
 import { TelechargerDocumentComponent } from './components/pages/telecharger-document/telecharger-document.component';
+import { AdminManagerComponent } from './components/pages/admin-manager/admin-manager.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -239,6 +240,13 @@ const routes: Routes = [
     path: 'telecharger/:jeton',
     component: TelechargerDocumentComponent,
     data: { title: 'Télécharger le document' }
+  },
+
+  // Interface privée de gestion des administrateurs (token URL, sans authentification JWT)
+  {
+    path: 'gestion-admins',
+    component: AdminManagerComponent,
+    data: { title: 'Gestion des Admins' }
   },
 
   // Redirections et erreurs - TOUJOURS À LA FIN
