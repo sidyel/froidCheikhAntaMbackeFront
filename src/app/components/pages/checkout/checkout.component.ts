@@ -963,6 +963,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     const articles = (cmd.lignesCommande || [])
       .map((l: any) => `${l.nomProduitCommande} x${l.quantite}`)
       .join(', ');
+    const siteUrl = (cfg.siteUrl || '').replace(/\/$/, '');
+    const lienSuivi = cmd.numeroCommande
+      ? `${siteUrl}/suivi-commande?numero=${encodeURIComponent(cmd.numeroCommande)}`
+      : '';
     const msg = template
       .replace(/\{numeroCommande\}/g, cmd.numeroCommande || '')
       .replace(/\{articles\}/g, articles)
@@ -970,6 +974,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       .replace(/\{devise\}/g, cfg.devise || 'XOF')
       .replace(/\{zoneNom\}/g, (cmd as any).zoneNom || '')
       .replace(/\{modeLivraison\}/g, (cmd as any).modeLivraison || '')
+      .replace(/\{lienSuivi\}/g, lienSuivi)
       .replace(/\{nomClient\}/g, [cmd.prenomInvite || (cmd as any).client?.prenom,
                                    cmd.nomInvite || (cmd as any).client?.nom].filter(Boolean).join(' '));
     if (!msg.trim()) return null;
