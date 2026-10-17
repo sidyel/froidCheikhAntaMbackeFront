@@ -291,7 +291,7 @@ import { SeoService } from '../../../services/seo.service';
       </section>
 
       <!-- Promotions Section -->
-      <section class="py-16 bg-white" *ngIf="hasPromos || isLoadingPromos" data-section="promos">
+      <section class="py-16 bg-white overflow-hidden" *ngIf="hasPromos || isLoadingPromos" data-section="promos">
         <div class="container mx-auto px-4">
           <div class="text-center mb-12 transform transition-all duration-1000"
                [class.translate-y-0]="isPromosVisible"
