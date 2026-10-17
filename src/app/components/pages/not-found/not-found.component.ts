@@ -1,7 +1,8 @@
-import { Component, Inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, Inject, OnInit, OnDestroy, Optional, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { Router } from '@angular/router';
 import { SeoService } from '../../../services/seo.service';
+import { SSR_RESPONSE } from '../../../utils/ssr.tokens';
 
 @Component({
   selector: 'app-not-found',
@@ -22,11 +23,15 @@ export class NotFoundComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private seoService: SeoService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Optional() @Inject(SSR_RESPONSE) private ssrResponse: any
   ) {}
 
   ngOnInit(): void {
     this.seoService.setDefault('Page introuvable');
+    if (isPlatformServer(this.platformId) && this.ssrResponse && !this.ssrResponse.headersSent) {
+      this.ssrResponse.status(404);
+    }
     if (isPlatformBrowser(this.platformId)) this.startCountdown();
   }
 
