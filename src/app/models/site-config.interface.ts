@@ -63,6 +63,11 @@ export interface SiteConfig {
   afficherEquipe?: boolean;
   afficherRealisations?: boolean;
 
+  // ENTREPRISE (champs publics utiles pour le footer)
+  ninea?: string;
+  rccm?: string;
+  raisonSociale?: string;
+
   // TEXTES LEGAUX
   cgv?: string;
   mentionsLegales?: string;
