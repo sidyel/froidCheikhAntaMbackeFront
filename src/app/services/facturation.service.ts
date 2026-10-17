@@ -18,7 +18,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class FacturationService {
 
-  private readonly adminUrl = `${environment.apiUrl}/admin/documents`;
+  private readonly adminUrl = `${environment.apiUrl}/admin/facturation`;
   private readonly publicUrl = `${environment.apiUrl}/public/documents`;
 
   constructor(private http: HttpClient) {}
@@ -37,7 +37,7 @@ export class FacturationService {
     let p = new HttpParams();
     if (params.type)      p = p.set('type', params.type);
     if (params.statut)    p = p.set('statut', params.statut);
-    if (params.client)    p = p.set('client', params.client);
+    if (params.client)    p = p.set('q', params.client);
     if (params.dateDebut) p = p.set('dateDebut', params.dateDebut);
     if (params.dateFin)   p = p.set('dateFin', params.dateFin);
     p = p.set('page', (params.page ?? 0).toString());
@@ -95,7 +95,7 @@ export class FacturationService {
   // ── Devis → Facture ────────────────────────────────────────────────────────
 
   convertirDevis(id: number): Observable<DocumentFacturationDTO> {
-    return this.http.post<DocumentFacturationDTO>(`${this.adminUrl}/devis/${id}/convertir`, {});
+    return this.http.post<DocumentFacturationDTO>(`${this.adminUrl}/${id}/convertir`, {});
   }
 
   // ── PDF ────────────────────────────────────────────────────────────────────
@@ -111,7 +111,7 @@ export class FacturationService {
   // ── WhatsApp jeton ─────────────────────────────────────────────────────────
 
   genererJetonWhatsapp(id: number): Observable<WhatsAppJetonResponse> {
-    return this.http.post<WhatsAppJetonResponse>(`${this.adminUrl}/${id}/whatsapp-jeton`, {});
+    return this.http.post<WhatsAppJetonResponse>(`${this.adminUrl}/${id}/jeton`, {});
   }
 
   // ── Règlements ─────────────────────────────────────────────────────────────
@@ -146,7 +146,7 @@ export class FacturationService {
   // ── Aperçu en-tête ─────────────────────────────────────────────────────────
 
   apercuEnTete(): Observable<Blob> {
-    return this.http.get(`${environment.apiUrl}/admin/documents/apercu-entete`, { responseType: 'blob' });
+    return this.http.get(`${this.adminUrl}/apercu-entete`, { responseType: 'blob' });
   }
 
   // ── Utilitaires ────────────────────────────────────────────────────────────
