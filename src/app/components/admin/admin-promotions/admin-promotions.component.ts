@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
 import {
@@ -154,24 +154,79 @@ type CiblePromotion = 'TOUS' | 'PRODUITS' | 'CATEGORIES' | 'MARQUES';
               </select>
             </div>
 
-            <!-- IDs selon cible -->
-            <div *ngIf="form.cible === 'PRODUITS'" class="text-sm text-gray-500 italic">
-              Saisir les IDs produits séparés par virgule :
-              <input type="text" [(ngModel)]="produitIdsRaw" name="produitIdsRaw"
-                placeholder="1, 2, 3"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <!-- Sélecteur produits -->
+            <div *ngIf="form.cible === 'PRODUITS'">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Rechercher des produits</label>
+              <div class="relative">
+                <input type="text" [ngModel]="rechercheProduit" (ngModelChange)="onRechercheProduit($event)"
+                  name="rechercheProduitInput" placeholder="Tapez le nom d'un produit..."
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8">
+                <div *ngIf="chargementRecherche" class="absolute right-2 top-2.5">
+                  <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              </div>
+              <div *ngIf="resultatsRechercheP.length > 0"
+                   class="border border-gray-200 rounded-lg mt-1 max-h-44 overflow-y-auto bg-white shadow-sm">
+                <div *ngFor="let p of resultatsRechercheP"
+                     class="px-3 py-2 text-sm cursor-pointer flex items-center justify-between hover:bg-gray-50"
+                     [class.bg-blue-50]="isProduitSelectionne(p)"
+                     (click)="toggleProduit(p)">
+                  <span class="flex items-center gap-2">
+                    <lucide-icon [name]="isProduitSelectionne(p) ? 'check-square' : 'square'" class="w-4 h-4 text-blue-600 flex-shrink-0"></lucide-icon>
+                    <span class="truncate">{{ p.nomProduit }}</span>
+                  </span>
+                  <span class="text-gray-400 text-xs ml-2 whitespace-nowrap">{{ p.prix | number }} F</span>
+                </div>
+              </div>
+              <div *ngIf="produitsSelectionnes.length > 0" class="mt-2">
+                <p class="text-xs text-gray-500 mb-1 font-medium">{{ produitsSelectionnes.length }} produit(s) sélectionné(s) :</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span *ngFor="let p of produitsSelectionnes"
+                        class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                    {{ p.nomProduit }}
+                    <button type="button" (click)="toggleProduit(p)" class="hover:text-blue-900 font-bold leading-none ml-0.5">×</button>
+                  </span>
+                </div>
+              </div>
+              <p *ngIf="produitsSelectionnes.length === 0" class="text-xs text-gray-400 mt-1 italic">
+                Aucun produit sélectionné
+              </p>
             </div>
-            <div *ngIf="form.cible === 'CATEGORIES'" class="text-sm text-gray-500 italic">
-              Saisir les IDs catégories séparés par virgule :
-              <input type="text" [(ngModel)]="categorieIdsRaw" name="categorieIdsRaw"
-                placeholder="1, 2, 3"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+
+            <!-- Sélecteur catégories -->
+            <div *ngIf="form.cible === 'CATEGORIES'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sélectionner les catégories</label>
+              <div *ngIf="categoriesDisponibles.length === 0" class="text-sm text-gray-400 py-2">Chargement…</div>
+              <div class="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                <label *ngFor="let cat of categoriesDisponibles"
+                       class="flex items-center gap-2 text-sm p-2 rounded-lg cursor-pointer border transition-colors"
+                       [class.border-blue-300]="categoriesSelectionnees.has(cat.idCategorie)"
+                       [class.bg-blue-50]="categoriesSelectionnees.has(cat.idCategorie)"
+                       [class.border-gray-200]="!categoriesSelectionnees.has(cat.idCategorie)">
+                  <input type="checkbox" [checked]="categoriesSelectionnees.has(cat.idCategorie)"
+                    (change)="toggleCategorie(cat.idCategorie)" class="w-4 h-4 text-blue-600 flex-shrink-0">
+                  <span class="truncate">{{ cat.nomCategorie }}</span>
+                </label>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">{{ categoriesSelectionnees.size }} catégorie(s) sélectionnée(s)</p>
             </div>
-            <div *ngIf="form.cible === 'MARQUES'" class="text-sm text-gray-500 italic">
-              Saisir les IDs marques séparés par virgule :
-              <input type="text" [(ngModel)]="marqueIdsRaw" name="marqueIdsRaw"
-                placeholder="1, 2, 3"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+
+            <!-- Sélecteur marques -->
+            <div *ngIf="form.cible === 'MARQUES'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sélectionner les marques</label>
+              <div *ngIf="marquesDisponibles.length === 0" class="text-sm text-gray-400 py-2">Chargement…</div>
+              <div class="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                <label *ngFor="let m of marquesDisponibles"
+                       class="flex items-center gap-2 text-sm p-2 rounded-lg cursor-pointer border transition-colors"
+                       [class.border-blue-300]="marquesSelectionnees.has(m.idMarque)"
+                       [class.bg-blue-50]="marquesSelectionnees.has(m.idMarque)"
+                       [class.border-gray-200]="!marquesSelectionnees.has(m.idMarque)">
+                  <input type="checkbox" [checked]="marquesSelectionnees.has(m.idMarque)"
+                    (change)="toggleMarque(m.idMarque)" class="w-4 h-4 text-blue-600 flex-shrink-0">
+                  <span class="truncate">{{ m.nomMarque }}</span>
+                </label>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">{{ marquesSelectionnees.size }} marque(s) sélectionnée(s)</p>
             </div>
 
             <!-- Aperçu -->
@@ -225,6 +280,7 @@ type CiblePromotion = 'TOUS' | 'PRODUITS' | 'CATEGORIES' | 'MARQUES';
 })
 export class AdminPromotionsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private rechercheSubject = new Subject<string>();
 
   onglets = [
     { key: 'actives' as Onglet, label: 'Actives' },
@@ -242,9 +298,18 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
   sauvegarde = false;
 
   form: PromotionRequest = this.formVide();
-  produitIdsRaw = '';
-  categorieIdsRaw = '';
-  marqueIdsRaw = '';
+
+  // Sélecteurs interactifs
+  rechercheProduit = '';
+  resultatsRechercheP: Produit[] = [];
+  produitsSelectionnes: Produit[] = [];
+  chargementRecherche = false;
+
+  categoriesDisponibles: Categorie[] = [];
+  categoriesSelectionnees = new Set<number>();
+
+  marquesDisponibles: Marque[] = [];
+  marquesSelectionnees = new Set<number>();
 
   apercu: PromotionApercuPage | null = null;
 
@@ -255,6 +320,11 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.chargerListe();
+    this.rechercheSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(terme => this.executerRechercheProduit(terme));
   }
 
   ngOnDestroy(): void {
@@ -283,6 +353,7 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
 
   ouvrirFormulaire(promo?: PromotionResponse): void {
     this.apercu = null;
+    this.reinitialiserSelecteurs();
     if (promo) {
       this.editMode = true;
       this.editId = promo.idPromotion;
@@ -299,16 +370,22 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
         categorieIds: promo.categorieIds,
         marqueIds: promo.marqueIds
       };
-      this.produitIdsRaw = (promo.produitIds || []).join(', ');
-      this.categorieIdsRaw = (promo.categorieIds || []).join(', ');
-      this.marqueIdsRaw = (promo.marqueIds || []).join(', ');
+      if (promo.cible === 'PRODUITS' && promo.produitIds?.length) {
+        this.api.getProduitsById(promo.produitIds).pipe(takeUntil(this.destroy$))
+          .subscribe(prods => this.produitsSelectionnes = prods);
+      }
+      if (promo.cible === 'CATEGORIES') {
+        this.categoriesSelectionnees = new Set(promo.categorieIds || []);
+        this.chargerCategoriesSiVide();
+      }
+      if (promo.cible === 'MARQUES') {
+        this.marquesSelectionnees = new Set(promo.marqueIds || []);
+        this.chargerMarquesSiVide();
+      }
     } else {
       this.editMode = false;
       this.editId = null;
       this.form = this.formVide();
-      this.produitIdsRaw = '';
-      this.categorieIdsRaw = '';
-      this.marqueIdsRaw = '';
     }
     this.showForm = true;
   }
@@ -320,6 +397,68 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
 
   onCibleChange(): void {
     this.apercu = null;
+    this.reinitialiserSelecteurs();
+    if (this.form.cible === 'CATEGORIES') this.chargerCategoriesSiVide();
+    if (this.form.cible === 'MARQUES') this.chargerMarquesSiVide();
+  }
+
+  onRechercheProduit(terme: string): void {
+    this.rechercheProduit = terme;
+    this.rechercheSubject.next(terme);
+  }
+
+  private executerRechercheProduit(terme: string): void {
+    if (!terme || terme.length < 2) { this.resultatsRechercheP = []; return; }
+    this.chargementRecherche = true;
+    this.api.getProduits({ q: terme, size: 10 }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: r => { this.resultatsRechercheP = r.content; this.chargementRecherche = false; },
+      error: () => { this.chargementRecherche = false; }
+    });
+  }
+
+  isProduitSelectionne(p: Produit): boolean {
+    return this.produitsSelectionnes.some(s => s.idProduit === p.idProduit);
+  }
+
+  toggleProduit(p: Produit): void {
+    const idx = this.produitsSelectionnes.findIndex(s => s.idProduit === p.idProduit);
+    if (idx >= 0) this.produitsSelectionnes.splice(idx, 1);
+    else this.produitsSelectionnes.push(p);
+    this.apercu = null;
+  }
+
+  toggleCategorie(id: number): void {
+    if (this.categoriesSelectionnees.has(id)) this.categoriesSelectionnees.delete(id);
+    else this.categoriesSelectionnees.add(id);
+    this.apercu = null;
+  }
+
+  toggleMarque(id: number): void {
+    if (this.marquesSelectionnees.has(id)) this.marquesSelectionnees.delete(id);
+    else this.marquesSelectionnees.add(id);
+    this.apercu = null;
+  }
+
+  private reinitialiserSelecteurs(): void {
+    this.produitsSelectionnes = [];
+    this.rechercheProduit = '';
+    this.resultatsRechercheP = [];
+    this.categoriesSelectionnees = new Set();
+    this.marquesSelectionnees = new Set();
+  }
+
+  private chargerCategoriesSiVide(): void {
+    if (this.categoriesDisponibles.length === 0) {
+      this.api.getCategories().pipe(takeUntil(this.destroy$))
+        .subscribe(cats => this.categoriesDisponibles = cats);
+    }
+  }
+
+  private chargerMarquesSiVide(): void {
+    if (this.marquesDisponibles.length === 0) {
+      this.api.getMarques().pipe(takeUntil(this.destroy$))
+        .subscribe(marqs => this.marquesDisponibles = marqs);
+    }
   }
 
   sauvegarder(): void {
@@ -377,10 +516,12 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
   }
 
   private buildIdsFromRaw(): void {
-    const parse = (raw: string) => raw.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-    this.form.produitIds = this.form.cible === 'PRODUITS' ? parse(this.produitIdsRaw) : [];
-    this.form.categorieIds = this.form.cible === 'CATEGORIES' ? parse(this.categorieIdsRaw) : [];
-    this.form.marqueIds = this.form.cible === 'MARQUES' ? parse(this.marqueIdsRaw) : [];
+    this.form.produitIds = this.form.cible === 'PRODUITS'
+      ? this.produitsSelectionnes.map(p => p.idProduit) : [];
+    this.form.categorieIds = this.form.cible === 'CATEGORIES'
+      ? Array.from(this.categoriesSelectionnees) : [];
+    this.form.marqueIds = this.form.cible === 'MARQUES'
+      ? Array.from(this.marquesSelectionnees) : [];
   }
 
   private formVide(): PromotionRequest {

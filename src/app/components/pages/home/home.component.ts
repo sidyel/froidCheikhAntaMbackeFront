@@ -290,6 +290,64 @@ import { SeoService } from '../../../services/seo.service';
         </div>
       </section>
 
+      <!-- Promotions Section -->
+      <section class="py-16 bg-white" *ngIf="hasPromos || isLoadingPromos" data-section="promos">
+        <div class="container mx-auto px-4">
+          <div class="text-center mb-12 transform transition-all duration-1000"
+               [class.translate-y-0]="isPromosVisible"
+               [class.opacity-100]="isPromosVisible"
+               [class.translate-y-8]="!isPromosVisible"
+               [class.opacity-0]="!isPromosVisible">
+            <div class="inline-flex items-center gap-2 bg-red-50 text-red-600 text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
+              <lucide-icon name="tag" class="w-4 h-4"></lucide-icon>
+              Offres spéciales
+            </div>
+            <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Produits en Promotion
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+              Profitez de nos meilleures offres du moment
+            </p>
+          </div>
+
+          <div class="products-grid" *ngIf="promoProducts.length > 0">
+            <div *ngFor="let produit of promoProducts; let i = index"
+                 class="transform transition-all duration-500"
+                 [class.animate-fade-in-up]="isPromosVisible"
+                 [style.animation-delay.ms]="i * 100">
+              <app-product-card
+                [produit]="produit"
+                (quickView)="onQuickView($event)"
+                (wishlistToggle)="onWishlistToggle($event)">
+              </app-product-card>
+            </div>
+          </div>
+
+          <!-- Loading state -->
+          <div *ngIf="isLoadingPromos" class="products-grid">
+            <div *ngFor="let i of [1,2,3,4]" class="animate-pulse">
+              <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                <div class="bg-gray-200 h-64 rounded-t-xl animate-shimmer"></div>
+                <div class="p-6 space-y-3">
+                  <div class="bg-gray-200 h-4 rounded w-3/4 animate-shimmer"></div>
+                  <div class="bg-gray-200 h-6 rounded w-1/2 animate-shimmer"></div>
+                  <div class="bg-gray-200 h-10 rounded animate-shimmer"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center mt-12">
+            <button
+              (click)="navigateToPromos()"
+              class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-lg px-8 py-4 rounded-xl font-semibold transform hover:scale-105 hover:shadow-xl transition-all duration-300">
+              <lucide-icon name="tag" class="w-5 h-5"></lucide-icon>
+              <span>Voir toutes les promotions</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- Brands Section -->
       <section class="py-16 bg-gray-50" *ngIf="brands.length > 0" #brandsSection>
         <div class="container mx-auto px-4">
@@ -1226,11 +1284,15 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   categories: Categorie[] = [];
   featuredProducts: Produit[] = [];
+  promoProducts: Produit[] = [];
   brands: Marque[] = [];
 
   isLoadingCategories = true;
   isLoadingProducts = true;
+  isLoadingPromos = true;
   isLoadingBrands = true;
+  isPromosVisible = false;
+  hasPromos = false;
 
   get config(): SiteConfig { return this.configService.config; }
 
@@ -1372,8 +1434,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Catégories : chargées côté serveur (liens de navigation présents pour Google)
     this.loadCategories();
     if (isPlatformBrowser(this.platformId)) {
-      // Produits vedettes et marques : UI uniquement, pas utiles pour le SEO de l'accueil
+      // Produits vedettes, promotions et marques : UI uniquement, pas utiles pour le SEO de l'accueil
       this.loadFeaturedProducts();
+      this.loadPromoProducts();
       this.loadBrands();
     }
   }
@@ -1416,6 +1479,20 @@ export class HomeComponent implements OnInit, OnDestroy {
           console.error('❌ Erreur lors du chargement des produits:', error);
           this.isLoadingProducts = false;
         }
+      });
+  }
+
+  private loadPromoProducts(): void {
+    this.apiService.getProduits({ filters: { enPromotion: true }, size: 8 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.promoProducts = response.content;
+          this.hasPromos = response.content.length > 0;
+          this.isLoadingPromos = false;
+          if (this.hasPromos) this.isPromosVisible = true;
+        },
+        error: () => { this.isLoadingPromos = false; }
       });
   }
 
@@ -1528,6 +1605,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       const img = new Image();
       img.src = image.url;
     });
+  }
+
+  navigateToPromos(): void {
+    this.router.navigate(['/produits'], { queryParams: { enPromotion: 'true' } });
   }
 
   navigateToProducts(): void {
