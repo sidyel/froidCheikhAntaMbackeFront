@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
 import {
@@ -156,41 +156,62 @@ type CiblePromotion = 'TOUS' | 'PRODUITS' | 'CATEGORIES' | 'MARQUES';
 
             <!-- Sélecteur produits -->
             <div *ngIf="form.cible === 'PRODUITS'">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Rechercher des produits</label>
-              <div class="relative">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Sélectionner les produits
+                <span *ngIf="produitsSelectionnes.length > 0"
+                      class="ml-2 bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                  {{ produitsSelectionnes.length }} sélectionné(s)
+                </span>
+              </label>
+
+              <!-- Barre de recherche -->
+              <div class="relative mb-2">
+                <lucide-icon name="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></lucide-icon>
                 <input type="text" [ngModel]="rechercheProduit" (ngModelChange)="onRechercheProduit($event)"
-                  name="rechercheProduitInput" placeholder="Tapez le nom d'un produit..."
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8">
-                <div *ngIf="chargementRecherche" class="absolute right-2 top-2.5">
-                  <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  name="rechercheProduitInput" placeholder="Rechercher un produit..."
+                  class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm">
+                <button *ngIf="rechercheProduit" type="button" (click)="onRechercheProduit('')"
+                        class="absolute right-2 top-2 text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+              </div>
+
+              <!-- Chargement -->
+              <div *ngIf="chargementProduits" class="text-center py-6 text-sm text-gray-400">
+                <div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                Chargement des produits…
+              </div>
+
+              <!-- Liste des produits -->
+              <div *ngIf="!chargementProduits"
+                   class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="max-h-56 overflow-y-auto">
+                  <div *ngIf="produitsFiltres.length === 0" class="py-6 text-center text-sm text-gray-400">
+                    Aucun produit trouvé
+                  </div>
+                  <label *ngFor="let p of produitsFiltres"
+                         class="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
+                         [class.bg-blue-50]="isProduitSelectionne(p)">
+                    <input type="checkbox" [checked]="isProduitSelectionne(p)"
+                      (change)="toggleProduit(p)" class="w-4 h-4 text-blue-600 flex-shrink-0">
+                    <span class="flex-1 text-sm truncate">{{ p.nomProduit }}</span>
+                    <span class="text-gray-400 text-xs whitespace-nowrap">{{ p.prix | number }} F</span>
+                  </label>
+                </div>
+                <div *ngIf="tousLesProduits.length > 0"
+                     class="px-3 py-1.5 bg-gray-50 border-t border-gray-200 text-xs text-gray-400">
+                  {{ produitsFiltres.length }} / {{ tousLesProduits.length }} produit(s)
+                  <span *ngIf="rechercheProduit"> — filtrés par "{{ rechercheProduit }}"</span>
                 </div>
               </div>
-              <div *ngIf="resultatsRechercheP.length > 0"
-                   class="border border-gray-200 rounded-lg mt-1 max-h-44 overflow-y-auto bg-white shadow-sm">
-                <div *ngFor="let p of resultatsRechercheP"
-                     class="px-3 py-2 text-sm cursor-pointer flex items-center justify-between hover:bg-gray-50"
-                     [class.bg-blue-50]="isProduitSelectionne(p)"
-                     (click)="toggleProduit(p)">
-                  <span class="flex items-center gap-2">
-                    <lucide-icon [name]="isProduitSelectionne(p) ? 'check-square' : 'square'" class="w-4 h-4 text-blue-600 flex-shrink-0"></lucide-icon>
-                    <span class="truncate">{{ p.nomProduit }}</span>
-                  </span>
-                  <span class="text-gray-400 text-xs ml-2 whitespace-nowrap">{{ p.prix | number }} F</span>
-                </div>
+
+              <!-- Tags produits sélectionnés -->
+              <div *ngIf="produitsSelectionnes.length > 0" class="mt-2 flex flex-wrap gap-1.5">
+                <span *ngFor="let p of produitsSelectionnes"
+                      class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                  {{ p.nomProduit }}
+                  <button type="button" (click)="toggleProduit(p)"
+                          class="hover:text-blue-900 font-bold leading-none ml-0.5">×</button>
+                </span>
               </div>
-              <div *ngIf="produitsSelectionnes.length > 0" class="mt-2">
-                <p class="text-xs text-gray-500 mb-1 font-medium">{{ produitsSelectionnes.length }} produit(s) sélectionné(s) :</p>
-                <div class="flex flex-wrap gap-1.5">
-                  <span *ngFor="let p of produitsSelectionnes"
-                        class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
-                    {{ p.nomProduit }}
-                    <button type="button" (click)="toggleProduit(p)" class="hover:text-blue-900 font-bold leading-none ml-0.5">×</button>
-                  </span>
-                </div>
-              </div>
-              <p *ngIf="produitsSelectionnes.length === 0" class="text-xs text-gray-400 mt-1 italic">
-                Aucun produit sélectionné
-              </p>
             </div>
 
             <!-- Sélecteur catégories -->
@@ -280,7 +301,6 @@ type CiblePromotion = 'TOUS' | 'PRODUITS' | 'CATEGORIES' | 'MARQUES';
 })
 export class AdminPromotionsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private rechercheSubject = new Subject<string>();
 
   onglets = [
     { key: 'actives' as Onglet, label: 'Actives' },
@@ -301,9 +321,10 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
 
   // Sélecteurs interactifs
   rechercheProduit = '';
-  resultatsRechercheP: Produit[] = [];
+  tousLesProduits: Produit[] = [];
+  produitsFiltres: Produit[] = [];
   produitsSelectionnes: Produit[] = [];
-  chargementRecherche = false;
+  chargementProduits = false;
 
   categoriesDisponibles: Categorie[] = [];
   categoriesSelectionnees = new Set<number>();
@@ -320,11 +341,6 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.chargerListe();
-    this.rechercheSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(terme => this.executerRechercheProduit(terme));
   }
 
   ngOnDestroy(): void {
@@ -370,9 +386,12 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
         categorieIds: promo.categorieIds,
         marqueIds: promo.marqueIds
       };
-      if (promo.cible === 'PRODUITS' && promo.produitIds?.length) {
-        this.api.getProduitsById(promo.produitIds).pipe(takeUntil(this.destroy$))
-          .subscribe(prods => this.produitsSelectionnes = prods);
+      if (promo.cible === 'PRODUITS') {
+        this.chargerTousProduits();
+        if (promo.produitIds?.length) {
+          this.api.getProduitsById(promo.produitIds).pipe(takeUntil(this.destroy$))
+            .subscribe(prods => this.produitsSelectionnes = prods);
+        }
       }
       if (promo.cible === 'CATEGORIES') {
         this.categoriesSelectionnees = new Set(promo.categorieIds || []);
@@ -398,21 +417,32 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
   onCibleChange(): void {
     this.apercu = null;
     this.reinitialiserSelecteurs();
+    if (this.form.cible === 'PRODUITS') this.chargerTousProduits();
     if (this.form.cible === 'CATEGORIES') this.chargerCategoriesSiVide();
     if (this.form.cible === 'MARQUES') this.chargerMarquesSiVide();
   }
 
   onRechercheProduit(terme: string): void {
     this.rechercheProduit = terme;
-    this.rechercheSubject.next(terme);
+    const t = terme.toLowerCase().trim();
+    this.produitsFiltres = t
+      ? this.tousLesProduits.filter(p => p.nomProduit.toLowerCase().includes(t))
+      : [...this.tousLesProduits];
   }
 
-  private executerRechercheProduit(terme: string): void {
-    if (!terme || terme.length < 2) { this.resultatsRechercheP = []; return; }
-    this.chargementRecherche = true;
-    this.api.getProduits({ q: terme, size: 10 }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: r => { this.resultatsRechercheP = r.content; this.chargementRecherche = false; },
-      error: () => { this.chargementRecherche = false; }
+  private chargerTousProduits(): void {
+    if (this.tousLesProduits.length > 0) {
+      this.produitsFiltres = [...this.tousLesProduits];
+      return;
+    }
+    this.chargementProduits = true;
+    this.api.getProduits({ size: 200 }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: r => {
+        this.tousLesProduits = r.content;
+        this.produitsFiltres = [...r.content];
+        this.chargementProduits = false;
+      },
+      error: () => { this.chargementProduits = false; }
     });
   }
 
@@ -442,7 +472,7 @@ export class AdminPromotionsComponent implements OnInit, OnDestroy {
   private reinitialiserSelecteurs(): void {
     this.produitsSelectionnes = [];
     this.rechercheProduit = '';
-    this.resultatsRechercheP = [];
+    this.produitsFiltres = [...this.tousLesProduits];
     this.categoriesSelectionnees = new Set();
     this.marquesSelectionnees = new Set();
   }
