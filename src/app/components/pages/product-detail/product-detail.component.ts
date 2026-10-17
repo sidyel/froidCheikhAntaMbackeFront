@@ -12,7 +12,7 @@ import { SeoService } from '../../../services/seo.service';
 import { PixelService } from '../../../services/pixel.service';
 import { Produit, Breadcrumb } from '../../../models/interfaces';
 import { SSR_RESPONSE } from '../../../utils/ssr.tokens';
-import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
+import { extractId, buildProduitUrl, buildCategorieUrl } from '../../../utils/slug.utils';
 
 @Component({
   selector: 'app-product-detail',
@@ -581,11 +581,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     if (this.produit?.categorie) {
       this.breadcrumbs.push({
         label: this.produit.categorie.nomCategorie,
-        route: `/produits/categorie/${this.produit.categorie.idCategorie}`
+        route: buildCategorieUrl(this.produit.categorie.idCategorie, this.produit.categorie.nomCategorie)
       });
     }
 
-
+    if (this.produit) {
+      this.breadcrumbs.push({ label: this.produit.nomProduit });
+    }
   }
 
 
