@@ -50,6 +50,7 @@ import { AdminFacturationFormComponent } from './components/admin/admin-facturat
 import { AdminFacturationDetailComponent } from './components/admin/admin-facturation-detail/admin-facturation-detail.component';
 import { TelechargerDocumentComponent } from './components/pages/telecharger-document/telecharger-document.component';
 import { AdminManagerComponent } from './components/pages/admin-manager/admin-manager.component';
+import { LegalPageComponent } from './components/pages/legal-page/legal-page.component';
 
 const routes: Routes = [
   // Installation initiale (accessible uniquement si aucun SUPER_ADMIN)
@@ -65,6 +66,11 @@ const routes: Routes = [
     component: HomeComponent,
     data: { title: 'Accueil' }
   },
+
+  // Pages légales
+  { path: 'cgv', component: LegalPageComponent, data: { title: 'Conditions Générales de Vente', type: 'cgv' } },
+  { path: 'politique-confidentialite', component: LegalPageComponent, data: { title: 'Politique de Confidentialité', type: 'politique-confidentialite' } },
+  { path: 'mentions-legales', component: LegalPageComponent, data: { title: 'Mentions Légales', type: 'mentions-legales' } },
 
   // Pages de produits
   {

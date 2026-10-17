@@ -63,6 +63,11 @@ export interface SiteConfig {
   afficherEquipe?: boolean;
   afficherRealisations?: boolean;
 
+  // TEXTES LEGAUX
+  cgv?: string;
+  mentionsLegales?: string;
+  politiqueConfidentialite?: string;
+
   // PUBLICITE ET SUIVI
   metaPixelId?: string;
   googleAnalyticsId?: string;
