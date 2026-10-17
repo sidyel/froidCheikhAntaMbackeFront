@@ -384,7 +384,7 @@ interface RapportFeed {
               <!-- Upload image en-tête -->
               <div class="md:col-span-2">
                 <label class="form-label">Image en-tête (mode IMAGE)</label>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                   <img *ngIf="form.get('urlImageEnTete')?.value"
                     [src]="form.get('urlImageEnTete')?.value"
                     alt="Aperçu en-tête" class="h-12 rounded border border-gray-200 object-contain bg-gray-50">
@@ -395,14 +395,19 @@ interface RapportFeed {
                     <input type="file" accept="image/*" class="hidden"
                       (change)="uploadImage($event, 'entete')" [disabled]="uploading.entete">
                   </label>
-                  <span *ngIf="form.get('urlImageEnTete')?.value"
-                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlImageEnTete')?.value }}</span>
+                  <button *ngIf="form.get('urlImageEnTete')?.value" type="button"
+                    (click)="supprimerImage('entete')" [disabled]="supprimant.entete"
+                    class="flex items-center gap-1 bg-white border border-red-300 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                    title="Supprimer l'image en-tête">
+                    <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
+                    {{ supprimant.entete ? '…' : 'Supprimer' }}
+                  </button>
                 </div>
               </div>
               <!-- Upload image pied -->
               <div class="md:col-span-2">
                 <label class="form-label">Image pied de page (mode IMAGE)</label>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                   <img *ngIf="form.get('urlImagePied')?.value"
                     [src]="form.get('urlImagePied')?.value"
                     alt="Aperçu pied" class="h-12 rounded border border-gray-200 object-contain bg-gray-50">
@@ -413,14 +418,19 @@ interface RapportFeed {
                     <input type="file" accept="image/*" class="hidden"
                       (change)="uploadImage($event, 'pied')" [disabled]="uploading.pied">
                   </label>
-                  <span *ngIf="form.get('urlImagePied')?.value"
-                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlImagePied')?.value }}</span>
+                  <button *ngIf="form.get('urlImagePied')?.value" type="button"
+                    (click)="supprimerImage('pied')" [disabled]="supprimant.pied"
+                    class="flex items-center gap-1 bg-white border border-red-300 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                    title="Supprimer l'image pied de page">
+                    <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
+                    {{ supprimant.pied ? '…' : 'Supprimer' }}
+                  </button>
                 </div>
               </div>
               <!-- Upload cachet/signature -->
               <div class="md:col-span-2">
                 <label class="form-label">Cachet / signature</label>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                   <img *ngIf="form.get('urlCachetSignature')?.value"
                     [src]="form.get('urlCachetSignature')?.value"
                     alt="Aperçu cachet" class="h-16 rounded border border-gray-200 object-contain bg-gray-50">
@@ -431,8 +441,13 @@ interface RapportFeed {
                     <input type="file" accept="image/*" class="hidden"
                       (change)="uploadImage($event, 'cachet')" [disabled]="uploading.cachet">
                   </label>
-                  <span *ngIf="form.get('urlCachetSignature')?.value"
-                    class="text-xs text-gray-400 truncate max-w-xs">{{ form.get('urlCachetSignature')?.value }}</span>
+                  <button *ngIf="form.get('urlCachetSignature')?.value" type="button"
+                    (click)="supprimerImage('cachet')" [disabled]="supprimant.cachet"
+                    class="flex items-center gap-1 bg-white border border-red-300 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                    title="Supprimer le cachet">
+                    <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
+                    {{ supprimant.cachet ? '…' : 'Supprimer' }}
+                  </button>
                 </div>
               </div>
               <div>
@@ -684,6 +699,7 @@ export class SiteSettingsComponent implements OnInit {
   errorMessage = '';
   generationApercu = false;
   uploading: Record<'entete' | 'pied' | 'cachet', boolean> = { entete: false, pied: false, cachet: false };
+  supprimant: Record<'entete' | 'pied' | 'cachet', boolean> = { entete: false, pied: false, cachet: false };
 
   rapport: RapportFeed | null = null;
   rapportLoading = false;
@@ -736,6 +752,26 @@ export class SiteSettingsComponent implements OnInit {
         this.errorMessage = 'Erreur lors de l\'upload de l\'image.';
         this.uploading[cible] = false;
         input.value = '';
+      }
+    });
+  }
+
+  supprimerImage(cible: 'entete' | 'pied' | 'cachet'): void {
+    const endpoint = cible === 'entete' ? 'entete-image' : cible === 'pied' ? 'pied-image' : 'cachet';
+    const formField = cible === 'entete' ? 'urlImageEnTete' : cible === 'pied' ? 'urlImagePied' : 'urlCachetSignature';
+
+    this.supprimant[cible] = true;
+    this.http.delete(
+      `${environment.apiUrl}/admin/config/${endpoint}`,
+      { headers: new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken() || ''}` }) }
+    ).subscribe({
+      next: () => {
+        this.form.get(formField)?.setValue('');
+        this.supprimant[cible] = false;
+      },
+      error: () => {
+        this.errorMessage = 'Erreur lors de la suppression de l\'image.';
+        this.supprimant[cible] = false;
       }
     });
   }
