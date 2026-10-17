@@ -65,6 +65,12 @@ import {
               <lucide-icon name="download" class="w-4 h-4"></lucide-icon>
               {{ telechargementPdf ? 'Génération…' : 'PDF' }}
             </button>
+            <button *ngIf="doc.statut === 'EMIS' && peutAdmin" (click)="regenererPdf()" [disabled]="regenerationPdf"
+              title="Régénère le PDF avec les paramètres actuels (logo, cachet, en-tête)"
+              class="bg-white border border-orange-300 hover:bg-orange-50 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50">
+              <lucide-icon name="refresh-cw" class="w-4 h-4"></lucide-icon>
+              {{ regenerationPdf ? '…' : 'Régén.' }}
+            </button>
             <button *ngIf="doc.statut === 'EMIS'" (click)="genererJetonWhatsapp()" [disabled]="generationJeton"
               class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50">
               <lucide-icon name="share" class="w-4 h-4"></lucide-icon>
@@ -358,6 +364,7 @@ export class AdminFacturationDetailComponent implements OnInit, OnDestroy {
   doc?: DocumentFacturationDTO;
   chargement = true;
   telechargementPdf = false;
+  regenerationPdf = false;
   generationJeton = false;
   ajoutReglement = false;
   afficherFormReglement = false;
@@ -479,6 +486,20 @@ export class AdminFacturationDetailComponent implements OnInit, OnDestroy {
           this.telechargementPdf = false;
         },
         error: () => { this.toastService.error('Erreur lors de la génération du PDF'); this.telechargementPdf = false; }
+      });
+  }
+
+  regenererPdf(): void {
+    if (!this.doc) return;
+    this.regenerationPdf = true;
+    this.facturationService.regenererPdf(this.doc.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastService.success('PDF régénéré avec les paramètres actuels');
+          this.regenerationPdf = false;
+        },
+        error: () => { this.toastService.error('Erreur lors de la régénération'); this.regenerationPdf = false; }
       });
   }
 

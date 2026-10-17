@@ -92,6 +92,10 @@ export class FacturationService {
     return this.http.post<DocumentFacturationDTO>(`${this.adminUrl}/${id}/avoir`, {});
   }
 
+  regenererPdf(id: number): Observable<DocumentFacturationDTO> {
+    return this.http.post<DocumentFacturationDTO>(`${this.adminUrl}/${id}/regenerer-pdf`, {});
+  }
+
   // ── Devis → Facture ────────────────────────────────────────────────────────
 
   convertirDevis(id: number): Observable<DocumentFacturationDTO> {
