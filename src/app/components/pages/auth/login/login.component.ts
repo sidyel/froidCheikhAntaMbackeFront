@@ -1,10 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../../services/auth.service';
 import { ToastService } from '../../../../services/toast.service';
+import { ConfigService } from '../../../../services/config.service';
 
 @Component({
   selector: 'app-login',
@@ -117,12 +119,16 @@ import { ToastService } from '../../../../services/toast.service';
               </div>
 
               <div class="text-sm">
-                <a
-                  href="javascript:void(0)"
-                  (click)="openResetModal()"
-                  class="font-medium text-primary-600 hover:text-primary-500 cursor-pointer">
-                  Mot de passe oublié ?
+                <a *ngIf="whatsAppMdpUrl"
+                  [href]="whatsAppMdpUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-medium text-primary-600 hover:text-primary-500">
+                  Mot de passe oublié ? Contactez-nous sur WhatsApp
                 </a>
+                <span *ngIf="!whatsAppMdpUrl" class="text-gray-500">
+                  Mot de passe oublié ? Contactez le support.
+                </span>
               </div>
             </div>
 
@@ -212,66 +218,6 @@ import { ToastService } from '../../../../services/toast.service';
       </div>
     </div>
 
-    <!-- Reset Password Modal -->
-    <div *ngIf="showResetModal"
-         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-      <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between p-5 border-b">
-          <h3 class="text-xl font-semibold text-gray-900">
-            Réinitialiser le mot de passe
-          </h3>
-          <button
-            type="button"
-            (click)="closeResetModal()"
-            class="text-gray-400 hover:text-gray-600 transition-colors">
-            <lucide-icon name="x" class="w-6 h-6"></lucide-icon>
-          </button>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="p-6">
-          <p class="text-sm text-gray-600 mb-4">
-            Entrez votre adresse email et votre mot de passe sera réinitialisé à <strong class="text-primary-600">passe123</strong>
-          </p>
-
-          <div>
-            <label for="reset-email" class="form-label">
-              Adresse email
-            </label>
-            <div class="mt-1 relative">
-              <input
-                id="reset-email"
-                type="email"
-                [(ngModel)]="resetEmail"
-                class="form-input"
-                placeholder="votre@email.com">
-              <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <lucide-icon name="mail" class="w-5 h-5 text-gray-400"></lucide-icon>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="flex items-center justify-end p-6 border-t space-x-3">
-          <button
-            type="button"
-            (click)="closeResetModal()"
-            class="btn-outline">
-            Annuler
-          </button>
-          <button
-            type="button"
-            (click)="confirmResetPassword()"
-            [disabled]="!resetEmail || isResetting"
-            class="btn-primary">
-            <div *ngIf="isResetting" class="spinner mr-2"></div>
-            <span>{{ isResetting ? 'Réinitialisation...' : 'Réinitialiser' }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
   `
 })
 export class LoginComponent implements OnInit, OnDestroy {
@@ -282,10 +228,19 @@ export class LoginComponent implements OnInit, OnDestroy {
   showPassword = false;
   returnUrl = '/';
 
-  // Reset password
-  showResetModal = false;
-  resetEmail = '';
-  isResetting = false;
+  private readonly configService = inject(ConfigService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  get whatsAppMdpUrl(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    const cfg = this.configService.config;
+    const tel = cfg.telephoneWhatsappBoutique
+      ?? cfg.telephones?.find((t: any) => t.whatsapp)?.numero;
+    if (!tel) return null;
+    const num = tel.replace(/\D/g, '');
+    const msg = encodeURIComponent('Bonjour, j\'ai oublié mon mot de passe pour mon compte.');
+    return `https://wa.me/${num}?text=${msg}`;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -373,58 +328,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         control.markAsTouched();
       }
     });
-  }
-
-  // Reset Password Methods
-  openResetModal(): void {
-    this.resetEmail = this.loginForm.get('email')?.value || '';
-    this.showResetModal = true;
-  }
-
-  closeResetModal(): void {
-    this.showResetModal = false;
-    this.resetEmail = '';
-    this.isResetting = false;
-  }
-
-  confirmResetPassword(): void {
-    if (!this.resetEmail || this.isResetting) {
-      return;
-    }
-
-    this.isResetting = true;
-
-    this.authService.resetPassword(this.resetEmail)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.isResetting = false;
-          this.toastService.success(
-            'Mot de passe réinitialisé',
-            'Votre nouveau mot de passe est: passe123'
-          );
-          this.closeResetModal();
-
-          // Pré-remplir le formulaire avec le nouveau mot de passe
-          this.loginForm.patchValue({
-            email: this.resetEmail,
-            motDePasse: 'passe123'
-          });
-        },
-        error: (error) => {
-          this.isResetting = false;
-          console.error('Erreur de réinitialisation:', error);
-
-          if (error.error?.message) {
-            this.toastService.error('Erreur', error.error.message);
-          } else {
-            this.toastService.error(
-              'Erreur',
-              'Aucun compte trouvé avec cet email'
-            );
-          }
-        }
-      });
   }
 
   // Méthodes utiles pour les tests ou l'administration
