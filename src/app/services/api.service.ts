@@ -23,7 +23,8 @@ import {
   PromotionApercuPage,
   ImageProduit,
   AttributProduit,
-  ModeleAttribut
+  ModeleAttribut,
+  VideoProduit
 } from '../models/interfaces';
 
 @Injectable({
@@ -478,5 +479,39 @@ export class ApiService {
       dto,
       { params: new HttpParams().set('page', page).set('size', size) }
     );
+  }
+
+  // ── Vidéos produit ────────────────────────────────────────────────────────
+
+  getVideosAdmin(produitId: number): Observable<VideoProduit[]> {
+    return this.http.get<VideoProduit[]>(`${this.apiUrl}/admin/produits/${produitId}/videos`);
+  }
+
+  ajouterVideoLien(produitId: number, url: string, titre?: string, urlApercuPersonnalise?: string): Observable<VideoProduit> {
+    return this.http.post<VideoProduit>(`${this.apiUrl}/admin/produits/${produitId}/videos/lien`,
+      { url, titre, urlApercuPersonnalise });
+  }
+
+  getVideoSignature(produitId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/admin/produits/${produitId}/videos/signature`);
+  }
+
+  confirmerUploadVideo(produitId: number, body: {
+    publicId: string; secureUrl: string; originalFilename: string;
+    bytes: number; format: string; titre?: string;
+  }): Observable<VideoProduit> {
+    return this.http.post<VideoProduit>(`${this.apiUrl}/admin/produits/${produitId}/videos/confirmer-upload`, body);
+  }
+
+  modifierOrdreVideo(produitId: number, videoId: number, ordre: number): Observable<VideoProduit> {
+    return this.http.put<VideoProduit>(`${this.apiUrl}/admin/produits/${produitId}/videos/${videoId}/ordre`, { ordre });
+  }
+
+  toggleVideoActif(produitId: number, videoId: number): Observable<VideoProduit> {
+    return this.http.put<VideoProduit>(`${this.apiUrl}/admin/produits/${produitId}/videos/${videoId}/activer`, {});
+  }
+
+  supprimerVideo(produitId: number, videoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/produits/${produitId}/videos/${videoId}`);
   }
 }
