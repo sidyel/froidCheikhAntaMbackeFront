@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, OnDestroy, Optional, PLATFORM_ID } from '@angular/core';
+import { Component, HostListener, Inject, OnInit, OnDestroy, Optional, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -79,59 +79,31 @@ import { extractId, buildProduitUrl, buildCategorieUrl } from '../../../utils/sl
                 </div>
               </div>
 
-              <!-- Miniatures vidéo (après les photos) -->
-              <div class="mt-3 flex space-x-2" *ngIf="produit.videos && produit.videos.length > 0">
-                <button
-                  *ngFor="let video of produit.videos"
-                  (click)="selectionnerVideo(video)"
-                  class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 relative rounded-lg overflow-hidden border-2 border-gray-200 hover:border-primary-300 transition-all duration-200"
-                  [class.ring-2]="videoSelectionne?.id === video.id"
-                  [class.ring-primary-500]="videoSelectionne?.id === video.id">
-                  <img *ngIf="video.urlApercu" [src]="video.urlApercu" [alt]="video.titre || 'Vidéo'"
-                       class="w-full h-full object-cover"
-                       onerror="this.style.display='none'">
-                  <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                    <lucide-icon name="play" class="w-6 h-6 text-white drop-shadow"></lucide-icon>
-                  </div>
-                </button>
-              </div>
-
-              <!-- Lecteur vidéo (chargé dans le navigateur uniquement) -->
-              <div *ngIf="videoSelectionne && isPlatformBrowserFlag" class="mt-4 rounded-lg overflow-hidden bg-black">
-                <!-- YouTube (youtube-nocookie) -->
-                <iframe *ngIf="videoSelectionne.type === 'YOUTUBE'"
-                        [src]="getYoutubeEmbedUrl(videoSelectionne)"
-                        class="w-full aspect-video"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                        allowfullscreen
-                        title="{{ videoSelectionne.titre || 'Vidéo du produit' }}">
-                </iframe>
-                <!-- Facebook (iframe officielle légère) -->
-                <iframe *ngIf="videoSelectionne.type === 'FACEBOOK'"
-                        [src]="getFacebookEmbedUrl(videoSelectionne)"
-                        class="w-full aspect-video"
-                        frameborder="0"
-                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                        allowfullscreen
-                        title="{{ videoSelectionne.titre || 'Vidéo du produit' }}">
-                </iframe>
-                <!-- Cloudinary / fichier vidéo -->
-                <video *ngIf="videoSelectionne.type === 'CLOUDINARY'"
-                       class="w-full aspect-video"
-                       controls
-                       autoplay
-                       playsinline
-                       [title]="videoSelectionne.titre || 'Vidéo du produit'">
-                  <source [src]="videoSelectionne.url" type="video/mp4">
-                </video>
-                <!-- Fermer -->
-                <div class="flex justify-end p-1 bg-black">
-                  <button (click)="fermerVideo()" class="text-white text-xs opacity-70 hover:opacity-100 flex items-center gap-1">
-                    <lucide-icon name="x" class="w-4 h-4"></lucide-icon> Fermer
+              <!-- Miniatures vidéo intégrées dans la galerie (même rangée que les photos) -->
+              <ng-container *ngIf="produit.videos && produit.videos.length > 0">
+                <div class="flex space-x-2 sm:space-x-3 mt-2">
+                  <button
+                    *ngFor="let video of produit.videos"
+                    (click)="selectionnerVideo(video)"
+                    class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 relative rounded-lg overflow-hidden border-2 border-gray-200 hover:border-primary-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400">
+                    <!-- Thumbnail statique (rendu SSR) -->
+                    <img *ngIf="video.urlApercu" [src]="video.urlApercu" [alt]="video.titre || 'Vidéo'"
+                         class="w-full h-full object-cover"
+                         onerror="this.style.display='none'">
+                    <div *ngIf="!video.urlApercu" class="w-full h-full bg-gray-800"></div>
+                    <!-- Overlay play -->
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center gap-1">
+                      <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow-lg">
+                        <lucide-icon name="play" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-900 ml-0.5"></lucide-icon>
+                      </div>
+                      <span class="text-white text-xs font-medium drop-shadow"
+                            *ngIf="video.type === 'YOUTUBE'">YouTube</span>
+                      <span class="text-white text-xs font-medium drop-shadow"
+                            *ngIf="video.type === 'FACEBOOK'">Facebook</span>
+                    </div>
                   </button>
                 </div>
-              </div>
+              </ng-container>
             </div>
 
             <!-- Product Information -->
@@ -380,6 +352,57 @@ import { extractId, buildProduitUrl, buildCategorieUrl } from '../../../utils/sl
         <div *ngIf="imageUrls.length > 1" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded">
           {{ selectedImageIndex + 1 }} / {{ imageUrls.length }}
         </div>
+      </div>
+    </div>
+
+    <!-- Modal vidéo plein écran (navigateur uniquement) -->
+    <div *ngIf="videoSelectionne && isPlatformBrowserFlag"
+         class="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4"
+         (click)="fermerVideo()">
+      <div class="relative w-full max-w-4xl" (click)="$event.stopPropagation()">
+
+        <!-- Titre + bouton fermer -->
+        <div class="flex items-center justify-between mb-3 px-1">
+          <span class="text-white text-sm font-medium truncate max-w-xs">
+            {{ videoSelectionne.titre || 'Vidéo du produit' }}
+          </span>
+          <button (click)="fermerVideo()"
+                  class="text-white hover:text-gray-300 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full p-2 transition-colors ml-4 flex-shrink-0"
+                  title="Fermer (Échap)">
+            <lucide-icon name="x" class="w-6 h-6"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- Lecteur 16:9 -->
+        <div class="relative w-full rounded-xl overflow-hidden bg-black shadow-2xl" style="padding-top: 56.25%">
+          <div class="absolute inset-0">
+            <!-- YouTube -->
+            <iframe *ngIf="videoSelectionne.type === 'YOUTUBE'"
+                    [src]="getYoutubeEmbedUrl(videoSelectionne)"
+                    class="w-full h-full"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowfullscreen>
+            </iframe>
+            <!-- Facebook -->
+            <iframe *ngIf="videoSelectionne.type === 'FACEBOOK'"
+                    [src]="getFacebookEmbedUrl(videoSelectionne)"
+                    class="w-full h-full"
+                    frameborder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                    allowfullscreen>
+            </iframe>
+            <!-- Cloudinary -->
+            <video *ngIf="videoSelectionne.type === 'CLOUDINARY'"
+                   class="w-full h-full"
+                   controls autoplay playsinline>
+              <source [src]="videoSelectionne.url" type="video/mp4">
+            </video>
+          </div>
+        </div>
+
+        <!-- Clic en dehors pour fermer -->
+        <p class="text-center text-gray-500 text-xs mt-3">Cliquer en dehors pour fermer</p>
       </div>
     </div>
 
@@ -671,9 +694,15 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.videoSelectionne) this.fermerVideo();
+    else if (this.showImageGallery) this.closeImageGallery();
+  }
+
   selectionnerVideo(video: VideoProduit): void {
     if (!this.isPlatformBrowserFlag) return;
-    this.videoSelectionne = this.videoSelectionne?.id === video.id ? null : video;
+    this.videoSelectionne = video;
   }
 
   fermerVideo(): void {
