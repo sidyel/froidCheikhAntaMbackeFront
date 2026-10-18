@@ -129,7 +129,23 @@ import {
   TrendingUp,      // Tendances/statistiques
   BarChart,        // Graphiques
   PieChart,        // Graphiques circulaires
-  Activity, XIcon         // Activité/monitoring
+  Activity, XIcon,        // Activité/monitoring
+  // Icônes manquantes détectées par audit templates
+  Play,
+  ArrowDown,
+  ArrowUp,
+  Bell,
+  LayoutGrid,
+  Linkedin,
+  Loader2,
+  Maximize,
+  RefreshCw,
+  Repeat,
+  ShieldX,
+  Target,
+  UploadCloud,
+  UserCheck,
+  UserX
 } from 'lucide-angular';
 import { AdminLayoutComponent } from './components/admin/admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './components/admin/admin-dashboard/admin-dashboard.component';
@@ -347,7 +363,24 @@ import { CookieBannerComponent } from './components/shared/cookie-banner/cookie-
       PieChart,
       Activity,
       Users,
-      MailOpen
+      MailOpen,
+
+      // Icônes manquantes détectées par audit templates
+      Play,
+      ArrowDown,
+      ArrowUp,
+      Bell,
+      LayoutGrid,
+      Linkedin,
+      Loader2,
+      Maximize,
+      RefreshCw,
+      Repeat,
+      ShieldX,
+      Target,
+      UploadCloud,
+      UserCheck,
+      UserX
     })
   ],
   providers: [

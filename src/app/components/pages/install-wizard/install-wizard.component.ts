@@ -80,7 +80,7 @@ import { environment } from '../../../../environments/environment';
               <label class="form-label">Slogan</label>
               <input formControlName="sloganSite" class="form-input" placeholder="Votre slogan">
             </div>
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label class="form-label">Couleur primaire</label>
                 <input type="color" formControlName="couleurPrimaire"

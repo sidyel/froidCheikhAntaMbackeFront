@@ -8,6 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "check:hardcoded": "node scripts/check-hardcoded.js",
+    "check:lucide": "node scripts/check-lucide-icons.js",
+    "check": "node scripts/check-hardcoded.js && node scripts/check-lucide-icons.js",
     "serve:ssr:froid-cheikh-ecommerce-frontend": "node dist/froid-cheikh-ecommerce-frontend/server/server.mjs"
   },
   "private": true,
