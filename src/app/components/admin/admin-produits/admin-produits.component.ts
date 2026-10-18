@@ -201,6 +201,13 @@ import { environment } from "../../../../environments/environment";
               <ng-template #noScore>
                 <span class="text-xs text-gray-400">—</span>
               </ng-template>
+              <!-- Icône vidéo -->
+              <span *ngIf="produit.videos && produit.videos.length > 0"
+                    class="inline-flex items-center gap-1 mt-1 text-xs text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded"
+                    title="{{ produit.videos.length }} vidéo(s)">
+                <lucide-icon name="video" class="w-3 h-3"></lucide-icon>
+                {{ produit.videos.length }}
+              </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div class="flex justify-end space-x-2">
