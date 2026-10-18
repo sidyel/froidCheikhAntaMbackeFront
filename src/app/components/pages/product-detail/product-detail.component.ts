@@ -10,7 +10,8 @@ import { ToastService } from '../../../services/toast.service';
 import { ConfigService } from '../../../services/config.service';
 import { SeoService } from '../../../services/seo.service';
 import { PixelService } from '../../../services/pixel.service';
-import { Produit, Breadcrumb } from '../../../models/interfaces';
+import { Produit, Breadcrumb, VideoProduit } from '../../../models/interfaces';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SSR_RESPONSE } from '../../../utils/ssr.tokens';
 import { extractId, buildProduitUrl, buildCategorieUrl } from '../../../utils/slug.utils';
 
@@ -78,15 +79,56 @@ import { extractId, buildProduitUrl, buildCategorieUrl } from '../../../utils/sl
                 </div>
               </div>
 
-              <!-- Video Thumbnails -->
-              <div class="mt-4 space-y-2" *ngIf="produit.videosOptionnelles && produit.videosOptionnelles.length > 0">
-                <h4 class="text-sm font-medium text-gray-900">Vidéos du produit</h4>
-                <div class="flex space-x-2">
-                  <button
-                    *ngFor="let video of produit.videosOptionnelles"
-                    (click)="playVideo(video)"
-                    class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-gray-200 hover:border-primary-300 transition-colors">
-                    <lucide-icon name="play" class="w-8 h-8 text-gray-600"></lucide-icon>
+              <!-- Miniatures vidéo (après les photos) -->
+              <div class="mt-3 flex space-x-2" *ngIf="produit.videos && produit.videos.length > 0">
+                <button
+                  *ngFor="let video of produit.videos"
+                  (click)="selectionnerVideo(video)"
+                  class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 relative rounded-lg overflow-hidden border-2 border-gray-200 hover:border-primary-300 transition-all duration-200"
+                  [class.ring-2]="videoSelectionne?.id === video.id"
+                  [class.ring-primary-500]="videoSelectionne?.id === video.id">
+                  <img *ngIf="video.urlApercu" [src]="video.urlApercu" [alt]="video.titre || 'Vidéo'"
+                       class="w-full h-full object-cover"
+                       onerror="this.style.display='none'">
+                  <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                    <lucide-icon name="play" class="w-6 h-6 text-white drop-shadow"></lucide-icon>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Lecteur vidéo (chargé dans le navigateur uniquement) -->
+              <div *ngIf="videoSelectionne && isPlatformBrowserFlag" class="mt-4 rounded-lg overflow-hidden bg-black">
+                <!-- YouTube (youtube-nocookie) -->
+                <iframe *ngIf="videoSelectionne.type === 'YOUTUBE'"
+                        [src]="getYoutubeEmbedUrl(videoSelectionne)"
+                        class="w-full aspect-video"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        allowfullscreen
+                        title="{{ videoSelectionne.titre || 'Vidéo du produit' }}">
+                </iframe>
+                <!-- Facebook (iframe officielle légère) -->
+                <iframe *ngIf="videoSelectionne.type === 'FACEBOOK'"
+                        [src]="getFacebookEmbedUrl(videoSelectionne)"
+                        class="w-full aspect-video"
+                        frameborder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        allowfullscreen
+                        title="{{ videoSelectionne.titre || 'Vidéo du produit' }}">
+                </iframe>
+                <!-- Cloudinary / fichier vidéo -->
+                <video *ngIf="videoSelectionne.type === 'CLOUDINARY'"
+                       class="w-full aspect-video"
+                       controls
+                       autoplay
+                       playsinline
+                       [title]="videoSelectionne.titre || 'Vidéo du produit'">
+                  <source [src]="videoSelectionne.url" type="video/mp4">
+                </video>
+                <!-- Fermer -->
+                <div class="flex justify-end p-1 bg-black">
+                  <button (click)="fermerVideo()" class="text-white text-xs opacity-70 hover:opacity-100 flex items-center gap-1">
+                    <lucide-icon name="x" class="w-4 h-4"></lucide-icon> Fermer
                   </button>
                 </div>
               </div>
@@ -384,6 +426,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   countdownText: string | null = null;
   private countdownInterval: any = null;
 
+  // Vidéos
+  videoSelectionne: VideoProduit | null = null;
+  isPlatformBrowserFlag = false;
+
   get firstTelephone(): string {
     const tels = this.configService.config.telephones;
     return (tels && tels.length > 0) ? tels[0].numero.replace(/\s/g, '') : '';
@@ -399,10 +445,12 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private seoService: SeoService,
     private pixelService: PixelService,
+    private sanitizer: DomSanitizer,
     @Inject(PLATFORM_ID) private platformId: Object,
     @Optional() @Inject(SSR_RESPONSE) private ssrResponse: any
   ) {
     this.isAuthenticated = this.authService.isAuthenticated();
+    this.isPlatformBrowserFlag = isPlatformBrowser(this.platformId);
   }
 
   ngOnInit(): void {
@@ -621,6 +669,26 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     if (count > 0) {
       this.selectedImageIndex = (this.selectedImageIndex - 1 + count) % count;
     }
+  }
+
+  selectionnerVideo(video: VideoProduit): void {
+    if (!this.isPlatformBrowserFlag) return;
+    this.videoSelectionne = this.videoSelectionne?.id === video.id ? null : video;
+  }
+
+  fermerVideo(): void {
+    this.videoSelectionne = null;
+  }
+
+  getYoutubeEmbedUrl(video: VideoProduit): SafeResourceUrl {
+    const url = `https://www.youtube-nocookie.com/embed/${video.videoId}?autoplay=1&rel=0`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  getFacebookEmbedUrl(video: VideoProduit): SafeResourceUrl {
+    const href = encodeURIComponent(video.url);
+    const url = `https://www.facebook.com/plugins/video.php?href=${href}&show_text=false&appId=`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   playVideo(videoPath: string): void {

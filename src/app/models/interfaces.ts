@@ -121,6 +121,7 @@ export interface Produit {
   listeImages: string[];          // rétrocompat public — utiliser images[] dans l'admin
   images?: ImageProduit[];        // admin — vide avant migration
   videosOptionnelles?: string[];
+  videos?: VideoProduit[];        // nouvelles vidéos structurées
   disponibilite: boolean;
   excluCatalogue?: boolean;
   dateAjout: string;
@@ -140,6 +141,20 @@ export interface AttributProduit {
   valeurAttribut: string;
   modeleAttributId?: number;
   unite?: string;
+}
+
+export type TypeVideo = 'YOUTUBE' | 'FACEBOOK' | 'CLOUDINARY';
+
+export interface VideoProduit {
+  id?: number;
+  type: TypeVideo;
+  videoId?: string;
+  url: string;
+  urlApercu?: string;
+  titre?: string;
+  ordre: number;
+  active: boolean;
+  dateCreation?: string;
 }
 
 export interface Categorie {

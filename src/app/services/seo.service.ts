@@ -162,6 +162,28 @@ export class SeoService {
 
   private setProduitJsonLd(produit: Produit, url: string, image: string | undefined, disponible: boolean): void {
     const prixAffiche = produit.prixPromo ?? produit.prix;
+
+    const videoObjects = (produit.videos || [])
+      .filter(v => v.active)
+      .map(v => {
+        const base: any = {
+          '@type': 'VideoObject',
+          name: v.titre || produit.nomProduit,
+          description: v.titre || produit.descriptionProduit?.slice(0, 200) || produit.nomProduit,
+          thumbnailUrl: v.urlApercu || image,
+          uploadDate: v.dateCreation ? v.dateCreation.split('T')[0] : undefined
+        };
+        if (v.type === 'YOUTUBE' && v.videoId) {
+          base.embedUrl = `https://www.youtube-nocookie.com/embed/${v.videoId}`;
+          base.contentUrl = v.url;
+        } else if (v.type === 'FACEBOOK') {
+          base.embedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(v.url)}`;
+        } else if (v.type === 'CLOUDINARY') {
+          base.contentUrl = v.url;
+        }
+        return base;
+      });
+
     this.setJsonLd({
       '@context': 'https://schema.org',
       '@graph': [
@@ -188,7 +210,8 @@ export class SeoService {
             produit.categorie ? { '@type': 'ListItem', position: 2, name: produit.categorie.nomCategorie, item: this.siteUrl + buildCategorieUrl(produit.categorie.idCategorie, produit.categorie.nomCategorie) } : undefined,
             { '@type': 'ListItem', position: produit.categorie ? 3 : 2, name: produit.nomProduit, item: url }
           ].filter(Boolean)
-        }
+        },
+        ...videoObjects
       ]
     });
   }

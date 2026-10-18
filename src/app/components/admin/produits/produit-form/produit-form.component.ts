@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { environment } from "../../../../../environments/environment";
-import { Categorie, Marque, Produit, ImageProduit, AttributProduit, ModeleAttribut } from "../../../../models/interfaces";
+import { Categorie, Marque, Produit, ImageProduit, AttributProduit, ModeleAttribut, VideoProduit } from "../../../../models/interfaces";
 import { ApiService } from "../../../../services/api.service";
 import { AdminService } from "../../../../services/admin.service";
 import { ToastService } from "../../../../services/toast.service";
@@ -256,6 +256,120 @@ interface EditableAttribut {
             </div>
           </div>
 
+          <!-- Vidéos de présentation -->
+          <div class="border-b border-gray-200 pb-6" *ngIf="isEditing && produitId">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-lg font-medium text-gray-900">Vidéos de présentation</h3>
+                <p class="text-xs text-gray-500 mt-1">{{ produitVideos.length }}/3 vidéos • YouTube, Facebook ou fichier MP4/MOV/WebM</p>
+              </div>
+            </div>
+
+            <!-- Liste des vidéos -->
+            <div *ngIf="produitVideos.length > 0" class="space-y-3 mb-4">
+              <div *ngFor="let video of produitVideos; index as i"
+                   class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <!-- Miniature -->
+                <div class="flex-shrink-0 w-16 h-10 bg-gray-200 rounded overflow-hidden relative">
+                  <img *ngIf="video.urlApercu" [src]="video.urlApercu" [alt]="video.titre || 'Vidéo'"
+                       class="w-full h-full object-cover" onerror="this.style.display='none'">
+                  <div *ngIf="!video.urlApercu"
+                       class="w-full h-full flex items-center justify-center bg-gray-700">
+                    <lucide-icon name="video" class="w-5 h-5 text-gray-300"></lucide-icon>
+                  </div>
+                  <!-- Badge type -->
+                  <span class="absolute bottom-0 right-0 text-white text-xs px-1 rounded-tl"
+                        [ngClass]="{'bg-red-600': video.type === 'YOUTUBE', 'bg-blue-600': video.type === 'FACEBOOK', 'bg-purple-600': video.type === 'CLOUDINARY'}">
+                    {{ video.type === 'YOUTUBE' ? 'YT' : video.type === 'FACEBOOK' ? 'FB' : 'CL' }}
+                  </span>
+                </div>
+                <!-- Titre -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ video.titre || video.url }}</p>
+                  <p class="text-xs text-gray-500">{{ video.type }}</p>
+                </div>
+                <!-- Actions -->
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="toggleVideoActif(video)"
+                          [title]="video.active ? 'Désactiver' : 'Activer'"
+                          class="p-1 rounded hover:bg-gray-200">
+                    <lucide-icon [name]="video.active ? 'eye' : 'eye-off'" class="w-4 h-4 text-gray-600"></lucide-icon>
+                  </button>
+                  <button type="button" (click)="monterVideo(i)" [disabled]="i === 0"
+                          class="p-1 rounded hover:bg-gray-200 disabled:opacity-30" title="Monter">
+                    <lucide-icon name="chevron-up" class="w-4 h-4 text-gray-600"></lucide-icon>
+                  </button>
+                  <button type="button" (click)="descendreVideo(i)" [disabled]="i === produitVideos.length - 1"
+                          class="p-1 rounded hover:bg-gray-200 disabled:opacity-30" title="Descendre">
+                    <lucide-icon name="chevron-down" class="w-4 h-4 text-gray-600"></lucide-icon>
+                  </button>
+                  <button type="button" (click)="demanderSuppressionVideo(video)"
+                          class="p-1 rounded hover:bg-red-100" title="Supprimer">
+                    <lucide-icon name="trash-2" class="w-4 h-4 text-red-500"></lucide-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirmation suppression vidéo -->
+            <div *ngIf="videoToDelete" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
+              <span class="text-sm text-red-700">Supprimer « {{ videoToDelete.titre || videoToDelete.url.slice(0,40) }} » ?</span>
+              <div class="flex gap-2">
+                <button type="button" (click)="executerSuppressionVideo()" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">Confirmer</button>
+                <button type="button" (click)="videoToDelete = null" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300">Annuler</button>
+              </div>
+            </div>
+
+            <!-- Ajout vidéo (masqué si limite atteinte) -->
+            <div *ngIf="produitVideos.length < 3" class="space-y-3">
+              <!-- Ajout par lien -->
+              <div class="flex gap-2">
+                <input type="text" [(ngModel)]="videoLienUrl" [ngModelOptions]="{standalone: true}"
+                       placeholder="Coller un lien YouTube ou Facebook…"
+                       (input)="onVideoLienChange()"
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <button type="button" (click)="ajouterVideoLien()"
+                        [disabled]="!videoLienUrl || isAddingVideo"
+                        class="px-4 py-2 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700 disabled:opacity-50">
+                  <lucide-icon name="plus" class="w-4 h-4" *ngIf="!isAddingVideo"></lucide-icon>
+                  <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" *ngIf="isAddingVideo"></div>
+                </button>
+              </div>
+              <!-- Aperçu lien en attente -->
+              <div *ngIf="videoLienApercu" class="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200">
+                <img [src]="videoLienApercu" alt="Aperçu" class="w-20 h-12 object-cover rounded">
+                <span class="text-xs text-gray-600">Aperçu YouTube — cliquez + pour ajouter</span>
+              </div>
+
+              <!-- Upload fichier -->
+              <div class="flex items-center gap-3">
+                <input type="file" #videoFileInput accept="video/mp4,video/quicktime,video/webm"
+                       (change)="onVideoFileSelected($event)" class="hidden">
+                <button type="button" (click)="videoFileInput.click()"
+                        [disabled]="isUploadingVideo"
+                        class="btn-outline text-sm">
+                  <lucide-icon name="upload" class="w-4 h-4 mr-2" *ngIf="!isUploadingVideo"></lucide-icon>
+                  <div class="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" *ngIf="isUploadingVideo"></div>
+                  {{ isUploadingVideo ? 'Envoi en cours…' : 'Envoyer un fichier vidéo' }}
+                </button>
+                <span class="text-xs text-gray-500">MP4, MOV, WebM • max 50 Mo</span>
+              </div>
+
+              <!-- Barre de progression upload -->
+              <div *ngIf="videoUploadProgress > 0 && videoUploadProgress < 100" class="mt-2">
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                       [style.width.%]="videoUploadProgress"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1 text-right">{{ videoUploadProgress }}%</p>
+              </div>
+            </div>
+            <p *ngIf="produitVideos.length >= 3" class="text-sm text-orange-600 mt-2">
+              <lucide-icon name="alert-circle" class="w-4 h-4 inline mr-1"></lucide-icon>
+              Limite de 3 vidéos atteinte.
+            </p>
+          </div>
+
           <!-- Fiche technique PDF -->
           <div class="border-b border-gray-200 pb-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Fiche technique (optionnel)</h3>
@@ -480,6 +594,15 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
   reorderDirty = false;
   isSavingReorder = false;
 
+  // Vidéos de présentation
+  produitVideos: VideoProduit[] = [];
+  videoLienUrl = '';
+  videoLienApercu: string | null = null;
+  isAddingVideo = false;
+  isUploadingVideo = false;
+  videoUploadProgress = 0;
+  videoToDelete: VideoProduit | null = null;
+
   // Fiche technique
   selectedFicheTechnique: File | null = null;
   currentFicheTechnique: string | null = null;
@@ -603,6 +726,11 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
       this.existingImages = [...produit.images].sort((a, b) => a.ordre - b.ordre);
     } else if (produit.listeImages && produit.listeImages.length > 0) {
       this.legacyImages = [...produit.listeImages];
+    }
+
+    // Vidéos
+    if (produit.videos && produit.videos.length > 0) {
+      this.produitVideos = [...produit.videos].sort((a, b) => a.ordre - b.ordre);
     }
 
     if (produit.ficheTechniquePDF) {
@@ -808,6 +936,162 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
     } finally {
       this.isSavingReorder = false;
     }
+  }
+
+  // === VIDÉOS DE PRÉSENTATION ===
+
+  ajouterVideoLien(): void {
+    if (!this.videoLienUrl.trim() || !this.produitId) return;
+    this.isAddingVideo = true;
+    this.apiService.ajouterVideoLien(this.produitId, this.videoLienUrl.trim())
+      .subscribe({
+        next: (video) => {
+          this.produitVideos = [...this.produitVideos, video].sort((a, b) => a.ordre - b.ordre);
+          this.videoLienUrl = '';
+          this.videoLienApercu = null;
+          this.isAddingVideo = false;
+          this.toastService.success('Succès', 'Vidéo ajoutée');
+        },
+        error: (err) => {
+          this.isAddingVideo = false;
+          const msg = err?.error?.message || 'URL non reconnue ou limite atteinte';
+          this.toastService.error('Erreur', msg);
+        }
+      });
+  }
+
+  /** Aperçu en temps réel pour YouTube */
+  onVideoLienChange(): void {
+    const yt = this.videoLienUrl.match(/(?:youtube\.com\/(?:watch\?.*v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    this.videoLienApercu = yt ? `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg` : null;
+  }
+
+  onVideoFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || !this.produitId) return;
+
+    const allowed = ['video/mp4', 'video/quicktime', 'video/webm'];
+    if (!allowed.includes(file.type)) {
+      this.toastService.error('Erreur', 'Format non autorisé. Utilisez MP4, MOV ou WebM.');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      this.toastService.error('Erreur', 'Le fichier dépasse 50 Mo.');
+      return;
+    }
+
+    this.isUploadingVideo = true;
+    this.videoUploadProgress = 0;
+
+    this.apiService.getVideoSignature(this.produitId).subscribe({
+      next: (sig) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', sig.apiKey);
+        formData.append('timestamp', sig.timestamp.toString());
+        formData.append('signature', sig.signature);
+        formData.append('folder', sig.folder);
+        formData.append('allowed_formats', sig.allowedFormats);
+
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            this.videoUploadProgress = Math.round((e.loaded / e.total) * 100);
+          }
+        });
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            const result = JSON.parse(xhr.responseText);
+            this.apiService.confirmerUploadVideo(this.produitId!, {
+              publicId: result.public_id,
+              secureUrl: result.secure_url,
+              originalFilename: file.name,
+              bytes: result.bytes,
+              format: result.format,
+              titre: file.name.replace(/\.[^.]+$/, '')
+            }).subscribe({
+              next: (video) => {
+                this.produitVideos = [...this.produitVideos, video].sort((a, b) => a.ordre - b.ordre);
+                this.isUploadingVideo = false;
+                this.videoUploadProgress = 0;
+                this.toastService.success('Succès', 'Vidéo uploadée');
+              },
+              error: () => {
+                this.isUploadingVideo = false;
+                this.toastService.error('Erreur', 'Erreur lors de la confirmation');
+              }
+            });
+          } else {
+            this.isUploadingVideo = false;
+            this.toastService.error('Erreur', 'Échec de l\'upload Cloudinary');
+          }
+        });
+        xhr.addEventListener('error', () => {
+          this.isUploadingVideo = false;
+          this.toastService.error('Erreur', 'Erreur réseau pendant l\'upload');
+        });
+        xhr.open('POST', `https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`);
+        xhr.send(formData);
+      },
+      error: () => {
+        this.isUploadingVideo = false;
+        this.toastService.error('Erreur', 'Impossible d\'obtenir la signature d\'upload');
+      }
+    });
+  }
+
+  toggleVideoActif(video: VideoProduit): void {
+    if (!this.produitId || !video.id) return;
+    this.apiService.toggleVideoActif(this.produitId, video.id).subscribe({
+      next: (updated) => {
+        const idx = this.produitVideos.findIndex(v => v.id === video.id);
+        if (idx >= 0) this.produitVideos[idx] = updated;
+      },
+      error: () => this.toastService.error('Erreur', 'Impossible de modifier la vidéo')
+    });
+  }
+
+  monterVideo(index: number): void {
+    if (index === 0 || !this.produitId) return;
+    const video = this.produitVideos[index];
+    if (!video.id) return;
+    this.apiService.modifierOrdreVideo(this.produitId, video.id, index - 1).subscribe({
+      next: () => {
+        [this.produitVideos[index - 1], this.produitVideos[index]] =
+          [this.produitVideos[index], this.produitVideos[index - 1]];
+      }
+    });
+  }
+
+  descendreVideo(index: number): void {
+    if (index >= this.produitVideos.length - 1 || !this.produitId) return;
+    const video = this.produitVideos[index];
+    if (!video.id) return;
+    this.apiService.modifierOrdreVideo(this.produitId, video.id, index + 1).subscribe({
+      next: () => {
+        [this.produitVideos[index], this.produitVideos[index + 1]] =
+          [this.produitVideos[index + 1], this.produitVideos[index]];
+      }
+    });
+  }
+
+  demanderSuppressionVideo(video: VideoProduit): void {
+    this.videoToDelete = video;
+  }
+
+  executerSuppressionVideo(): void {
+    if (!this.videoToDelete || !this.produitId || !this.videoToDelete.id) return;
+    const id = this.videoToDelete.id;
+    this.apiService.supprimerVideo(this.produitId, id).subscribe({
+      next: () => {
+        this.produitVideos = this.produitVideos.filter(v => v.id !== id);
+        this.videoToDelete = null;
+        this.toastService.success('Succès', 'Vidéo supprimée');
+      },
+      error: () => this.toastService.error('Erreur', 'Impossible de supprimer la vidéo')
+    });
   }
 
   // === FICHE TECHNIQUE ===
