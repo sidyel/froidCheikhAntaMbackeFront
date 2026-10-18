@@ -12,7 +12,7 @@ import { SeoService } from '../../../services/seo.service';
 import { PixelService } from '../../../services/pixel.service';
 import { Produit, Breadcrumb } from '../../../models/interfaces';
 import { SSR_RESPONSE } from '../../../utils/ssr.tokens';
-import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
+import { extractId, buildProduitUrl, buildCategorieUrl } from '../../../utils/slug.utils';
 
 @Component({
   selector: 'app-product-detail',
@@ -42,14 +42,14 @@ import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
 
               <!-- Image Thumbnails -->
               <!-- Image Thumbnails - VERSION RESPONSIVE -->
-              <div class="relative" *ngIf="produit.listeImages && produit.listeImages.length > 1">
+              <div class="relative" *ngIf="imageUrls.length > 1">
                 <!-- Gradient fade gauche -->
                 <div class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent z-10 md:hidden"></div>
 
                 <!-- Container des thumbnails -->
                 <div class="flex space-x-2 sm:space-x-3 overflow-x-auto pb-2 px-1 thumbnail-scroll-container">
                   <button
-                    *ngFor="let image of produit.listeImages; let i = index"
+                    *ngFor="let image of imageUrls; let i = index"
                     (click)="selectImage(i)"
                     [class.ring-2]="selectedImageIndex === i"
                     [class.ring-primary-500]="selectedImageIndex === i"
@@ -67,9 +67,9 @@ import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
                 <div class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent z-10 md:hidden"></div>
 
                 <!-- Indicateur de scroll (mobile uniquement) -->
-                <div class="flex justify-center mt-2 md:hidden" *ngIf="produit.listeImages.length > 3">
+                <div class="flex justify-center mt-2 md:hidden" *ngIf="imageUrls.length > 3">
                   <div class="flex space-x-1">
-                    <div *ngFor="let image of produit.listeImages; let i = index"
+                    <div *ngFor="let image of imageUrls; let i = index"
                          [class.bg-primary-600]="selectedImageIndex === i"
                          [class.bg-gray-300]="selectedImageIndex !== i"
                          class="w-1.5 h-1.5 rounded-full transition-colors duration-200">
@@ -318,7 +318,7 @@ import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
           class="max-w-full max-h-full object-contain rounded-lg">
 
         <!-- Navigation arrows if multiple images -->
-        <div *ngIf="produit?.listeImages && produit!.listeImages.length > 1" class="absolute inset-y-0 left-4 flex items-center">
+        <div *ngIf="imageUrls.length > 1" class="absolute inset-y-0 left-4 flex items-center">
           <button
             (click)="previousImage()"
             class="text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2">
@@ -326,7 +326,7 @@ import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
           </button>
         </div>
 
-        <div *ngIf="produit?.listeImages && produit!.listeImages.length > 1" class="absolute inset-y-0 right-4 flex items-center">
+        <div *ngIf="imageUrls.length > 1" class="absolute inset-y-0 right-4 flex items-center">
           <button
             (click)="nextImage()"
             class="text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2">
@@ -335,8 +335,8 @@ import { extractId, buildProduitUrl } from '../../../utils/slug.utils';
         </div>
 
         <!-- Image counter -->
-        <div *ngIf="produit?.listeImages && produit!.listeImages.length > 1" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded">
-          {{ selectedImageIndex + 1 }} / {{ produit!.listeImages.length }}
+        <div *ngIf="imageUrls.length > 1" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded">
+          {{ selectedImageIndex + 1 }} / {{ imageUrls.length }}
         </div>
       </div>
     </div>
@@ -529,18 +529,20 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     //   });
   }
 
-  // ✅ Corriger les 3 méthodes
+  get imageUrls(): string[] {
+    return this.produit?.images?.map(i => i.url).filter(Boolean) || [];
+  }
+
   getMainImageUrl(): string {
-    if (this.produit?.listeImages && this.produit.listeImages.length > 0) {
-      const imagePath = this.produit.listeImages[this.selectedImageIndex];
-      if (imagePath.startsWith('http')) return imagePath;
+    const urls = this.imageUrls;
+    if (urls.length > 0 && this.selectedImageIndex < urls.length) {
+      return urls[this.selectedImageIndex];
     }
     return 'assets/images/placeholder-product.jpg';
   }
 
-  getImageUrl(imagePath: string): string {
-    if (imagePath && imagePath.startsWith('http')) return imagePath;
-    return 'assets/images/placeholder-product.jpg';
+  getImageUrl(imageUrl: string): string {
+    return imageUrl || 'assets/images/placeholder-product.jpg';
   }
 
   getTechnicalSheetUrl(): string {
@@ -579,11 +581,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     if (this.produit?.categorie) {
       this.breadcrumbs.push({
         label: this.produit.categorie.nomCategorie,
-        route: `/produits/categorie/${this.produit.categorie.idCategorie}`
+        route: buildCategorieUrl(this.produit.categorie.idCategorie, this.produit.categorie.nomCategorie)
       });
     }
 
-
+    if (this.produit) {
+      this.breadcrumbs.push({ label: this.produit.nomProduit });
+    }
   }
 
 
@@ -606,18 +610,16 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   nextImage(): void {
-    if (this.produit?.listeImages && this.selectedImageIndex < this.produit.listeImages.length - 1) {
-      this.selectedImageIndex++;
-    } else {
-      this.selectedImageIndex = 0; // Revenir à la première image
+    const count = this.imageUrls.length;
+    if (count > 0) {
+      this.selectedImageIndex = (this.selectedImageIndex + 1) % count;
     }
   }
 
   previousImage(): void {
-    if (this.selectedImageIndex > 0) {
-      this.selectedImageIndex--;
-    } else if (this.produit?.listeImages) {
-      this.selectedImageIndex = this.produit.listeImages.length - 1; // Aller à la dernière image
+    const count = this.imageUrls.length;
+    if (count > 0) {
+      this.selectedImageIndex = (this.selectedImageIndex - 1 + count) % count;
     }
   }
 

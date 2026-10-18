@@ -371,10 +371,9 @@ export class ProductCardComponent {
   }
 
   getMainImageUrl(): string {
-    if (this.produit.listeImages && this.produit.listeImages.length > 0) {
-      const image = this.produit.listeImages[0];
-      if (image.startsWith('http')) return image;
-    }
+    const url = this.produit.images?.find(i => i.principale)?.url
+      || this.produit.images?.[0]?.url;
+    if (url) return url;
     return 'assets/images/placeholder-product.jpg';
   }
 

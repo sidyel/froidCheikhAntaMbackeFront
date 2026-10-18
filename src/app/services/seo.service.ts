@@ -83,7 +83,8 @@ export class SeoService {
         : null
     ].filter(Boolean).join(' · ');
 
-    const firstImage = produit.listeImages?.[0];
+    const firstImage = produit.images?.find(i => i.principale)?.url
+      || produit.images?.[0]?.url;
     const ogImage = this.buildOgImageUrl(firstImage) || this.buildOgImageUrl(this.logoUrl);
     const disponible = produit.disponibilite && (produit.stockDisponible == null || produit.stockDisponible > 0);
 

@@ -284,9 +284,9 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   }
 
   getProductImageUrl(produit: Produit): string {
-    if (produit.listeImages && produit.listeImages.length > 0) {
-      return `http://localhost:8080/uploads/${produit.listeImages[0]}`;
-    }
+    const url = produit.images?.find(i => i.principale)?.url
+      || produit.images?.[0]?.url;
+    if (url) return url;
     return 'assets/images/placeholder-product.jpg';
   }
 

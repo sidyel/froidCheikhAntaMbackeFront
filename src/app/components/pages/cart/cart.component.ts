@@ -352,10 +352,9 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getProductImageUrl(produit: any): string {
-    if (produit.listeImages && produit.listeImages.length > 0) {
-      const image = produit.listeImages[0];
-      if (image.startsWith('http')) return image;
-    }
+    const url = produit.images?.find((i: any) => i.principale)?.url
+      || produit.images?.[0]?.url;
+    if (url) return url;
     return 'assets/images/placeholder-product.jpg';
   }
 

@@ -13,6 +13,7 @@ import { PixelService } from '../../../services/pixel.service';
 import { ConsentService } from '../../../services/consent.service';
 import {
   Cart,
+  CartItem,
   Breadcrumb,
   ModeLivraison,
   Commande,
@@ -385,15 +386,35 @@ import {
                 <!-- Cart Items -->
                 <div class="space-y-3 mb-4">
                   <div *ngFor="let item of cart.items" class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <lucide-icon name="package" class="w-6 h-6 text-gray-400"></lucide-icon>
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      <img
+                        *ngIf="getCheckoutItemImageUrl(item)"
+                        [src]="getCheckoutItemImageUrl(item)"
+                        [alt]="item.produit.nomProduit"
+                        class="w-full h-full object-contain"
+                        onerror="this.src='assets/images/placeholder-product.jpg'">
+                      <div *ngIf="!getCheckoutItemImageUrl(item)" class="w-full h-full flex items-center justify-center">
+                        <lucide-icon name="package" class="w-6 h-6 text-gray-400"></lucide-icon>
+                      </div>
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="text-sm font-medium text-gray-900 truncate">{{ item.produit.nomProduit }}</div>
                       <div class="text-xs text-gray-500">Qté: {{ item.quantite }}</div>
                     </div>
-                    <div class="text-sm font-medium text-gray-900">
-                      {{ item.sousTotal | currency:devise:'symbol':'1.0-0' }}
+                    <div class="text-right">
+                      <ng-container *ngIf="item.produit.prixPromo && item.produit.prixPromo < item.produit.prix; else prixNormal">
+                        <div class="text-xs text-gray-400 line-through">
+                          {{ item.produit.prix * item.quantite | currency:devise:'symbol':'1.0-0' }}
+                        </div>
+                        <div class="text-sm font-semibold text-green-600">
+                          {{ item.sousTotal | currency:devise:'symbol':'1.0-0' }}
+                        </div>
+                      </ng-container>
+                      <ng-template #prixNormal>
+                        <div class="text-sm font-medium text-gray-900">
+                          {{ item.sousTotal | currency:devise:'symbol':'1.0-0' }}
+                        </div>
+                      </ng-template>
                     </div>
                   </div>
                 </div>
@@ -937,6 +958,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.router.navigate(['/produits']);
   }
 
+  getCheckoutItemImageUrl(item: CartItem): string | null {
+    const url = item.produit.images?.find(i => i.principale)?.url
+      || item.produit.images?.[0]?.url;
+    return url || null;
+  }
+
   private getCookie(name: string): string | null {
     if (typeof document === 'undefined') return null;
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -963,6 +990,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     const articles = (cmd.lignesCommande || [])
       .map((l: any) => `${l.nomProduitCommande} x${l.quantite}`)
       .join(', ');
+    const siteUrl = (cfg.siteUrl || '').replace(/\/$/, '');
+    const lienSuivi = cmd.numeroCommande
+      ? `${siteUrl}/suivi-commande?numero=${encodeURIComponent(cmd.numeroCommande)}`
+      : '';
     const msg = template
       .replace(/\{numeroCommande\}/g, cmd.numeroCommande || '')
       .replace(/\{articles\}/g, articles)
@@ -970,6 +1001,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       .replace(/\{devise\}/g, cfg.devise || 'XOF')
       .replace(/\{zoneNom\}/g, (cmd as any).zoneNom || '')
       .replace(/\{modeLivraison\}/g, (cmd as any).modeLivraison || '')
+      .replace(/\{lienSuivi\}/g, lienSuivi)
       .replace(/\{nomClient\}/g, [cmd.prenomInvite || (cmd as any).client?.prenom,
                                    cmd.nomInvite || (cmd as any).client?.nom].filter(Boolean).join(' '));
     if (!msg.trim()) return null;
