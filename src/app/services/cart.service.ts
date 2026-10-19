@@ -168,10 +168,11 @@ export class CartService {
       }
 
       const prix = item.produit.prixPromo ?? item.produit.prix;
+      const prixInstall = item.avecInstallation ? (item.produit.prixInstallation ?? 0) : 0;
       currentCart.items[itemIndex] = {
         ...item,
         quantite,
-        sousTotal: quantite * prix
+        sousTotal: quantite * prix + prixInstall
       };
 
       this.updateCart(currentCart);
@@ -227,13 +228,32 @@ export class CartService {
     return this.cartSubject.value.items.find(item => item.produit.idProduit === produitId);
   }
 
+  toggleInstallation(produitId: number): void {
+    const currentCart = this.cartSubject.value;
+    const idx = currentCart.items.findIndex(i => i.produit.idProduit === produitId);
+    if (idx < 0) return;
+
+    const item = currentCart.items[idx];
+    const prixInstall = item.produit.prixInstallation ?? 0;
+    const prixArticles = (item.produit.prixPromo ?? item.produit.prix) * item.quantite;
+    const avecInstallation = !item.avecInstallation;
+
+    currentCart.items[idx] = {
+      ...item,
+      avecInstallation,
+      sousTotal: prixArticles + (avecInstallation ? prixInstall : 0)
+    };
+    this.updateCart(currentCart);
+  }
+
   // Méthodes pour la commande
   getCartItemsForOrder(): any[] {
     return this.cartSubject.value.items.map(item => ({
       produitId: item.produit.idProduit,
       quantite: item.quantite,
       prixUnitaire: item.produit.prix,
-      sousTotal: item.sousTotal
+      sousTotal: item.sousTotal,
+      avecInstallation: item.avecInstallation ?? false
     }));
   }
 

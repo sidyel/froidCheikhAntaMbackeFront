@@ -193,6 +193,22 @@ import { extractId, buildProduitUrl, buildCategorieUrl } from '../../../utils/sl
                   </div>
                 </div>
 
+                <!-- Option installation -->
+                <div *ngIf="produit.prixInstallation" class="flex items-center space-x-3 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="avecInstallation"
+                    [(ngModel)]="avecInstallation"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                  <label for="avecInstallation" class="flex-1 text-sm text-gray-900 cursor-pointer">
+                    <span class="font-medium">Installation professionnelle</span>
+                    <span class="text-blue-700 font-semibold ml-1">
+                      (+{{ produit.prixInstallation | currency:('' | devise):'symbol':'1.0-0' }})
+                    </span>
+                    <span class="block text-xs text-gray-500 mt-0.5">Pose et mise en service par nos techniciens</span>
+                  </label>
+                </div>
+
                 <!-- Boutons Ajouter au panier / Acheter — compacts sur mobile -->
                 <div class="flex space-x-2 sm:space-x-3">
                   <button
@@ -430,7 +446,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   isAddingToCart = false;
   isInWishlist = false;
   isAuthenticated = false;
-  showImageGallery = false; // NOUVEAU: pour la galerie d'images
+  showImageGallery = false;
+  avecInstallation = false;
 
   selectedImageIndex = 0;
   selectedQuantity = 1;
