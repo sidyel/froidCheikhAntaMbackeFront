@@ -432,6 +432,10 @@ import {
                       <span class="text-gray-600">Frais de livraison</span>
                       <span class="text-green-600 font-medium">Gratuit</span>
                     </div>
+                    <div *ngIf="getMontantInstallationPanier() > 0" class="flex justify-between text-sm">
+                      <span class="text-gray-600">Installation</span>
+                      <span class="font-medium text-blue-700">{{ getMontantInstallationPanier() | currency:devise:'symbol':'1.0-0' }}</span>
+                    </div>
                   </ng-container>
 
                   <ng-container *ngIf="!isModeLivraison('RETRAIT_MAGASIN')">
@@ -454,6 +458,10 @@ import {
                       <div *ngIf="estimation.supplementGabarit > 0" class="flex justify-between text-sm">
                         <span class="text-gray-600">Supplément gabarit</span>
                         <span class="font-medium">{{ estimation.supplementGabarit | currency:devise:'symbol':'1.0-0' }}</span>
+                      </div>
+                      <div *ngIf="estimation.montantInstallation > 0" class="flex justify-between text-sm">
+                        <span class="text-gray-600">Installation</span>
+                        <span class="font-medium text-blue-700">{{ estimation.montantInstallation | currency:devise:'symbol':'1.0-0' }}</span>
                       </div>
                       <div *ngIf="estimation.delaiEstime" class="text-xs text-blue-600">
                         Délai estimé : {{ estimation.delaiEstime }}
@@ -740,7 +748,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       modeLivraison,
       lignes: this.cart.items.map(item => ({
         produitId: item.produit.idProduit,
-        quantite: item.quantite
+        quantite: item.quantite,
+        avecInstallation: item.avecInstallation ?? false
       }))
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -840,8 +849,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   getTotalWithDelivery(): number {
+    // En retrait magasin l'estimation n'est pas lancée, mais le totalPrice du panier inclut déjà l'installation (via CartService)
     if (this.isModeLivraison('RETRAIT_MAGASIN')) return this.cart.totalPrice;
     return this.estimation?.montantTotal ?? this.cart.totalPrice;
+  }
+
+  getMontantInstallationPanier(): number {
+    return this.cart.items.reduce((sum, item) =>
+      sum + (item.avecInstallation && item.produit.prixInstallation ? item.produit.prixInstallation : 0), 0);
   }
 
   onSubmit(): void {
@@ -890,7 +905,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         produitId: item.produit.idProduit,
         quantite: item.quantite,
         prixUnitaire: item.produit.prix,
-        sousTotal: item.sousTotal
+        sousTotal: item.sousTotal,
+        avecInstallation: item.avecInstallation ?? false
       })),
       consentementCookies: this.consentService.state === 'accepted',
       fbp: this.getCookie('_fbp') ?? undefined,

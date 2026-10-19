@@ -550,6 +550,23 @@ interface EditableAttribut {
             </div>
           </div>
 
+          <!-- Installation -->
+          <div class="border-b border-gray-200 pb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-1">Installation professionnelle</h3>
+            <p class="text-sm text-gray-500 mb-4">Laisser vide pour ne pas proposer l'option installation sur ce produit.</p>
+            <div class="max-w-xs">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Prix d'installation (XOF)</label>
+              <div class="relative">
+                <input type="number" formControlName="prixInstallation" min="0" step="100"
+                  class="w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Ex: 25000">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span class="text-gray-400 text-sm">XOF</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Actions -->
           <div class="flex justify-end space-x-3 pt-6">
             <button type="button" (click)="goBack()"
@@ -657,7 +674,8 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
       modeleFabricant: [''],
       ean: ['', [Validators.pattern('^(\\d{8}|\\d{12}|\\d{13}|\\d{14})$')]],
       disponibilite: [true],
-      excluCatalogue: [false]
+      excluCatalogue: [false],
+      prixInstallation: [null]
     });
   }
 
@@ -718,7 +736,8 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
       modeleFabricant: produit.modeleFabricant || '',
       ean: produit.ean || '',
       disponibilite: produit.disponibilite,
-      excluCatalogue: produit.excluCatalogue ?? false
+      excluCatalogue: produit.excluCatalogue ?? false,
+      prixInstallation: produit.prixInstallation ?? null
     });
 
     // Images : d'abord images[] (après migration), sinon listeImages (avant migration)
@@ -1233,6 +1252,7 @@ export class ProduitFormComponent implements OnInit, OnDestroy {
       ean: formValue.ean || undefined,
       disponibilite: formValue.disponibilite,
       excluCatalogue: formValue.excluCatalogue,
+      prixInstallation: formValue.prixInstallation ? parseFloat(formValue.prixInstallation) : undefined,
       categorie: formValue.categorieId ? {idCategorie: parseInt(formValue.categorieId)} as Categorie : undefined,
       marque: formValue.marqueId ? {idMarque: parseInt(formValue.marqueId)} as Marque : undefined,
       ficheTechniquePDF: this.currentFicheTechnique || undefined

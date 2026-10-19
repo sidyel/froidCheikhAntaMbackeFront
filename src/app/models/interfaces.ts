@@ -124,6 +124,7 @@ export interface Produit {
   videos?: VideoProduit[];        // nouvelles vidéos structurées
   disponibilite: boolean;
   excluCatalogue?: boolean;
+  prixInstallation?: number;      // null = pas d'option installation proposée
   dateAjout: string;
   categorie?: Categorie;
   marque?: Marque;
@@ -287,6 +288,8 @@ export interface LigneCommande {
   prixUnitaireOrigine?: number;
   promotionId?: number;
   promotionNom?: string;
+  avecInstallation?: boolean;
+  prixInstallationApplique?: number;
 }
 
 export interface AdresseLivraison {
@@ -354,6 +357,7 @@ export interface ZoneLivraisonCreate {
 export interface EstimationLigne {
   produitId: number;
   quantite: number;
+  avecInstallation?: boolean;
 }
 
 export interface EstimationLivraisonRequest {
@@ -368,6 +372,7 @@ export interface EstimationLivraisonResponse {
   supplementExpress: number;
   supplementGabarit: number;
   fraisLivraisonTotal: number;
+  montantInstallation: number;
   montantTotal: number;
   livraisonGratuite: boolean;
   delaiEstime: string;
@@ -406,6 +411,7 @@ export interface CartItem {
   produit: Produit;
   quantite: number;
   sousTotal: number;
+  avecInstallation?: boolean;
 }
 
 export interface Cart {

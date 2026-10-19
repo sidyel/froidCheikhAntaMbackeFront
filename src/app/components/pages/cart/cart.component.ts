@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CartService } from '../../../services/cart.service';
 import { ToastService } from '../../../services/toast.service';
-import { Cart, CartItem, Breadcrumb } from '../../../models/interfaces';
+import { Cart, CartItem, Breadcrumb, Produit } from '../../../models/interfaces';
 
 @Component({
   selector: 'app-cart',
@@ -90,6 +90,20 @@ import { Cart, CartItem, Breadcrumb } from '../../../models/interfaces';
                       </span>
                     </div>
 
+                    <!-- Option installation -->
+                    <div *ngIf="item.produit.prixInstallation" class="flex items-center space-x-2 mt-3">
+                      <input
+                        type="checkbox"
+                        [id]="'install-' + item.produit.idProduit"
+                        [checked]="item.avecInstallation"
+                        (change)="toggleInstallation(item.produit.idProduit)"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                      <label [for]="'install-' + item.produit.idProduit" class="text-sm text-gray-700 cursor-pointer">
+                        Installation professionnelle
+                        <span class="text-blue-700 font-medium">(+{{ item.produit.prixInstallation | currency:('' | devise):'symbol':'1.0-0' }})</span>
+                      </label>
+                    </div>
+
                     <!-- Price and Quantity -->
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 space-y-3 sm:space-y-0">
 
@@ -118,6 +132,9 @@ import { Cart, CartItem, Breadcrumb } from '../../../models/interfaces';
                           <ng-template #prixNormal>
                             {{ item.produit.prix | currency:('' | devise):'symbol':'1.0-0' }} × {{ item.quantite }}
                           </ng-template>
+                        </div>
+                        <div *ngIf="item.avecInstallation && item.produit.prixInstallation" class="text-xs text-blue-600">
+                          + {{ item.produit.prixInstallation | currency:('' | devise):'symbol':'1.0-0' }} installation
                         </div>
                         <div *ngIf="item.produit.nomPromotion" class="text-xs text-gray-400 italic">{{ item.produit.nomPromotion }}</div>
                         <div [class]="item.produit.prixPromo ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-primary-600'">
@@ -301,6 +318,10 @@ export class CartComponent implements OnInit, OnDestroy {
 
   updateQuantity(productId: number, quantity: number): void {
     this.cartService.updateQuantity(productId, quantity);
+  }
+
+  toggleInstallation(productId: number): void {
+    this.cartService.toggleInstallation(productId);
   }
 
   removeItem(productId: number): void {
