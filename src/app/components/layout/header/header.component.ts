@@ -64,8 +64,8 @@ import { SiteConfig } from '../../../models/site-config.interface';
               <!-- Logo Image - Agrandi et repositionné -->
               <div class="flex-shrink-0">
                 <img
-                  src="assets/images/logo.png"
-                  alt="Froid Cheikh Logo"
+                  [src]="config.logoUrl || 'assets/images/logo.png'"
+                  [alt]="config.nomSite || 'Logo'"
                   class="h-16 w-auto object-contain"
                 >
               </div>

@@ -171,7 +171,7 @@ import { ConfigService } from '../../../../services/config.service';
         <!-- Additional Links -->
         <div class="mt-6 text-center space-y-2">
           <p class="text-sm text-gray-600">
-            Nouveau chez Froid Cheikh ?
+            Nouveau chez {{ nomSite || 'nous' }} ?
             <a routerLink="/inscription" class="font-medium text-primary-600 hover:text-primary-500">
               Créer un compte
             </a>
@@ -189,7 +189,7 @@ import { ConfigService } from '../../../../services/config.service';
       <div class="mt-12 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div class="bg-white rounded-lg shadow-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">
-            Avantages d'un compte Froid Cheikh
+            Avantages d'un compte {{ nomSite }}
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="text-center">
@@ -228,8 +228,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   showPassword = false;
   returnUrl = '/';
 
-  private readonly configService = inject(ConfigService);
+  readonly configService = inject(ConfigService);
   private readonly platformId = inject(PLATFORM_ID);
+
+  get nomSite(): string {
+    return this.configService.config.nomSite || '';
+  }
 
   get whatsAppMdpUrl(): string | null {
     if (!isPlatformBrowser(this.platformId)) return null;

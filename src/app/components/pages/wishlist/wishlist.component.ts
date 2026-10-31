@@ -3,6 +3,7 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 import { ApiService } from '../../../services/api.service';
 import { CartService } from '../../../services/cart.service';
 import { ToastService } from '../../../services/toast.service';
+import { ConfigService } from '../../../services/config.service';
 import { Produit } from '../../../models/interfaces';
 
 @Component({
@@ -22,7 +23,8 @@ export class WishlistComponent implements OnInit, OnDestroy {
   constructor(
     private apiService: ApiService,
     private cartService: CartService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private configService: ConfigService
   ) {}
 
   ngOnInit(): void {
@@ -145,7 +147,7 @@ export class WishlistComponent implements OnInit, OnDestroy {
     const url = window.location.href;
     if (navigator.share) {
       navigator.share({
-        title: 'Ma liste de souhaits - Froid Cheikh',
+        title: `Ma liste de souhaits - ${this.configService.config.nomSite || ''}`,
         text: 'Découvrez ma sélection de produits',
         url: url
       });
