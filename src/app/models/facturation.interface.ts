@@ -37,19 +37,21 @@ export interface ReglementDocumentDTO {
 
 export interface DocumentFacturationDTO {
   id: number;
-  type: TypeDocument;
+  typeDocument: TypeDocument;
   statut: StatutDocument;
+  expire?: boolean;
   numero?: string;
   dateCreation: string;
   dateEmission?: string;
   dateValidite?: string;
-  nomClient?: string;
-  prenomClient?: string;
-  telephoneClient?: string;
-  emailClient?: string;
-  adresseClient?: string;
-  nineaClient?: string;
-  rccmClient?: string;
+  clientNom?: string;
+  clientPrenom?: string;
+  clientTelephone?: string;
+  clientEmail?: string;
+  clientAdresse?: string;
+  clientNinea?: string;
+  clientRccm?: string;
+  clientSiteId?: number;
   clientFacturationId?: number;
   commandeId?: number;
   numeroCommande?: string;
@@ -57,33 +59,34 @@ export interface DocumentFacturationDTO {
   numeroDocumentOrigine?: string;
   livreurNom?: string;
   livreurTelephone?: string;
-  remiseTotale: number;
+  remiseTotalePourcent: number;
+  tauxTvaDefaut?: number;
+  prixAfficheTTC?: boolean;
   montantHT?: number;
   montantTva?: number;
   montantTTC?: number;
   montantEnLettres?: string;
+  hasPdf?: boolean;
   statutPaiement?: StatutPaiementDocument;
-  totalRegle?: number;
+  montantRegle?: number;
+  montantRestant?: number;
   lignes: LigneDocumentDTO[];
   reglements?: ReglementDocumentDTO[];
   creePar?: string;
   modifiePar?: string;
-  notes?: string;
 }
 
 export interface DocumentFacturationListDTO {
   id: number;
-  type: TypeDocument;
+  typeDocument: TypeDocument;
   statut: StatutDocument;
+  expire?: boolean;
   numero?: string;
   dateCreation: string;
   dateEmission?: string;
-  nomClient?: string;
-  prenomClient?: string;
+  clientNom?: string;
   montantTTC?: number;
   statutPaiement?: StatutPaiementDocument;
-  commandeId?: number;
-  numeroCommande?: string;
 }
 
 export interface CreerDocumentRequest {

@@ -384,18 +384,17 @@ export class AdminFacturationFormComponent implements OnInit, OnDestroy {
 
   private remplirFormulaire(doc: DocumentFacturationDTO): void {
     this.form.patchValue({
-      type: doc.type,
+      type: doc.typeDocument,
       dateValidite: doc.dateValidite ?? '',
-      remiseTotale: doc.remiseTotale ?? 0,
-      notes: doc.notes ?? '',
+      remiseTotale: doc.remiseTotalePourcent ?? 0,
       client: {
-        nomClient: doc.nomClient ?? '',
-        prenomClient: doc.prenomClient ?? '',
-        telephoneClient: doc.telephoneClient ?? '',
-        emailClient: doc.emailClient ?? '',
-        adresseClient: doc.adresseClient ?? '',
-        nineaClient: doc.nineaClient ?? '',
-        rccmClient: doc.rccmClient ?? '',
+        nomClient: doc.clientNom ?? '',
+        prenomClient: doc.clientPrenom ?? '',
+        telephoneClient: doc.clientTelephone ?? '',
+        emailClient: doc.clientEmail ?? '',
+        adresseClient: doc.clientAdresse ?? '',
+        nineaClient: doc.clientNinea ?? '',
+        rccmClient: doc.clientRccm ?? '',
         livreurNom: doc.livreurNom ?? '',
         livreurTelephone: doc.livreurTelephone ?? ''
       }
@@ -476,23 +475,25 @@ export class AdminFacturationFormComponent implements OnInit, OnDestroy {
 
   private buildRequest() {
     const v = this.form.value;
+    const c = v.client;
+    const hasClient = !!(c.nomClient || c.prenomClient || c.telephoneClient || c.emailClient);
     return {
-      type: v.type as TypeDocument,
+      typeDocument: v.type as TypeDocument,
       dateValidite: v.dateValidite || undefined,
-      remiseTotale: v.remiseTotale || 0,
-      notes: v.notes || undefined,
-      nomClient: v.client.nomClient || undefined,
-      prenomClient: v.client.prenomClient || undefined,
-      telephoneClient: v.client.telephoneClient || undefined,
-      emailClient: v.client.emailClient || undefined,
-      adresseClient: v.client.adresseClient || undefined,
-      nineaClient: v.client.nineaClient || undefined,
-      rccmClient: v.client.rccmClient || undefined,
-      livreurNom: v.client.livreurNom || undefined,
-      livreurTelephone: v.client.livreurTelephone || undefined,
+      remiseTotalePourcent: v.remiseTotale || 0,
+      livreurNom: c.livreurNom || undefined,
+      livreurTelephone: c.livreurTelephone || undefined,
+      nouveauClient: hasClient ? {
+        nom: c.nomClient || 'Client',
+        prenom: c.prenomClient || undefined,
+        telephone: c.telephoneClient || undefined,
+        email: c.emailClient || undefined,
+        adresse: c.adresseClient || undefined,
+        ninea: c.nineaClient || undefined,
+        rccm: c.rccmClient || undefined
+      } : undefined,
       lignes: (v.lignes as any[]).map((l: any, i: number) => ({
-        id: l.id || undefined,
-        ordre: i + 1,
+        ordre: i,
         designation: l.designation,
         quantite: +l.quantite,
         prixUnitaireHT: +l.prixUnitaireHT,
@@ -519,9 +520,16 @@ export class AdminFacturationFormComponent implements OnInit, OnDestroy {
           this.toastService.success('Document sauvegardé');
         }
       },
-      error: () => {
+      error: (err) => {
         this.sauvegarde = false;
-        this.toastService.error('Erreur lors de la sauvegarde');
+        const body = err?.error;
+        if (body?.errors) {
+          const details = Object.entries(body.errors as Record<string, string>)
+            .map(([, msg]) => msg).join(' · ');
+          this.toastService.error('Données invalides : ' + details);
+        } else {
+          this.toastService.error(body?.message || 'Erreur lors de la sauvegarde');
+        }
       }
     });
   }
@@ -558,7 +566,16 @@ export class AdminFacturationFormComponent implements OnInit, OnDestroy {
             this.idDocument = doc.id;
             this.emettreDocument(doc.id);
           },
-          error: () => { this.sauvegarde = false; this.toastService.error('Erreur lors de la sauvegarde'); }
+          error: (err: any) => {
+            this.sauvegarde = false;
+            const body = err?.error;
+            if (body?.errors) {
+              const details = Object.entries(body.errors as Record<string, string>).map(([, msg]) => msg).join(' · ');
+              this.toastService.error('Données invalides : ' + details);
+            } else {
+              this.toastService.error(body?.message || 'Erreur lors de la sauvegarde');
+            }
+          }
         });
     } else {
       this.emettreDocument(this.idDocument);
@@ -574,7 +591,10 @@ export class AdminFacturationFormComponent implements OnInit, OnDestroy {
           this.toastService.success('Document émis avec succès');
           this.router.navigate(['/admin/facturation', id]);
         },
-        error: () => { this.sauvegarde = false; this.toastService.error('Erreur lors de l\'émission'); }
+        error: (err: any) => {
+          this.sauvegarde = false;
+          this.toastService.error(err?.error?.message || 'Erreur lors de l\'émission');
+        }
       });
   }
 

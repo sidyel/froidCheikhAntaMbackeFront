@@ -104,10 +104,9 @@ type OngletType = 'FACTURE' | 'DEVIS' | 'AVOIR' | 'BON_LIVRAISON';
               <td class="px-4 py-3">
                 <span *ngIf="doc.numero" class="font-mono font-semibold text-gray-900">{{ doc.numero }}</span>
                 <span *ngIf="!doc.numero" class="text-gray-400 italic text-xs">Brouillon</span>
-                <div *ngIf="doc.numeroCommande" class="text-xs text-gray-400">Cmd {{ doc.numeroCommande }}</div>
               </td>
               <td class="px-4 py-3">
-                <span class="text-gray-900">{{ doc.nomClient || '—' }} {{ doc.prenomClient || '' }}</span>
+                <span class="text-gray-900">{{ doc.clientNom || '—' }}</span>
               </td>
               <td class="px-4 py-3 text-gray-500">
                 {{ (doc.dateEmission || doc.dateCreation) | date:'dd/MM/yyyy' }}

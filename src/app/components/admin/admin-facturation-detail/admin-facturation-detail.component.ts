@@ -34,19 +34,19 @@ import {
             <div>
               <div class="flex items-center gap-3">
                 <h1 class="text-xl font-bold text-gray-900">
-                  {{ doc.numero || ('Brouillon — ' + labelType(doc.type)) }}
+                  {{ doc.numero || ('Brouillon — ' + labelType(doc.typeDocument)) }}
                 </h1>
                 <span [class]="badgeStatut(doc.statut)" class="text-xs px-2 py-0.5 rounded-full font-semibold">
                   {{ doc.statut === 'BROUILLON' ? 'Brouillon' : 'Émis' }}
                 </span>
-                <span *ngIf="doc.statutPaiement && doc.type === 'FACTURE'"
+                <span *ngIf="doc.statutPaiement && doc.typeDocument === 'FACTURE'"
                   [class]="badgePaiement(doc.statutPaiement)"
                   class="text-xs px-2 py-0.5 rounded-full font-semibold">
                   {{ labelPaiement(doc.statutPaiement) }}
                 </span>
               </div>
               <p class="text-sm text-gray-500 mt-0.5">
-                {{ labelType(doc.type) }} ·
+                {{ labelType(doc.typeDocument) }} ·
                 {{ (doc.dateEmission || doc.dateCreation) | date:'dd/MM/yyyy HH:mm' }}
                 <span *ngIf="doc.numeroCommande"> · Commande {{ doc.numeroCommande }}</span>
               </p>
@@ -81,12 +81,12 @@ import {
               <lucide-icon name="send" class="w-4 h-4"></lucide-icon>
               Émettre
             </button>
-            <button *ngIf="doc.statut === 'EMIS' && doc.type === 'FACTURE' && peutAdmin" (click)="creerAvoir()"
+            <button *ngIf="doc.statut === 'EMIS' && doc.typeDocument === 'FACTURE' && peutAdmin" (click)="creerAvoir()"
               class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
               <lucide-icon name="rotate-ccw" class="w-4 h-4"></lucide-icon>
               Créer avoir
             </button>
-            <button *ngIf="doc.statut === 'EMIS' && doc.type === 'DEVIS' && peutAdmin" (click)="convertirDevis()"
+            <button *ngIf="doc.statut === 'EMIS' && doc.typeDocument === 'DEVIS' && peutAdmin" (click)="convertirDevis()"
               class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
               <lucide-icon name="file-text" class="w-4 h-4"></lucide-icon>
               → Facture
@@ -103,24 +103,24 @@ import {
             <div class="bg-white rounded-xl border border-gray-200 p-5">
               <h2 class="font-semibold text-gray-900 mb-3">Client</h2>
               <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                <div *ngIf="doc.nomClient || doc.prenomClient" class="col-span-2">
-                  <span class="font-medium text-gray-900">{{ doc.prenomClient }} {{ doc.nomClient }}</span>
+                <div *ngIf="doc.clientNom || doc.clientPrenom" class="col-span-2">
+                  <span class="font-medium text-gray-900">{{ doc.clientPrenom }} {{ doc.clientNom }}</span>
                 </div>
-                <div *ngIf="doc.telephoneClient" class="flex items-center gap-1.5 text-gray-600">
+                <div *ngIf="doc.clientTelephone" class="flex items-center gap-1.5 text-gray-600">
                   <lucide-icon name="phone" class="w-3.5 h-3.5"></lucide-icon>
-                  {{ doc.telephoneClient }}
+                  {{ doc.clientTelephone }}
                 </div>
-                <div *ngIf="doc.emailClient" class="flex items-center gap-1.5 text-gray-600">
+                <div *ngIf="doc.clientEmail" class="flex items-center gap-1.5 text-gray-600">
                   <lucide-icon name="mail" class="w-3.5 h-3.5"></lucide-icon>
-                  {{ doc.emailClient }}
+                  {{ doc.clientEmail }}
                 </div>
-                <div *ngIf="doc.adresseClient" class="col-span-2 flex items-start gap-1.5 text-gray-600">
+                <div *ngIf="doc.clientAdresse" class="col-span-2 flex items-start gap-1.5 text-gray-600">
                   <lucide-icon name="map-pin" class="w-3.5 h-3.5 mt-0.5 shrink-0"></lucide-icon>
-                  {{ doc.adresseClient }}
+                  {{ doc.clientAdresse }}
                 </div>
-                <div *ngIf="doc.nineaClient" class="text-gray-500">NINEA : {{ doc.nineaClient }}</div>
-                <div *ngIf="doc.rccmClient" class="text-gray-500">RCCM : {{ doc.rccmClient }}</div>
-                <div *ngIf="!doc.nomClient && !doc.prenomClient" class="col-span-2 text-gray-400 italic text-xs">
+                <div *ngIf="doc.clientNinea" class="text-gray-500">NINEA : {{ doc.clientNinea }}</div>
+                <div *ngIf="doc.clientRccm" class="text-gray-500">RCCM : {{ doc.clientRccm }}</div>
+                <div *ngIf="!doc.clientNom && !doc.clientPrenom" class="col-span-2 text-gray-400 italic text-xs">
                   Aucun client renseigné
                 </div>
               </div>
@@ -180,7 +180,7 @@ import {
             </div>
 
             <!-- Règlements (factures émises seulement) -->
-            <div *ngIf="doc.statut === 'EMIS' && doc.type === 'FACTURE'"
+            <div *ngIf="doc.statut === 'EMIS' && doc.typeDocument === 'FACTURE'"
               class="bg-white rounded-xl border border-gray-200 p-5">
               <div class="flex items-center justify-between mb-4">
                 <h2 class="font-semibold text-gray-900">Règlements</h2>
@@ -257,7 +257,7 @@ import {
               <div *ngIf="doc.montantTTC" class="mt-4 pt-4 border-t border-gray-100 text-sm">
                 <div class="flex justify-between text-gray-600">
                   <span>Total réglé</span>
-                  <span class="font-mono">{{ doc.totalRegle | number:'1.0-0' }} FCFA</span>
+                  <span class="font-mono">{{ doc.montantRegle | number:'1.0-0' }} FCFA</span>
                 </div>
                 <div class="flex justify-between font-semibold" [class.text-red-600]="resteARegler > 0" [class.text-green-600]="resteARegler <= 0">
                   <span>Reste à régler</span>
@@ -324,11 +324,6 @@ import {
               </div>
             </div>
 
-            <!-- Notes -->
-            <div *ngIf="doc.notes" class="bg-yellow-50 rounded-xl border border-yellow-200 p-4 text-sm text-yellow-800">
-              <h3 class="font-semibold mb-1">Notes</h3>
-              <p class="whitespace-pre-wrap">{{ doc.notes }}</p>
-            </div>
 
           </div>
         </div>
@@ -405,13 +400,13 @@ export class AdminFacturationDetailComponent implements OnInit, OnDestroy {
   }
 
   get peutEmettre(): boolean {
-    if (this.authService.hasRole('GESTIONNAIRE')) return this.doc?.type === 'BON_LIVRAISON';
+    if (this.authService.hasRole('GESTIONNAIRE')) return this.doc?.typeDocument === 'BON_LIVRAISON';
     return true;
   }
 
   get resteARegler(): number {
     if (!this.doc?.montantTTC) return 0;
-    return Math.max(0, this.doc.montantTTC - (this.doc.totalRegle ?? 0));
+    return Math.max(0, this.doc.montantTTC - (this.doc.montantRegle ?? 0));
   }
 
   get estimationTTC(): number {
