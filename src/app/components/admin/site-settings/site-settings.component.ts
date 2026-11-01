@@ -404,6 +404,30 @@ interface RapportFeed {
                   </button>
                 </div>
               </div>
+              <!-- Upload logo documents (mode COMPOSÉ) -->
+              <div class="md:col-span-2">
+                <label class="form-label">Logo des documents PDF (mode Composé)</label>
+                <p class="text-xs text-gray-400 mb-2">Affiché à gauche du nom en mode Composé. Privilégiez un logo sans texte (flocon seul).</p>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <img *ngIf="form.get('urlLogoDocuments')?.value"
+                    [src]="form.get('urlLogoDocuments')?.value"
+                    alt="Aperçu logo documents" class="h-12 rounded border border-gray-200 object-contain bg-gray-50">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                    [class.opacity-50]="uploading.logo">
+                    <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                    {{ uploading.logo ? 'Envoi…' : 'Choisir un fichier' }}
+                    <input type="file" accept="image/*" class="hidden"
+                      (change)="uploadImage($event, 'logo')" [disabled]="uploading.logo">
+                  </label>
+                  <button *ngIf="form.get('urlLogoDocuments')?.value" type="button"
+                    (click)="supprimerImage('logo')" [disabled]="supprimant.logo"
+                    class="flex items-center gap-1 bg-white border border-red-300 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                    title="Supprimer le logo des documents">
+                    <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
+                    {{ supprimant.logo ? '…' : 'Supprimer' }}
+                  </button>
+                </div>
+              </div>
               <!-- Upload image pied -->
               <div class="md:col-span-2">
                 <label class="form-label">Image pied de page (mode IMAGE)</label>
@@ -698,8 +722,8 @@ export class SiteSettingsComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   generationApercu = false;
-  uploading: Record<'entete' | 'pied' | 'cachet', boolean> = { entete: false, pied: false, cachet: false };
-  supprimant: Record<'entete' | 'pied' | 'cachet', boolean> = { entete: false, pied: false, cachet: false };
+  uploading: Record<'entete' | 'pied' | 'cachet' | 'logo', boolean> = { entete: false, pied: false, cachet: false, logo: false };
+  supprimant: Record<'entete' | 'pied' | 'cachet' | 'logo', boolean> = { entete: false, pied: false, cachet: false, logo: false };
 
   rapport: RapportFeed | null = null;
   rapportLoading = false;
@@ -726,13 +750,19 @@ export class SiteSettingsComponent implements OnInit {
     private facturationService: FacturationService
   ) {}
 
-  uploadImage(event: Event, cible: 'entete' | 'pied' | 'cachet'): void {
+  uploadImage(event: Event, cible: 'entete' | 'pied' | 'cachet' | 'logo'): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
-    const endpoint = cible === 'entete' ? 'entete-image' : cible === 'pied' ? 'pied-image' : 'cachet';
-    const formField = cible === 'entete' ? 'urlImageEnTete' : cible === 'pied' ? 'urlImagePied' : 'urlCachetSignature';
+    const endpoint = cible === 'entete' ? 'entete-image'
+                   : cible === 'pied'   ? 'pied-image'
+                   : cible === 'cachet' ? 'cachet'
+                   : 'logo-documents';
+    const formField = cible === 'entete' ? 'urlImageEnTete'
+                    : cible === 'pied'   ? 'urlImagePied'
+                    : cible === 'cachet' ? 'urlCachetSignature'
+                    : 'urlLogoDocuments';
 
     this.uploading[cible] = true;
     const fd = new FormData();
@@ -756,9 +786,15 @@ export class SiteSettingsComponent implements OnInit {
     });
   }
 
-  supprimerImage(cible: 'entete' | 'pied' | 'cachet'): void {
-    const endpoint = cible === 'entete' ? 'entete-image' : cible === 'pied' ? 'pied-image' : 'cachet';
-    const formField = cible === 'entete' ? 'urlImageEnTete' : cible === 'pied' ? 'urlImagePied' : 'urlCachetSignature';
+  supprimerImage(cible: 'entete' | 'pied' | 'cachet' | 'logo'): void {
+    const endpoint = cible === 'entete' ? 'entete-image'
+                   : cible === 'pied'   ? 'pied-image'
+                   : cible === 'cachet' ? 'cachet'
+                   : 'logo-documents';
+    const formField = cible === 'entete' ? 'urlImageEnTete'
+                    : cible === 'pied'   ? 'urlImagePied'
+                    : cible === 'cachet' ? 'urlCachetSignature'
+                    : 'urlLogoDocuments';
 
     this.supprimant[cible] = true;
     this.http.delete(
@@ -932,6 +968,7 @@ export class SiteSettingsComponent implements OnInit {
       conditionsPaiementDefaut: [''],
       mentionsPiedDocument: [''],
       urlCachetSignature: [''],
+      urlLogoDocuments: [''],
       couleurDocuments: ['#2563eb'],
       modeEnTeteDocuments: ['COMPOSE'],
       urlImageEnTete: [''],
