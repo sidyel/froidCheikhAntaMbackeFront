@@ -61,13 +61,49 @@ interface RapportFeed {
             <textarea formControlName="descriptionSite" class="form-input" rows="3"></textarea>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Logo du site -->
             <div>
-              <label class="form-label">URL du logo</label>
-              <input formControlName="logoUrl" class="form-input" placeholder="https://...">
+              <label class="form-label">Logo du site</label>
+              <div class="flex items-center gap-3 flex-wrap">
+                <img *ngIf="form.get('logoUrl')?.value"
+                  [src]="form.get('logoUrl')?.value"
+                  alt="Logo" class="h-10 rounded border border-gray-200 object-contain bg-gray-50">
+                <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                  [class.opacity-50]="uploading.logoSite">
+                  <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                  {{ uploading.logoSite ? 'Envoi…' : 'Choisir un fichier' }}
+                  <input type="file" accept="image/*" class="hidden"
+                    (change)="uploadImage($event, 'logoSite')" [disabled]="uploading.logoSite">
+                </label>
+                <button *ngIf="form.get('logoUrl')?.value" type="button"
+                  (click)="supprimerImage('logoSite')" [disabled]="supprimant.logoSite"
+                  class="flex items-center gap-1 bg-white border border-red-300 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
+                  <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
+                  {{ supprimant.logoSite ? '…' : 'Supprimer' }}
+                </button>
+              </div>
             </div>
+            <!-- Favicon -->
             <div>
-              <label class="form-label">URL du favicon</label>
-              <input formControlName="faviconUrl" class="form-input" placeholder="https://...">
+              <label class="form-label">Favicon</label>
+              <div class="flex items-center gap-3 flex-wrap">
+                <img *ngIf="form.get('faviconUrl')?.value"
+                  [src]="form.get('faviconUrl')?.value"
+                  alt="Favicon" class="h-8 w-8 rounded border border-gray-200 object-contain bg-gray-50">
+                <label class="flex items-center gap-2 cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium"
+                  [class.opacity-50]="uploading.favicon">
+                  <lucide-icon name="upload" class="w-4 h-4"></lucide-icon>
+                  {{ uploading.favicon ? 'Envoi…' : 'Choisir un fichier' }}
+                  <input type="file" accept="image/*,.ico" class="hidden"
+                    (change)="uploadImage($event, 'favicon')" [disabled]="uploading.favicon">
+                </label>
+                <button *ngIf="form.get('faviconUrl')?.value" type="button"
+                  (click)="supprimerImage('favicon')" [disabled]="supprimant.favicon"
+                  class="flex items-center gap-1 bg-white border border-red-300 hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
+                  <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
+                  {{ supprimant.favicon ? '…' : 'Supprimer' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -722,8 +758,8 @@ export class SiteSettingsComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   generationApercu = false;
-  uploading: Record<'entete' | 'pied' | 'cachet' | 'logo', boolean> = { entete: false, pied: false, cachet: false, logo: false };
-  supprimant: Record<'entete' | 'pied' | 'cachet' | 'logo', boolean> = { entete: false, pied: false, cachet: false, logo: false };
+  uploading: Record<'entete' | 'pied' | 'cachet' | 'logo' | 'logoSite' | 'favicon', boolean> = { entete: false, pied: false, cachet: false, logo: false, logoSite: false, favicon: false };
+  supprimant: Record<'entete' | 'pied' | 'cachet' | 'logo' | 'logoSite' | 'favicon', boolean> = { entete: false, pied: false, cachet: false, logo: false, logoSite: false, favicon: false };
 
   rapport: RapportFeed | null = null;
   rapportLoading = false;
@@ -755,14 +791,18 @@ export class SiteSettingsComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
 
-    const endpoint = cible === 'entete' ? 'entete-image'
-                   : cible === 'pied'   ? 'pied-image'
-                   : cible === 'cachet' ? 'cachet'
-                   : 'logo-documents';
-    const formField = cible === 'entete' ? 'urlImageEnTete'
-                    : cible === 'pied'   ? 'urlImagePied'
-                    : cible === 'cachet' ? 'urlCachetSignature'
-                    : 'urlLogoDocuments';
+    const endpoint = cible === 'entete'   ? 'entete-image'
+                   : cible === 'pied'     ? 'pied-image'
+                   : cible === 'cachet'   ? 'cachet'
+                   : cible === 'logo'     ? 'logo-documents'
+                   : cible === 'logoSite' ? 'logo'
+                   : 'favicon';
+    const formField = cible === 'entete'   ? 'urlImageEnTete'
+                    : cible === 'pied'     ? 'urlImagePied'
+                    : cible === 'cachet'   ? 'urlCachetSignature'
+                    : cible === 'logo'     ? 'urlLogoDocuments'
+                    : cible === 'logoSite' ? 'logoUrl'
+                    : 'faviconUrl';
 
     this.uploading[cible] = true;
     const fd = new FormData();
@@ -787,14 +827,18 @@ export class SiteSettingsComponent implements OnInit {
   }
 
   supprimerImage(cible: 'entete' | 'pied' | 'cachet' | 'logo'): void {
-    const endpoint = cible === 'entete' ? 'entete-image'
-                   : cible === 'pied'   ? 'pied-image'
-                   : cible === 'cachet' ? 'cachet'
-                   : 'logo-documents';
-    const formField = cible === 'entete' ? 'urlImageEnTete'
-                    : cible === 'pied'   ? 'urlImagePied'
-                    : cible === 'cachet' ? 'urlCachetSignature'
-                    : 'urlLogoDocuments';
+    const endpoint = cible === 'entete'   ? 'entete-image'
+                   : cible === 'pied'     ? 'pied-image'
+                   : cible === 'cachet'   ? 'cachet'
+                   : cible === 'logo'     ? 'logo-documents'
+                   : cible === 'logoSite' ? 'logo'
+                   : 'favicon';
+    const formField = cible === 'entete'   ? 'urlImageEnTete'
+                    : cible === 'pied'     ? 'urlImagePied'
+                    : cible === 'cachet'   ? 'urlCachetSignature'
+                    : cible === 'logo'     ? 'urlLogoDocuments'
+                    : cible === 'logoSite' ? 'logoUrl'
+                    : 'faviconUrl';
 
     this.supprimant[cible] = true;
     this.http.delete(
